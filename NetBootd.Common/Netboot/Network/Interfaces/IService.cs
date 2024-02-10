@@ -4,10 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace NetBoot.Common.Netboot.Common.Network.Interfaces
+namespace Netboot.Services.Interfaces
 {
-	public interface IClient : IDisposable
-	{
-		void Close();
-	}
+    public interface IService
+    {
+    }
 }

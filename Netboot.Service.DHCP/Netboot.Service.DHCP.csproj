@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
     <TargetFramework>net8.0</TargetFramework>
+	<EnableDynamicLoading>true</EnableDynamicLoading>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <BaseOutputPath>..\</BaseOutputPath>
@@ -10,12 +10,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\NetBootd.Common\Netboot.Common.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Update="Config\Netboot.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
 
 </Project>

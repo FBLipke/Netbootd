@@ -1,4 +1,4 @@
-﻿using NetBoot;
+﻿using Netboot;
 using System.Diagnostics;
 
 namespace Netbootd.Netboot
