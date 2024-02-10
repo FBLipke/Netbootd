@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Netboot>
+	<Configuration>
+		<Network>
+			<Server type="dhcp" port="67">
+				<RespondToUnknown>True</RespondToUnknown>
+			</Server>
+			<Server type="bootp" port="4011">
+				<RespondToUnknown>True</RespondToUnknown>
+			</Server>
+			<Server type="tftp" port="69">
+				<MaxBlockSize>8192</MaxBlockSize>
+				<VariableWindow>True</VariableWindow>
+			</Server>
+		</Network>
+	</Configuration>
+</Netboot>
