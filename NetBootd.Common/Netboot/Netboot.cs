@@ -1,12 +1,14 @@
 ﻿using Netboot.Common.Network.Sockets.Server;
 using NetBoot.Common.Netboot.Common.Network.Definitions;
+using NetBoot.Common.Netboot.Common.Network.Interfaces;
 using System.Xml;
 
 namespace NetBoot
 {
 	public class NetbootBase : IDisposable
 	{
-		public Dictionary<Guid, BaseServer> Servers = [];
+		public static Dictionary<Guid, IServer> Servers = [];
+		public static Dictionary<Guid, IClient> Clients = [];
 
 		string[] cmdArgs = [];
 
@@ -19,7 +21,7 @@ namespace NetBoot
 
 		public bool Initialize()
 		{
-			Console.WriteLine("Netboot 0.1a ({0})", BitConverter.IsLittleEndian ? "LE" : "BE");
+			Console.WriteLine("Netboot 0.1a ({0})", Functions.IsLittleEndian() ? "LE (LittleEndian)" : "BE (BigEndian)");
 
 			var ConfigDir = Path.Combine(WorkingDirectory, "Config");
 			if (!Directory.Exists(ConfigDir))
@@ -39,6 +41,7 @@ namespace NetBoot
 			if (!Directory.Exists(Path.Combine(tftpRoot, "OSChooser")))
 				Directory.CreateDirectory(Path.Combine(tftpRoot, "OSChooser"));
 
+			#region Parse Config File
 			var doc = new XmlDocument();
 			doc.Load(Path.Combine(ConfigDir, "Netboot.xml"));
 
@@ -86,6 +89,7 @@ namespace NetBoot
 					}
 				}
 			}
+			#endregion
 
 			return true;
 		}

@@ -1,13 +1,15 @@
-﻿using NetBoot.Common.Netboot.Common.Network.Definitions;
+﻿using Netboot.Common.Network.Interfaces;
+using NetBoot;
+using NetBoot.Common.Netboot.Common.Network.Definitions;
+using NetBoot.Common.Netboot.Common.Network.Interfaces;
 using System.Net;
 using System.Net.NetworkInformation;
 
 namespace Netboot.Common.Network.Sockets.Server
 {
-	public class BaseServer : IDisposable
+	public class BaseServer : IServer
 	{
-		public Dictionary<Guid, BaseSocket> Sockets = [];
-
+		public Dictionary<Guid, ISocket> Sockets = [];
 		public Guid ServerId = Guid.Empty;
 		public ServerType ServerType;
 
@@ -16,20 +18,7 @@ namespace Netboot.Common.Network.Sockets.Server
 			ServerId = serverid;
 			ServerType = serverType;
 
-			var addresses = new List<IPAddress>();
-
-			foreach (NetworkInterface ni in NetworkInterface.GetAllNetworkInterfaces())
-				if (ni.NetworkInterfaceType == NetworkInterfaceType.Ethernet)
-					foreach (UnicastIPAddressInformation ip in ni.GetIPProperties().UnicastAddresses)
-						if (ip.Address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
-							if (!IPAddress.IsLoopback(ip.Address) && ip.Address.GetAddressBytes()[0] != 0xa9)
-								addresses.Add(ip.Address);
-
-			if (addresses.Count == 0)
-			{
-				Console.WriteLine("[E]: Could not find any suitable network interface!");
-				return;
-			}
+			var addresses = Functions.GetIPAddresses();
 
 			foreach (var address in addresses)
 			{
@@ -42,8 +31,7 @@ namespace Netboot.Common.Network.Sockets.Server
 					Console.WriteLine($"{e.BytesSent} bytes sent to {e.RemoteEndpoint}");
 				};
 
-				socket.DataReceived += (sender, e) =>
-				{
+				socket.DataReceived += (sender, e) => {
 					Console.WriteLine($"Got {e.Data.Length} bytes from {e.RemoteEndpoint}!");
 				};
 

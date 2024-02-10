@@ -1,4 +1,5 @@
-﻿using NetBoot.Common.Netboot.Common.Network.Definitions;
+﻿using Netboot.Common.Network.Interfaces;
+using NetBoot.Common.Netboot.Common.Network.Definitions;
 using System.Net;
 using System.Net.Sockets;
 
@@ -6,8 +7,8 @@ namespace Netboot.Common.Network.Sockets
 {
     internal class SocketState : IDisposable
     {
-        public Socket socket;
-        public byte[] buffer;
+        public Socket? socket;
+        public byte[]? buffer;
 
 		public SocketState()
         {
@@ -25,7 +26,7 @@ namespace Netboot.Common.Network.Sockets
         }
     }
 
-    public class BaseSocket : IDisposable
+    public class BaseSocket : IDisposable, ISocket
     {
         public delegate void DataReceivedEventHandler(object sender, DataReceivedEventArgs e);
         public delegate void DataSendEventHandler(object sender, DataSendEventArgs e);
@@ -57,13 +58,17 @@ namespace Netboot.Common.Network.Sockets
 
         public void Start()
         {
+            if (socketState == null)
+                return;
+
             try
             {
-				socketState.socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
-				socketState.socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.Broadcast, true);
-				socketState.socket.Bind(localendpoint);
-				socketState.socket.BeginReceiveFrom(socketState.buffer, 0, socketState.buffer.Length,
-                    SocketFlags.None, ref localendpoint, new AsyncCallback(EndReceive), socketState);
+				socketState.socket?.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
+				socketState.socket?.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.Broadcast, true);
+				socketState.socket?.Bind(localendpoint);
+
+                socketState.socket?.BeginReceiveFrom(socketState.buffer, 0, socketState.buffer.Length,
+		            SocketFlags.None, ref localendpoint, new AsyncCallback(EndReceive), socketState);
 
                 Listening = true;
 
@@ -73,6 +78,7 @@ namespace Netboot.Common.Network.Sockets
             {
                 Console.WriteLine(ex);
                 Listening = false;
+                throw;
             }
         }
 
@@ -106,7 +112,7 @@ namespace Netboot.Common.Network.Sockets
         {
             try
             {
-                socketState.socket.BeginSendTo(buffer, 0, buffer.Length, 
+                socketState.socket?.BeginSendTo(buffer, 0, buffer.Length, 
                     SocketFlags.None, endpoint, EndSendTo, socketState);
             }
             catch (SocketException ex)

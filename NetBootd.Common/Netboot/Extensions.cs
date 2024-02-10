@@ -1,6 +1,7 @@
 ﻿namespace NetBoot.Common.Netboot
 {
-	internal class Extensions
+	public class Extensions
 	{
+
 	}
 }
