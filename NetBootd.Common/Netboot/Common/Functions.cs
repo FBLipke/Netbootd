@@ -9,8 +9,8 @@ namespace Netboot
         {
             try
             {
-                var methods = obj.GetType().GetMethods().Where(m => m.Name == name && m.IsPublic);
-                methods.FirstOrDefault().Invoke(obj, args);
+                var methods = obj.GetType().GetMethods().Where(m => m.Name == name && m.IsPublic).FirstOrDefault();
+                methods.Invoke(obj, args);
             }
             catch (NullReferenceException ex)
             {

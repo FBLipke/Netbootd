@@ -1,175 +1,150 @@
 ﻿using Netboot.Network.Server;
-using Netboot.Network.Definitions;
 using Netboot.Network.Interfaces;
 using System.Xml;
 using Netboot.Services.Interfaces;
+using Netboot.Services;
 using System.Reflection;
-using System.Windows.Input;
-using Netboot.Network.Packet;
 
 namespace Netboot
 {
-    public class NetbootBase : IDisposable
-    {
-        public static Dictionary<Guid, IServer> Servers = [];
-        public static Dictionary<ServerType, IService> Services = [];
-        public static Dictionary<Guid, IClient> Clients = [];
+	public class NetbootBase : IDisposable
+	{
+		public static Dictionary<Guid, IServer> Servers = [];
+		public static Dictionary<string, IService> Services = [];
 
-        string[] cmdArgs = [];
+		string[] cmdArgs = [];
 
-        public static string WorkingDirectory = Directory.GetCurrentDirectory();
+		public static string WorkingDirectory = Directory.GetCurrentDirectory();
 
-        public NetbootBase(string[] args)
-        {
-            cmdArgs = args;
-        }
+		public NetbootBase(string[] args)
+		{
+			cmdArgs = args;
+		}
 
-        public static void LoadServices()
-        {
-            var serviceModules = new DirectoryInfo(WorkingDirectory)
-                .GetFiles("Netboot.Service.*.dll", SearchOption.AllDirectories);
+		public static void LoadServices()
+		{
+			Add_Service(new BaseService("NONE"));
 
-            foreach (var module in serviceModules)
-            {
-                var ass = Assembly.LoadFrom(module.FullName);
-                foreach (var t in ass.GetTypes())
-                {
-                    if ((t.IsSubclassOf(typeof(IService)) || t.GetInterfaces().Contains(typeof(IService))) && t.IsAbstract == false)
-                    {
-                        var b = t.InvokeMember(null, BindingFlags.CreateInstance, null, null, null) as IService;
+			var serviceModules = new DirectoryInfo(WorkingDirectory)
+				.GetFiles("Netboot.Service.*.dll", SearchOption.AllDirectories);
 
+			foreach (var module in serviceModules)
+			{
+				var ass = Assembly.LoadFrom(module.FullName);
+				foreach (var t in ass.GetTypes())
+				{
+					if ((t.IsSubclassOf(typeof(IService)) || t.GetInterfaces().Contains(typeof(IService))) && t.IsAbstract == false)
+					{
+						var serviceType = module.Name.Split('.')[2].Trim().ToUpper();
+						try
+						{
+							var b = t.InvokeMember(null, BindingFlags.CreateInstance, null, null, new object[] { serviceType }) as IService;
+							Add_Service(b);
 
-                        var moduleType = module.Name.Split('.')[2].Trim().ToUpper();
+						}
+						catch (MissingMethodException ex)
+						{
+							Console.WriteLine(ex.Message);
+							throw;
+						}
+					}
+				}
+			}
+		}
 
-                        if (Enum.TryParse<ServerType>(moduleType, out var serverType))
-                            Services.Add(serverType, b);
-                    }
-                }
-            }
-        }
+		public static void Add_Service(IService service)
+		{
+			service.AddServer += (sender, e) =>
+			{
+				Add_Server(e.ServiceType, e.Ports);
+			};
 
-        public bool Initialize()
-        {
-            Console.WriteLine("Netboot 0.1a ({0})", Functions.IsLittleEndian()
-                ? "LE (LittleEndian)" : "BE (BigEndian)");
+			Services.Add(service.ServiceType, service);
 
-            var ConfigDir = Path.Combine(WorkingDirectory, "Config");
-            if (!Directory.Exists(ConfigDir))
-                Directory.CreateDirectory(ConfigDir);
+			Console.WriteLine($"[I] Added Service for '{service.ServiceType}'");
+		}
 
-            if (!Directory.Exists(Path.Combine(WorkingDirectory, "Dump")))
-                Directory.CreateDirectory(Path.Combine(WorkingDirectory, "Dump"));
+		public bool Initialize()
+		{
+			Console.WriteLine("Netboot 0.1a ({0})", Functions.IsLittleEndian()
+				? "LE (LittleEndian)" : "BE (BigEndian)");
 
-            var tftpRoot = Path.Combine(WorkingDirectory, "TFTPRoot");
-            if (!Directory.Exists(Path.Combine(tftpRoot, "Boot")))
-                Directory.CreateDirectory(Path.Combine(tftpRoot, "Boot"));
+			var ConfigDir = Path.Combine(WorkingDirectory, "Config");
+			if (!Directory.Exists(ConfigDir))
+				Directory.CreateDirectory(ConfigDir);
 
-            if (!Directory.Exists(Path.Combine(tftpRoot, "Images")))
-                Directory.CreateDirectory(Path.Combine(tftpRoot, "Images"));
+			if (!Directory.Exists(Path.Combine(WorkingDirectory, "Dump")))
+				Directory.CreateDirectory(Path.Combine(WorkingDirectory, "Dump"));
 
-            if (!Directory.Exists(Path.Combine(tftpRoot, "OSChooser")))
-                Directory.CreateDirectory(Path.Combine(tftpRoot, "OSChooser"));
+			var tftpRoot = Path.Combine(WorkingDirectory, "TFTPRoot");
+			if (!Directory.Exists(Path.Combine(tftpRoot, "Boot")))
+				Directory.CreateDirectory(Path.Combine(tftpRoot, "Boot"));
 
-            #region Parse Config File
-            var doc = new XmlDocument();
-            doc.Load(Path.Combine(ConfigDir, "Netboot.xml"));
+			if (!Directory.Exists(Path.Combine(tftpRoot, "Images")))
+				Directory.CreateDirectory(Path.Combine(tftpRoot, "Images"));
 
-            {
-                var serverEntries = doc.SelectNodes("Netboot/Configuration/Network/Server");
-                if (serverEntries == null)
-                    return false;
+			if (!Directory.Exists(Path.Combine(tftpRoot, "OSChooser")))
+				Directory.CreateDirectory(Path.Combine(tftpRoot, "OSChooser"));
 
-                if (serverEntries.Count != 0)
-                {
-                    foreach (XmlNode serverNode in serverEntries)
-                    {
-                        if (serverNode == null)
-                            continue;
+			LoadServices();
 
-                        var port = serverNode.Attributes?.GetNamedItem("port")?.Value;
-                        if (string.IsNullOrEmpty(port))
-                        {
-                            Console.WriteLine("[E] Server: No Port given!");
-                            continue;
-                        }
+			foreach (var service in Services.Values)
+				service.Initialize();
 
-                        if (!ushort.TryParse(port, out var serverPort))
-                        {
-                            Console.WriteLine("[E] Server: Invalid port given!");
-                            continue;
-                        }
+			return true;
+		}
 
-                        var type = serverNode.Attributes?.GetNamedItem("type")?.Value;
-                        if (string.IsNullOrEmpty(type))
-                        {
-                            Console.WriteLine("[E] Server: No type given!");
-                            continue;
-                        }
+		public void Start()
+		{
+			foreach (var service in Services.Values)
+				service.Start();
 
-                        if (!Enum.TryParse<ServerType>(type.ToUpper(), out var serverType))
-                        {
-                            Console.WriteLine("[E] Server: Invalid Argument for type!");
-                            continue;
-                        }
+			foreach (var server in Servers)
+				server.Value.Start();
+		}
 
-                        Add(serverType, serverPort);
-                    }
-                }
-            }
-            #endregion
+		public static void Add_Server(string serviceType, IEnumerable<ushort> ports)
+		{
+			var serverId = Guid.NewGuid();
+			var server = new BaseServer(serverId, serviceType, ports);
+			server.DataSent += (sender, e) =>
+			{
+				Functions.InvokeMethod(Services[e.ServiceType], "Handle_DataSent",
+					new object[] { new object[] { sender, e } });
+			};
 
-            LoadServices();
+			server.DataReceived += (sender, e) =>
+			{
+				try
+				{
+					Functions.InvokeMethod(Services[e.ServiceType],
+						"Handle_DataReceived", new object[] { sender, e });
+				}
+				catch (KeyNotFoundException ex)
+				{
+					Console.WriteLine($"[E] Cant find Service for '{e.ServiceType}'");
+				}
+			};
 
-            return true;
-        }
+			Servers.Add(serverId, server);
+		}
 
-        public void Start()
-        {
-            foreach (var server in Servers)
-                server.Value.Start();
-        }
+		public void Stop()
+		{
+			foreach (var service in Services.Values)
+				service.Stop();
 
-        public void Add(ServerType serverType, ushort port)
-        {
-            var serverId = Guid.NewGuid();
-            var server = new BaseServer(serverId, serverType, port);
-            server.DataSent += (sender, e) => { };
+			foreach (var server in Servers)
+				server.Value.Stop();
+		}
 
-            server.DataReceived += (sender, e) =>
-            {
-                switch (e.ServerType)
-                {
-                    case ServerType.DHCP:
-                    case ServerType.BSDP:
-                    case ServerType.BOOTP:
-                        var functionName = e.ServerType;
-                        Functions.InvokeMethod(Services[e.ServerType], $"Handle_{functionName}_Discover",
-                            new object[] { e.ServerType, e.ServerId, e.SocketId, e.Packet });
-                        break;
-                    case ServerType.TFTP:
-                        break;
-                    case ServerType.HTTP:
-                        break;
-                    default:
-                        break;
-                }
+		public void Dispose()
+		{
+			foreach (var service in Services.Values)
+				service.Dispose();
 
-               
-            };
-
-            Servers.Add(serverId, server);
-        }
-
-        public void Stop()
-        {
-            foreach (var server in Servers)
-                server.Value.Stop();
-        }
-
-        public void Dispose()
-        {
-            foreach (var server in Servers)
-                server.Value.Dispose();
-        }
-    }
+			foreach (var server in Servers)
+				server.Value.Dispose();
+		}
+	}
 }

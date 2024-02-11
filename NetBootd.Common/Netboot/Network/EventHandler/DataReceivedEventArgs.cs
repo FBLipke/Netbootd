@@ -1,5 +1,4 @@
 ﻿using Netboot.Network.Interfaces;
-using Netboot.Network.Definitions;
 using System.Net;
 
 namespace Netboot.Network.EventHandler
@@ -10,12 +9,12 @@ namespace Netboot.Network.EventHandler
         public IPEndPoint RemoteEndpoint { get; private set; }
         public Guid SocketId { get; private set; }
         public Guid ServerId { get; private set; }
-        public ServerType ServerType { get; private set; }
+        public string ServiceType { get; private set; }
 
-        public DataReceivedEventArgs(ServerType serverType, Guid serverId,
+        public DataReceivedEventArgs(string serviceType, Guid serverId,
             Guid socketId, IPacket packet, IPEndPoint remoteEndpoint)
         {
-            ServerType = serverType;
+            ServiceType = serviceType;
             ServerId = serverId;
             SocketId = socketId;
             Packet = packet;

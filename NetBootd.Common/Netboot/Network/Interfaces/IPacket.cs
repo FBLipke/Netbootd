@@ -1,11 +1,9 @@
-﻿using Netboot.Network.Definitions;
-
-namespace Netboot.Network.Interfaces
+﻿namespace Netboot.Network.Interfaces
 {
     public interface IPacket : IDisposable
     {
-        byte[] Data { get; set; }
+        MemoryStream Buffer { get; set; }
 
-        ServerType ServerType { get; set; }
+        string ServiceType { get; }
     }
 }

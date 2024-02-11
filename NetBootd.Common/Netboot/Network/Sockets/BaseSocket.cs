@@ -1,7 +1,6 @@
 ﻿using System.Net;
 using System.Net.Sockets;
 using Netboot.Network.Packet;
-using Netboot.Network.Definitions;
 using Netboot.Network.EventHandler;
 using Netboot.Network.Interfaces;
 
@@ -10,7 +9,7 @@ namespace Netboot.Network.Sockets
     internal class SocketState : IDisposable
     {
         public Socket? socket;
-        public byte[] buffer;
+        public byte[] buffer = [];
 
         public SocketState()
         {
@@ -33,7 +32,7 @@ namespace Netboot.Network.Sockets
     public class BaseSocket : IDisposable, ISocket
     {
         public delegate void DataReceivedEventHandler(object sender, DataReceivedEventArgs e);
-        public delegate void DataSendEventHandler(object sender, DataSendEventArgs e);
+        public delegate void DataSendEventHandler(object sender, DataSentEventArgs e);
         public event DataReceivedEventHandler? DataReceived;
         public event DataSendEventHandler? DataSent;
 
@@ -41,21 +40,18 @@ namespace Netboot.Network.Sockets
         EndPoint localendpoint;
         Guid SocketId;
         Guid ServerId;
-        public ServerType ServerType;
+        public string ServiceType;
 
         public bool Listening { get; private set; }
         public int BufferLength { get; private set; }
 
-        public BaseSocket(Guid serverId, Guid socketId, ServerType serverType, IPEndPoint localep, int buffersize = ushort.MaxValue)
+        public BaseSocket(Guid serverId, Guid socketId, string serviceType, IPEndPoint localep, int buffersize = ushort.MaxValue)
         {
-            if (localep.AddressFamily == AddressFamily.InterNetworkV6)
-                localep.Port = 547;
-
             localendpoint = localep;
             BufferLength = buffersize;
             SocketId = socketId;
             ServerId = serverId;
-            ServerType = serverType;
+            ServiceType = serviceType;    
 
             socketState = new SocketState
             {
@@ -112,9 +108,9 @@ namespace Netboot.Network.Sockets
                 var data = new byte[bytesRead];
                 Array.Copy(socketState.buffer, data, data.Length);
 
-                IPacket packet = new BasePacket(ServerType, data);
+                IPacket packet = new BasePacket(ServiceType, data);
 
-                DataReceived?.Invoke(this, new(ServerType, ServerId, SocketId, packet,
+                DataReceived?.Invoke(this, new(ServiceType, ServerId, SocketId, packet,
                     (IPEndPoint)localendpoint));
 
                 socketState.socket.BeginReceiveFrom(socketState.buffer, 0, socketState.buffer.Length,
@@ -131,7 +127,7 @@ namespace Netboot.Network.Sockets
         {
             try
             {
-                socketState.socket?.BeginSendTo(packet.Data, 0, packet.Data.Length,
+                socketState.socket?.BeginSendTo(packet.Buffer.GetBuffer(), 0, (int)packet.Buffer.Length,
                     SocketFlags.None, client.RemoteEntpoint, new(EndSendTo), socketState);
             }
             catch (SocketException ex)
@@ -155,7 +151,7 @@ namespace Netboot.Network.Sockets
             if (remoteEndpoint == null)
                 return;
 
-            DataSent?.Invoke(this, new(ServerType, ServerId, SocketId, bytesSent, remoteEndpoint));
+            DataSent?.Invoke(this, new(ServiceType, ServerId, SocketId, bytesSent, remoteEndpoint));
         }
 
         public void Dispose()

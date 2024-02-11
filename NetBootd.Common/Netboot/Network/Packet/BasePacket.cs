@@ -1,18 +1,17 @@
-﻿using Netboot.Network.Definitions;
-using Netboot.Network.Interfaces;
+﻿using Netboot.Network.Interfaces;
 
 namespace Netboot.Network.Packet
 {
     public class BasePacket : IPacket
     {
-        public byte[] Data { get; set; }
+        public MemoryStream Buffer { get; set; }
 
-        public ServerType ServerType { get; set; }
+        public string ServiceType { get; set; }
 
-        public BasePacket(ServerType serverType, byte[] data)
+        public BasePacket(string serviceType, byte[] data)
         {
-            Data = data;
-            ServerType = serverType;
+            Buffer = new MemoryStream(data);
+            ServiceType = serviceType;
         }
 
         public void Dispose()

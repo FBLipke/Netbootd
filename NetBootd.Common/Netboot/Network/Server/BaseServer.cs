@@ -1,5 +1,4 @@
 ﻿using System.Net;
-using Netboot.Network.Definitions;
 using Netboot.Network.EventHandler;
 using Netboot.Network.Interfaces;
 using Netboot.Network.Sockets;
@@ -9,38 +8,39 @@ namespace Netboot.Network.Server
     public class BaseServer : IServer
     {
         public delegate void DataReceivedEventHandler(object sender, DataReceivedEventArgs e);
-        public delegate void DataSendEventHandler(object sender, DataSendEventArgs e);
+        public delegate void DataSentEventHandler(object sender, DataSentEventArgs e);
         public event DataReceivedEventHandler? DataReceived;
-        public event DataSendEventHandler? DataSent;
+        public event DataSentEventHandler? DataSent;
 
         Dictionary<Guid, ISocket> _Sockets = [];
         public Guid ServerId;
-        public ServerType ServerType;
+        public string ServiceType { get; }
 
-        public BaseServer(Guid serverid, ServerType serverType, ushort port)
+        public BaseServer(Guid serverid, string serviceType, IEnumerable<ushort> ports)
         {
             ServerId = serverid;
-            ServerType = serverType;
+            ServiceType = serviceType;
 
             var addresses = Functions.GetIPAddresses();
 
             foreach (var address in addresses)
-                Add(new(address, port));
+                foreach (var port in ports)
+                    Add(new(address, port));
         }
 
         public void Add(IPEndPoint endPoint)
         {
             var socketID = Guid.NewGuid();
-            var socket = new BaseSocket(ServerId, socketID, ServerType, endPoint);
+            var socket = new BaseSocket(ServerId, socketID, ServiceType, endPoint);
 
             socket.DataSent += (sender, e) =>
             {
-                DataSent.Invoke(this, e);
+                DataSent?.Invoke(this, e);
             };
 
             socket.DataReceived += (sender, e) =>
             {
-                DataReceived.Invoke(this, e);
+                DataReceived?.Invoke(this, e);
             };
 
             _Sockets.Add(socketID, socket);

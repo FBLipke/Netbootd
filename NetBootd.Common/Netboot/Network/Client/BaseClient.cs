@@ -1,5 +1,4 @@
-﻿using Netboot.Network.Definitions;
-using Netboot.Network.Interfaces;
+﻿using Netboot.Network.Interfaces;
 using System.Net;
 
 namespace Netboot.Network.Client
@@ -8,19 +7,18 @@ namespace Netboot.Network.Client
     {
         public Guid SocketId;
         public Guid ServerId;
-        public ServerType ServerType;
+        public string ServiceType;
         public Guid ClientId = Guid.Empty;
         public IPEndPoint RemoteEntpoint { get; set; }
 
-        public BaseClient(Guid clientId, ServerType serverType, Guid serverid, Guid socketId)
+        public BaseClient(Guid clientId, string serviceType, IPEndPoint remoteEndpoint, Guid serverid, Guid socketId)
         {
-            ServerType = serverType;
+            ServiceType = serviceType;
             SocketId = socketId;
             ServerId = serverid;
             ClientId = clientId;
+            RemoteEntpoint = remoteEndpoint;
         }
-
-        
 
         public void Close()
         {

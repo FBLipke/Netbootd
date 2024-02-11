@@ -1,20 +1,19 @@
-﻿using Netboot.Network.Definitions;
-using System.Net;
+﻿using System.Net;
 
 namespace Netboot.Network.EventHandler
 {
-    public class DataSendEventArgs
+    public class DataSentEventArgs
     {
         public IPEndPoint RemoteEndpoint { get; private set; }
         public int BytesSent { get; private set; }
         public Guid SocketId { get; private set; }
         public Guid ServerId { get; private set; }
-        public ServerType ServerType { get; private set; }
+        public string ServiceType { get; }
 
-        public DataSendEventArgs(ServerType serverType, Guid serverId, Guid socketId,
+        public DataSentEventArgs(string serviceType, Guid serverId, Guid socketId,
             int bytessent, IPEndPoint remoteEndpoint)
         {
-            ServerType = serverType;
+            ServiceType = serviceType;
             ServerId = serverId;
             SocketId = socketId;
             BytesSent = bytessent;
