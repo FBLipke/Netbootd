@@ -1,4 +1,5 @@
-﻿using Netboot.Network.EventHandler;
+﻿using Netboot.Common.Netboot.Network.EventHandler;
+using Netboot.Network.EventHandler;
 using Netboot.Network.Interfaces;
 
 namespace Netboot.Services.Interfaces
@@ -6,13 +7,15 @@ namespace Netboot.Services.Interfaces
     public interface IService : IDisposable
     {
         delegate void AddServerEventHandler(object sender, AddServerEventArgs e);
-        event AddServerEventHandler? AddServer;
+		delegate void ServerSendPacketEventHandler(object sender, ServerSendPacketEventArgs e);
+		event AddServerEventHandler? AddServer;
+		event ServerSendPacketEventHandler? ServerSendPacket;
 
-        List<ushort> Ports { get; }
+		List<ushort> Ports { get; }
 
         string ServiceType { get; }
 
-        Dictionary<Guid, IClient> Clients { get; set; }
+        Dictionary<string, IClient> Clients { get; set; }
 
         void Handle_DataReceived(object sender, DataReceivedEventArgs e);
         void Handle_DataSent(object sender, DataSentEventArgs e);

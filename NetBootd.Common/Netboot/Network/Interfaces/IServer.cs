@@ -1,11 +1,14 @@
-﻿namespace Netboot.Network.Interfaces
-{
-    public interface IServer : IDisposable
-    {
-        string ServiceType { get; }
+﻿using System.Net;
 
-        void Start();
-        void Stop();
-        void Send(Guid socketId, IPacket packet, IClient client);
-    }
+namespace Netboot.Network.Interfaces
+{
+	public interface IServer : IDisposable
+	{
+		string ServiceType { get; }
+
+		void Start();
+		void Stop();
+		void Send(Guid socketId, IPacket packet, IClient client);
+		IPAddress Get_IPAddress(Guid socket);
+	}
 }

@@ -4,47 +4,48 @@ using Netboot.Services.Interfaces;
 
 namespace Netboot.Services
 {
-    public class BaseService : IService
-    {
+	public class BaseService : IService
+	{
+		public BaseService(string serviceType)
+		{
+			ServiceType = serviceType;
+		}
 
-        public BaseService(string serviceType) {
-            ServiceType = serviceType;
-        }
+		public Dictionary<string, IClient> Clients { get; set; } = [];
 
-        public Dictionary<Guid, IClient> Clients { get; set; } = [];
+		public List<ushort> Ports { get; } = new List<ushort>();
 
-        public List<ushort> Ports { get; }  = new List<ushort>();
+		public string ServiceType { get; }
 
-        public string ServiceType { get; }
+		public event IService.AddServerEventHandler? AddServer;
+		public event IService.ServerSendPacketEventHandler? ServerSendPacket;
 
-        public event IService.AddServerEventHandler? AddServer;
+		public void Dispose()
+		{
+		}
 
-        public void Dispose()
-        {
-        }
+		public void Handle_DataReceived(object sender, DataReceivedEventArgs e)
+		{
+			throw new NotImplementedException();
+		}
 
-        public void Handle_DataReceived(object sender, DataReceivedEventArgs e)
-        {
-            throw new NotImplementedException();
-        }
+		public void Handle_DataSent(object sender, DataSentEventArgs e)
+		{
+			throw new NotImplementedException();
+		}
 
-        public void Handle_DataSent(object sender, DataSentEventArgs e)
-        {
-            throw new NotImplementedException();
-        }
+		public bool Initialize()
+		{
+			AddServer.Invoke(this, new AddServerEventArgs(ServiceType, Ports));
+			return true;
+		}
 
-        public bool Initialize()
-        {
-            AddServer.Invoke(this, new AddServerEventArgs(ServiceType, Ports));
-            return true;
-        }
+		public void Start()
+		{
+		}
 
-        public void Start()
-        {
-        }
-
-        public void Stop()
-        {
-        }
-    }
+		public void Stop()
+		{
+		}
+	}
 }

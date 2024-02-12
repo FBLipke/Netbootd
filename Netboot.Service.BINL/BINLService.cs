@@ -2,30 +2,29 @@
 using Netboot.Network.Interfaces;
 using Netboot.Services.Interfaces;
 
-namespace Netboot.Service.DHCP
+namespace Netboot.Service.BINL
 {
-	public class DHCPService : IService
+	public class BINLService : IService
 	{
-		public DHCPService(string serviceType) {
+		public BINLService(string serviceType)
+		{
 			ServiceType = serviceType;
 		}
-
-		public List<ushort> Ports => new List<ushort> { 67, 4011 };
+		public List<ushort> Ports => throw new NotImplementedException();
 
 		public string ServiceType { get; }
 
-		public Dictionary<Guid, IClient> Clients { get; set; } = [];
+		public Dictionary<string, IClient> Clients { get; set; } = [];
 
 		public event IService.AddServerEventHandler? AddServer;
+		public event IService.ServerSendPacketEventHandler? ServerSendPacket;
 
 		public void Dispose()
 		{
-			Ports.Clear();
 		}
 
 		public void Handle_DataReceived(object sender, DataReceivedEventArgs e)
 		{
-			Console.WriteLine("Service: DHCP!");
 		}
 
 		public void Handle_DataSent(object sender, DataSentEventArgs e)
@@ -34,8 +33,7 @@ namespace Netboot.Service.DHCP
 
 		public bool Initialize()
 		{
-			AddServer?.Invoke(this, new AddServerEventArgs(ServiceType,Ports));
-			return true;
+			return false;
 		}
 
 		public void Start()

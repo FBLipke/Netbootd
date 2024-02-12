@@ -10,7 +10,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="DHCPService.cs" />
+    <Compile Include="Netboot\Network\Client\DHCPClient.cs" />
+    <Compile Include="Netboot\Network\Definitions\Definitions.cs" />
+    <Compile Include="Netboot\Network\Definitions\DHCPOption.cs" />
+    <Compile Include="Netboot\Network\Packet\DHCPPacket.cs" />
+    <Compile Include="Netboot\Services\DHCPService.cs" />
   </ItemGroup>
 
   <ItemGroup>

@@ -5,7 +5,7 @@ namespace Netboot
 {
     public static class Functions
     {
-        public static void InvokeMethod(object obj, string name, object?[]? args)
+		public static void InvokeMethod(object obj, string name, object?[]? args)
         {
             try
             {

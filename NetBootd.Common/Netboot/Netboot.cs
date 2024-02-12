@@ -1,6 +1,5 @@
 ﻿using Netboot.Network.Server;
 using Netboot.Network.Interfaces;
-using System.Xml;
 using Netboot.Services.Interfaces;
 using Netboot.Services;
 using System.Reflection;
@@ -38,7 +37,7 @@ namespace Netboot
 						var serviceType = module.Name.Split('.')[2].Trim().ToUpper();
 						try
 						{
-							var b = t.InvokeMember(null, BindingFlags.CreateInstance, null, null, new object[] { serviceType }) as IService;
+							var b = t.InvokeMember(string.Empty, BindingFlags.CreateInstance, null, null, new object[] { serviceType }) as IService;
 							Add_Service(b);
 
 						}
@@ -57,6 +56,11 @@ namespace Netboot
 			service.AddServer += (sender, e) =>
 			{
 				Add_Server(e.ServiceType, e.Ports);
+			};
+
+			service.ServerSendPacket += (sender, e) =>
+			{
+				Servers[e.ServerId].Send(e.SocketId, e.Packet, e.Client);
 			};
 
 			Services.Add(service.ServiceType, service);
@@ -117,8 +121,11 @@ namespace Netboot
 			{
 				try
 				{
-					Functions.InvokeMethod(Services[e.ServiceType],
-						"Handle_DataReceived", new object[] { sender, e });
+					// Microsoft BINL (RIS) uses also port 4011. So differentiate between BINL and BOOTP (/ DHCP)
+					if (e.Packet[0] > 2 && e.ServiceType == "DHCP")
+						Functions.InvokeMethod(Services["BINL"], "Handle_DataReceived", new object[] { sender, e });
+					else
+						Functions.InvokeMethod(Services[e.ServiceType], "Handle_DataReceived", new object[] { sender, e });
 				}
 				catch (KeyNotFoundException ex)
 				{
