@@ -11,6 +11,7 @@
 
 	<ItemGroup>
 		<Compile Include="BINLService.cs" />
+		<Compile Include="Netboot\Network\Definitions\Definitions.cs" />
 	</ItemGroup>
 
 	<ItemGroup>
