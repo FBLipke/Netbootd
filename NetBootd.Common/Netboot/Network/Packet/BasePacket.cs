@@ -31,6 +31,7 @@ namespace Netboot.Network.Packet
 
 		public void Dispose()
 		{
+			GC.SuppressFinalize(this);
 		}
 
 		public byte Read_UINT8(long position = 0)

@@ -3,6 +3,8 @@ using Netboot.Network.Interfaces;
 using Netboot.Services.Interfaces;
 using Netboot.Services;
 using System.Reflection;
+using System.Xml;
+using System.Linq;
 
 namespace Netboot
 {
@@ -14,11 +16,64 @@ namespace Netboot
 		string[] cmdArgs = [];
 
 		public static string WorkingDirectory = Directory.GetCurrentDirectory();
+		public static string ConfigFile = string.Empty;
 
 		public NetbootBase(string[] args)
 		{
 			cmdArgs = args;
+
 		}
+
+
+		void ParseArguments(string[] args)
+		{
+			foreach (var arg in args)
+			{
+				if (!arg.StartsWith("--"))
+					continue;
+
+				var kvPair = arg.Substring(2).Split(':',1);
+
+				switch (kvPair[0].ToLower())
+				{
+					case "root":
+						if (string.IsNullOrEmpty(kvPair[1]))
+							continue;
+
+						var value = kvPair[1];
+						if (value == "~")
+							WorkingDirectory = Directory.GetCurrentDirectory();
+						else
+						{
+							if (Directory.Exists(kvPair[1]))
+								WorkingDirectory = kvPair[1];
+						}
+						break;
+					case "config":
+						if (string.IsNullOrEmpty(kvPair[1]))
+							continue;
+
+						var configValue = kvPair[1];
+						if (configValue == "~")
+							ConfigFile = Path.Combine(Path.Combine(Directory.GetCurrentDirectory(), "Config","Netboot.xml"));
+						else
+						{
+							if (!File.Exists(kvPair[1]))
+							{
+								Console.WriteLine($"Configfile: {configValue} not found! -> using default...");
+								break;
+							}
+
+							ConfigFile = kvPair[1];
+						}
+						break;
+					default:
+						break;
+				}
+			}
+		}
+
+
 
 		public static void LoadServices()
 		{
@@ -73,27 +128,35 @@ namespace Netboot
 			Console.WriteLine("Netboot 0.1a ({0})", Functions.IsLittleEndian()
 				? "LE (LittleEndian)" : "BE (BigEndian)");
 
-			var ConfigDir = Path.Combine(WorkingDirectory, "Config");
-			if (!Directory.Exists(ConfigDir))
-				Directory.CreateDirectory(ConfigDir);
+			foreach (string arg in cmdArgs)
+			{
+				Console.WriteLine(arg);
+			}
 
-			if (!Directory.Exists(Path.Combine(WorkingDirectory, "Dump")))
-				Directory.CreateDirectory(Path.Combine(WorkingDirectory, "Dump"));
 
-			var tftpRoot = Path.Combine(WorkingDirectory, "TFTPRoot");
-			if (!Directory.Exists(Path.Combine(tftpRoot, "Boot")))
-				Directory.CreateDirectory(Path.Combine(tftpRoot, "Boot"));
+			ConfigFile = Path.Combine(WorkingDirectory, "Config", "Netboot.xml");
 
-			if (!Directory.Exists(Path.Combine(tftpRoot, "Images")))
-				Directory.CreateDirectory(Path.Combine(tftpRoot, "Images"));
-
-			if (!Directory.Exists(Path.Combine(tftpRoot, "OSChooser")))
-				Directory.CreateDirectory(Path.Combine(tftpRoot, "OSChooser"));
+			if (!File.Exists(ConfigFile))
+				throw new FileNotFoundException(ConfigFile);
 
 			LoadServices();
 
+			var xmlFile = new XmlDocument();
+			xmlFile.Load(ConfigFile);
+
+			XmlNodeList services = xmlFile.SelectNodes("Netboot/Configuration/Services/Service");
 			foreach (var service in Services.Values)
-				service.Initialize();
+			{
+
+				foreach (XmlNode xmlnode in services)
+				{
+					var node = xmlnode.Attributes.GetNamedItem("type");
+					if (node.Value != service.ServiceType.ToLower())
+						continue;
+
+					service.Initialize(xmlnode);
+				}
+			}
 
 			return true;
 		}
@@ -105,6 +168,12 @@ namespace Netboot
 
 			foreach (var server in Servers)
 				server.Value.Start();
+		}
+
+		public void Heartbeat()
+		{
+			foreach(var service in Services.Values)
+				service.Heartbeat();
 		}
 
 		public static void Add_Server(string serviceType, IEnumerable<ushort> ports)

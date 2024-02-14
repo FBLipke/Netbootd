@@ -1,6 +1,7 @@
 ﻿using Netboot.Network.EventHandler;
 using Netboot.Network.Interfaces;
 using Netboot.Services.Interfaces;
+using System.Xml;
 
 namespace Netboot.Services
 {
@@ -34,7 +35,11 @@ namespace Netboot.Services
 			throw new NotImplementedException();
 		}
 
-		public bool Initialize()
+		public void Heartbeat()
+		{
+		}
+
+		public bool Initialize(XmlNode xmlConfigNode)
 		{
 			AddServer.Invoke(this, new AddServerEventArgs(ServiceType, Ports));
 			return true;

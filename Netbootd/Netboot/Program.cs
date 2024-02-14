@@ -6,6 +6,15 @@ namespace Netbootd.Netboot
 	internal class Program
 	{
 		static NetbootBase? NetbootBase;
+		static bool IsExiting = false;
+
+		public static void HeartBeat () {
+			while (!IsExiting)
+			{
+				Thread.Sleep (10000);
+				NetbootBase.Heartbeat();
+			}
+		}
 
 		static void Main(string[] args)
 		{
@@ -21,8 +30,13 @@ namespace Netbootd.Netboot
 
 				var x = string.Empty;
 
+				var heartbeatThread = new Thread(new ThreadStart(HeartBeat));
+				heartbeatThread.Start();
+
 				while (x != "!exit")
 					x = Console.ReadLine();
+
+				heartbeatThread.Join();
 			}
 
 			CurrentDomain_ProcessExit(null, EventArgs.Empty);

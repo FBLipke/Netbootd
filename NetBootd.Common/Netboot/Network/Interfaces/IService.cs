@@ -1,6 +1,7 @@
 ﻿using Netboot.Common.Netboot.Network.EventHandler;
 using Netboot.Network.EventHandler;
 using Netboot.Network.Interfaces;
+using System.Xml;
 
 namespace Netboot.Services.Interfaces
 {
@@ -20,9 +21,10 @@ namespace Netboot.Services.Interfaces
         void Handle_DataReceived(object sender, DataReceivedEventArgs e);
         void Handle_DataSent(object sender, DataSentEventArgs e);
 
-        void Start();
+		void Heartbeat();
+		void Start();
         void Stop();
 
-        bool Initialize();
+        bool Initialize(XmlNode xmlConfigNode);
     }
 }

@@ -6,6 +6,7 @@ using Netboot.Network.Interfaces;
 using Netboot.Network.Packet;
 using Netboot.Services.Interfaces;
 using System.Net;
+using System.Xml;
 using static Netboot.Services.Interfaces.IService;
 
 namespace Netboot.Service.DHCP
@@ -17,7 +18,7 @@ namespace Netboot.Service.DHCP
             ServiceType = serviceType;
         }
 
-        public List<ushort> Ports => new List<ushort> { 67, 4011 };
+        public List<ushort> Ports { get; } = new List<ushort>();
 
         public string ServiceType { get; }
 
@@ -81,8 +82,15 @@ namespace Netboot.Service.DHCP
             Console.WriteLine(e.RemoteEndpoint);
         }
 
-        public bool Initialize()
+        public bool Initialize(XmlNode xmlConfigNode)
         {
+			var ports = xmlConfigNode.Attributes.GetNamedItem("port").Value.Split(',').ToList();
+            if (ports.Count > 0)
+            {
+				foreach (var port in ports)
+                    Ports.Add(ushort.Parse(port.Trim()));
+			}
+
             AddServer?.Invoke(this, new AddServerEventArgs(ServiceType, Ports));
             return true;
         }
@@ -100,15 +108,17 @@ namespace Netboot.Service.DHCP
             var serverIP = NetbootBase.Servers[server].Get_IPAddress(socket);
             var response = packet.CreateResponse(serverIP);
 
-
-
             response.CommitOptions();
             ServerSendPacket.Invoke(this,new ServerSendPacketEventArgs(server, socket, response, Clients[client]));
-            Console.WriteLine("Handle_DHCP_Discover -> Done");
         }
 
 		private void Handle_DHCP_Request(Guid server, Guid socket, DHCPPacket packet)
 		{
+		}
+
+		public void Heartbeat()
+		{
+            Console.WriteLine("Heartbeat...");
 		}
 	}
 }

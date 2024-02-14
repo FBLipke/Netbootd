@@ -1,6 +1,7 @@
 ﻿using Netboot.Network.EventHandler;
 using Netboot.Network.Interfaces;
 using Netboot.Services.Interfaces;
+using System.Xml;
 
 namespace Netboot.Service.BINL
 {
@@ -31,7 +32,11 @@ namespace Netboot.Service.BINL
 		{
 		}
 
-		public bool Initialize()
+		public void Heartbeat()
+		{
+		}
+
+		public bool Initialize(XmlNode xmlConfigNode)
 		{
 			return false;
 		}

@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Net.Sockets;
+using Netboot.Common.Properties;
 using Netboot.Network.EventHandler;
 using Netboot.Network.Interfaces;
 
@@ -9,6 +10,7 @@ namespace Netboot.Network.Sockets
 	{
 		public Socket? socket;
 		public byte[] buffer = [];
+		private bool IsDisposed;
 
 		public SocketState()
 		{
@@ -21,10 +23,24 @@ namespace Netboot.Network.Sockets
 
 		public void Dispose()
 		{
-			socket.Dispose();
+			Dispose(true);
+			GC.SuppressFinalize(this);
+		}
 
-			if (buffer != null)
-				Array.Clear(buffer, 0, buffer.Length);
+		protected virtual void Dispose(bool disposing)
+		{
+			if (!IsDisposed)
+			{
+				if (disposing)
+				{
+					socket?.Dispose();
+					if (buffer != null)
+						Array.Clear(buffer, 0, buffer.Length);
+				}
+
+				socket = null;
+				IsDisposed = true;
+			}
 		}
 	}
 
@@ -40,6 +56,9 @@ namespace Netboot.Network.Sockets
 		EndPoint remoteendpoint;
 		Guid SocketId;
 		Guid ServerId;
+		
+		bool IsDisposed;
+
 		public string ServiceType;
 
 		public bool Listening { get; private set; }
@@ -105,6 +124,9 @@ namespace Netboot.Network.Sockets
 				if (client == null)
 					return;
 
+				if (socketState == null)
+					return;
+
 				var bytesRead = client.EndReceiveFrom(asyncResult, ref remoteendpoint);
 				if (bytesRead == 0 || bytesRead == -1)
 					return;
@@ -117,6 +139,9 @@ namespace Netboot.Network.Sockets
 
 				socketState.socket.BeginReceiveFrom(socketState.buffer, 0, socketState.buffer.Length,
 					SocketFlags.None, ref localendpoint, new(EndReceive), socketState);
+			}
+			catch (ObjectDisposedException)
+			{
 			}
 			catch (SocketException ex)
 			{
@@ -136,7 +161,20 @@ namespace Netboot.Network.Sockets
 
 		public void Dispose()
 		{
-			socketState.Dispose();
+			Dispose(true);
+			GC.SuppressFinalize(this);
+		}
+
+		protected virtual void Dispose(bool disposing)
+		{
+			if (!IsDisposed)
+			{
+				if (disposing)
+					socketState?.Dispose();
+
+				socketState = null;
+				IsDisposed = true;
+			}
 		}
 	}
 }
