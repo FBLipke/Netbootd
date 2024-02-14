@@ -153,8 +153,17 @@ namespace Netboot.Network.Sockets
 		public void SendTo(IPacket packet, IClient client)
 		{
 			var buffer = packet.Buffer.GetBuffer();
+
+			try
+			{
 			var bytesSent = socketState.socket.SendTo(buffer, 0, (int)packet.Buffer.Length,
 				SocketFlags.None, client.RemoteEntpoint);
+			}
+			catch (SocketException ex)
+			{
+				Console.WriteLine(ex);
+			}
+
 		}
 
 		public void Dispose()

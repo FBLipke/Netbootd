@@ -10,7 +10,12 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<Compile Include="BINLService.cs" />
+	  <EmbeddedResource Remove="Netboot\Network\Packet\**" />
+	  <None Remove="Netboot\Network\Packet\**" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Compile Include="Netboot\Services\BINLService.cs" />
 		<Compile Include="Netboot\Network\Definitions\Definitions.cs" />
 	</ItemGroup>
 
@@ -19,10 +24,6 @@
 			<Private>false</Private>
 			<ExcludeAssets>runtime</ExcludeAssets>
 		</ProjectReference>
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Folder Include="Netboot\Network\Packet\" />
 	</ItemGroup>
 
 </Project>

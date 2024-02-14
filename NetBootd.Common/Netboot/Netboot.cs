@@ -31,7 +31,7 @@ namespace Netboot
 				if (!arg.StartsWith("--"))
 					continue;
 
-				var kvPair = arg.Substring(2).Split(':',1);
+				var kvPair = arg.Substring(2).Split(':', 1);
 
 				switch (kvPair[0].ToLower())
 				{
@@ -54,7 +54,7 @@ namespace Netboot
 
 						var configValue = kvPair[1];
 						if (configValue == "~")
-							ConfigFile = Path.Combine(Path.Combine(Directory.GetCurrentDirectory(), "Config","Netboot.xml"));
+							ConfigFile = Path.Combine(Path.Combine(Directory.GetCurrentDirectory(), "Config", "Netboot.xml"));
 						else
 						{
 							if (!File.Exists(kvPair[1]))
@@ -72,8 +72,6 @@ namespace Netboot
 			}
 		}
 
-
-
 		public static void LoadServices()
 		{
 			Add_Service(new BaseService("NONE"));
@@ -84,22 +82,22 @@ namespace Netboot
 			foreach (var module in serviceModules)
 			{
 				var ass = Assembly.LoadFrom(module.FullName);
-				foreach (var t in ass.GetTypes())
+				foreach (var (t, serviceType) in from t in ass.GetTypes()
+					where (t.IsSubclassOf(typeof(IService)) || t.GetInterfaces().Contains(typeof(IService))) && t.IsAbstract == false
+						let serviceType = module.Name.Split('.')[2].Trim().ToUpper()
+							select (t, serviceType))
 				{
-					if ((t.IsSubclassOf(typeof(IService)) || t.GetInterfaces().Contains(typeof(IService))) && t.IsAbstract == false)
+					try
 					{
-						var serviceType = module.Name.Split('.')[2].Trim().ToUpper();
-						try
-						{
-							var b = t.InvokeMember(string.Empty, BindingFlags.CreateInstance, null, null, new object[] { serviceType }) as IService;
-							Add_Service(b);
+						var b = t.InvokeMember(string.Empty, BindingFlags.CreateInstance,
+							null, null, new[] { serviceType }) as IService;
+						Add_Service(b);
 
-						}
-						catch (MissingMethodException ex)
-						{
-							Console.WriteLine(ex.Message);
-							throw;
-						}
+					}
+					catch (MissingMethodException ex)
+					{
+						Console.WriteLine(ex.Message);
+						throw;
 					}
 				}
 			}
@@ -156,16 +154,18 @@ namespace Netboot
 
 		public void Start()
 		{
-			foreach (var service in Services.Values)
+			foreach (var service in Services.Values.ToList())
 				service.Start();
 
-			foreach (var server in Servers)
-				server.Value.Start();
+			foreach (var server in Servers.Values.ToList())
+				server.Start();
 		}
+
+		private object heartbeatLock = new();
 
 		public void Heartbeat()
 		{
-			foreach(var service in Services.Values)
+			foreach (var service in Services.Values.ToList())
 				service.Heartbeat();
 		}
 
@@ -176,7 +176,7 @@ namespace Netboot
 			server.DataSent += (sender, e) =>
 			{
 				Functions.InvokeMethod(Services[e.ServiceType], "Handle_DataSent",
-					new object[] { new[] { sender, e } });
+					new[] { new[] { sender, e } });
 			};
 
 			server.DataReceived += (sender, e) =>
@@ -185,9 +185,9 @@ namespace Netboot
 				{
 					// Microsoft BINL (RIS) uses also port 4011. So differentiate between BINL and BOOTP (/ DHCP)
 					if (e.Packet[0] > 2 && e.ServiceType == "DHCP")
-						Functions.InvokeMethod(Services["BINL"], "Handle_DataReceived", new object[] { sender, e });
+						Functions.InvokeMethod(Services["BINL"], "Handle_DataReceived", new[] { sender, e });
 					else
-						Functions.InvokeMethod(Services[e.ServiceType], "Handle_DataReceived", new object[] { sender, e });
+						Functions.InvokeMethod(Services[e.ServiceType], "Handle_DataReceived", new[] { sender, e });
 				}
 				catch (KeyNotFoundException ex)
 				{
@@ -200,20 +200,20 @@ namespace Netboot
 
 		public void Stop()
 		{
-			foreach (var service in Services.Values)
+			foreach (var service in Services.Values.ToList())
 				service.Stop();
 
-			foreach (var server in Servers)
-				server.Value.Stop();
+			foreach (var server in Servers.Values.ToList())
+				server.Stop();
 		}
 
 		public void Dispose()
 		{
-			foreach (var service in Services.Values)
+			foreach (var service in Services.Values.ToList())
 				service.Dispose();
 
-			foreach (var server in Servers)
-				server.Value.Dispose();
+			foreach (var server in Servers.Values.ToList())
+				server.Dispose();
 		}
 	}
 }

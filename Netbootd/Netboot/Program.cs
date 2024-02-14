@@ -8,7 +8,7 @@ namespace Netbootd.Netboot
 		static NetbootBase? NetbootBase;
 		static bool IsExiting = false;
 
-		public static void HeartBeat () {
+		public static void HeartBeat() {
 			while (!IsExiting)
 			{
 				Thread.Sleep (10000);

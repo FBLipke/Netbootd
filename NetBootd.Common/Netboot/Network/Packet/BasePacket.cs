@@ -6,9 +6,9 @@ namespace Netboot.Network.Packet
 {
 	public abstract class BasePacket : IPacket
 	{
-		public MemoryStream Buffer { get; set; }
+		public MemoryStream? Buffer { get; set; }
 
-		public string ServiceType { get; set; }
+		public string ServiceType { get; set; } = string.Empty;
 
 		public BasePacket() { }
 
@@ -66,7 +66,7 @@ namespace Netboot.Network.Packet
 			Buffer.Write(buffer, 0, buffer.Length);
 		}
 
-		public IPAddress Read_IPAddress() => new IPAddress(Read_Bytes(IPAddress.None.GetAddressBytes().Length));
+		public IPAddress Read_IPAddress() => new(Read_Bytes(IPAddress.None.GetAddressBytes().Length));
 
 		public void Write_IPAddress(IPAddress address) => Write_Bytes(address.GetAddressBytes());
 

@@ -225,9 +225,7 @@ namespace Netboot.Network.Packet
 			if (dhcpoption == null)
 				return;
 
-			if (!Options.ContainsKey(dhcpoption.Option))
-				Options.Add(dhcpoption.Option, dhcpoption);
-			else
+			if (!Options.TryAdd(dhcpoption.Option, dhcpoption))
 				Options[dhcpoption.Option] = dhcpoption;
 		}
 

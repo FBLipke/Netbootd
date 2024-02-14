@@ -2,6 +2,7 @@
 using Netboot.Network.EventHandler;
 using Netboot.Network.Interfaces;
 using Netboot.Network.Sockets;
+using System.Linq;
 
 namespace Netboot.Network.Server
 {
@@ -22,10 +23,12 @@ namespace Netboot.Network.Server
 			ServiceType = serviceType;
 
 			var addresses = Functions.GetIPAddresses();
-
-			foreach (var address in addresses)
-				foreach (var port in ports)
-					Add(new(address, port));
+			foreach (var (address, port) in from address in addresses
+											from port in ports
+											select (address, port))
+			{
+				Add(new(address, port));
+			}
 		}
 
 		public void Add(IPEndPoint endPoint)
@@ -48,20 +51,20 @@ namespace Netboot.Network.Server
 
 		public void Start()
 		{
-			foreach (var Sockets in _Sockets)
-				Sockets.Value.Start();
+			foreach (var Sockets in _Sockets.Values.ToList())
+				Sockets.Start();
 		}
 
 		public void Stop()
 		{
-			foreach (var Sockets in _Sockets)
-				Sockets.Value.Close();
+			foreach (var Sockets in _Sockets.Values.ToList())
+				Sockets.Close();
 		}
 
 		public void Dispose()
 		{
-			foreach (var Sockets in _Sockets)
-				Sockets.Value.Dispose();
+			foreach (var Sockets in _Sockets.Values.ToList())
+				Sockets.Dispose();
 		}
 
 		public IPAddress Get_IPAddress(Guid socket)
