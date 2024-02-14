@@ -1,5 +1,6 @@
 ﻿using System.Net.NetworkInformation;
 using System.Net;
+using System.Linq;
 
 namespace Netboot
 {
@@ -20,11 +21,11 @@ namespace Netboot
 
         public static IEnumerable<IPAddress> GetIPAddresses()
         {
-            foreach (var ni in NetworkInterface.GetAllNetworkInterfaces())
-                foreach (var ip in ni.GetIPProperties().UnicastAddresses)
-                    if (!IPAddress.IsLoopback(ip.Address) && ip.Address.GetAddressBytes()[0] != 0xa9)
-                        yield return ip.Address;
-        }
+			return from ni in NetworkInterface.GetAllNetworkInterfaces()
+				   from ip in ni.GetIPProperties().UnicastAddresses
+				   where !IPAddress.IsLoopback(ip.Address) && ip.Address.GetAddressBytes()[0] != 0xa9
+				   select ip.Address;
+		}
 
         public static bool IsLittleEndian() => BitConverter.IsLittleEndian;
     }

@@ -1,5 +1,4 @@
-﻿using Netboot.Common.Netboot.Network.EventHandler;
-using Netboot.Network.Client;
+﻿using Netboot.Network.Client;
 using Netboot.Network.Definitions;
 using Netboot.Network.EventHandler;
 using Netboot.Network.Interfaces;
@@ -46,36 +45,53 @@ namespace Netboot.Service.DHCP
             Console.WriteLine("Service: DHCP!");
 
             var requestPacket = new DHCPPacket(e.ServiceType, e.Packet);
-            var clientid = string.Join("-", requestPacket.HardwareAddress.Select(x => x.ToString("X2")));
-            AddClient(clientid, e.ServiceType,e.RemoteEndpoint, e.ServerId, e.SocketId);
 
-            Console.WriteLine("Got Request from: {0}", Clients[clientid].RemoteEntpoint);
-
-            switch (requestPacket.BootpOPCode)
+            switch (requestPacket.GetVendorIdent)
             {
-                case BOOTPOPCode.BootRequest:
-                    Console.WriteLine("BOOTP: Request!");
+                case PXEVendorID.PXEClient:
+                case PXEVendorID.PXEServer:
+                case PXEVendorID.AAPLBSDPC:
+					var clientid = string.Join(":", requestPacket.HardwareAddress.Select(x => x.ToString("X2")));
+					AddClient(clientid, e.ServiceType, e.RemoteEndpoint, e.ServerId, e.SocketId);
 
-                    switch ((DHCPMessageType)requestPacket.GetOption(53).Data[0])
-                    {
-                        case DHCPMessageType.Discover:
-                            Clients[clientid].RemoteEntpoint.Address = IPAddress.Broadcast;
-                            Handle_DHCP_Discover(e.ServerId, e.SocketId, clientid, requestPacket);
-                            break;
-						case DHCPMessageType.Request:
+					Console.WriteLine("Got Request from: {0}", Clients[clientid].RemoteEntpoint);
+
+					switch (requestPacket.BootpOPCode)
+					{
+						case BOOTPOPCode.BootRequest:
+							switch ((DHCPMessageType)requestPacket.GetOption(53).Data[0])
+							{
+								case DHCPMessageType.Discover:
+									Clients[clientid].RemoteEntpoint.Address = IPAddress.Broadcast;
+									Handle_DHCP_Discover(e.ServerId, e.SocketId, clientid, requestPacket);
+									break;
+								case DHCPMessageType.Request:
+									break;
+								case DHCPMessageType.Inform:
+									break;
+							}
+
 							break;
-						case DHCPMessageType.Inform:
+						case BOOTPOPCode.BootReply:
+							Console.WriteLine("BOOTP: Reply!");
+							break;
+						default:
 							break;
 					}
+					break;
+				case PXEVendorID.None:
+				case PXEVendorID.Msft:
+				default:
+					return;
+			}
 
-					break;
-                case BOOTPOPCode.BootReply:
-					Console.WriteLine("BOOTP: Reply!");
-					break;
-                default:
-                    break;
-            }
-        }
+
+
+
+
+
+
+		}
 
         public void Handle_DataSent(object sender, DataSentEventArgs e)
         {
@@ -91,7 +107,7 @@ namespace Netboot.Service.DHCP
                     Ports.Add(ushort.Parse(port.Trim()));
 			}
 
-            AddServer?.Invoke(this, new AddServerEventArgs(ServiceType, Ports));
+            AddServer?.Invoke(this, new(ServiceType, Ports));
             return true;
         }
 
@@ -109,7 +125,7 @@ namespace Netboot.Service.DHCP
             var response = packet.CreateResponse(serverIP);
 
             response.CommitOptions();
-            ServerSendPacket.Invoke(this,new ServerSendPacketEventArgs(server, socket, response, Clients[client]));
+            ServerSendPacket.Invoke(this, new(server, socket, response, Clients[client]));
         }
 
 		private void Handle_DHCP_Request(Guid server, Guid socket, DHCPPacket packet)

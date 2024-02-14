@@ -14,13 +14,13 @@ namespace Netboot.Network.Packet
 
 		public BasePacket(string serviceType, byte[] data)
 		{
-			Buffer = new MemoryStream(data);
+			Buffer = new(data);
 			ServiceType = serviceType;
 		}
 
 		public BasePacket(string serviceType)
 		{
-			Buffer = new MemoryStream();
+			Buffer = new();
 			ServiceType = serviceType;
 		}
 
@@ -36,20 +36,14 @@ namespace Netboot.Network.Packet
 
 		public byte Read_UINT8(long position = 0)
 		{
-			if (position != 0)
-				Buffer.Position = position;
-			else
-				Buffer.Position = 0;
+			Buffer.Position = position != 0 ? position : 0;
 
 			return Convert.ToByte(Buffer.ReadByte());
 		}
 
 		public int Write_UINT8(byte value, long position = 0)
 		{
-			if (position != 0)
-				Buffer.Position = position;
-			else
-				Buffer.Position = 0;
+			Buffer.Position = position != 0 ? position : 0;
 
 			Buffer.WriteByte(value);
 

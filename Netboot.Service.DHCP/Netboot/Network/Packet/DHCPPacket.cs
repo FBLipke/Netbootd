@@ -1,5 +1,6 @@
 ﻿using Netboot.Common.Netboot.Common;
 using Netboot.Network.Definitions;
+using System.Linq;
 using System.Net;
 using System.Text;
 
@@ -23,6 +24,28 @@ namespace Netboot.Network.Packet
 		{
 			get => (BOOTPOPCode)Read_UINT8();
 			set => Write_UINT8(Convert.ToByte(value));
+		}
+
+		public PXEVendorID GetVendorIdent
+		{
+			get
+			{
+				var vendorId = PXEVendorID.None;
+
+				if (Options.ContainsKey(60))
+				{
+					var option = GetOption(60);
+					
+					if (option == null)
+						return vendorId;
+
+					var ident = option.Data.GetString().Trim().Split(':', 1).FirstOrDefault();
+					if (!string.IsNullOrEmpty(ident))
+						Enum.TryParse(ident, out vendorId);
+				}
+
+				return vendorId;
+			}
 		}
 
 		public DHCPHardwareType HardwareType
@@ -234,13 +257,13 @@ namespace Netboot.Network.Packet
 					Buffer.Position = i + 2;
 					Buffer.Read(data, 0, len);
 
-					AddOption(new DHCPOption(opt, data));
+					AddOption(new(opt, data));
 
 					i += 2 + len;
 				}
 				else
 				{
-					AddOption(new DHCPOption(opt));
+					AddOption(new(opt));
 					break;
 				}
 			}
@@ -261,8 +284,9 @@ namespace Netboot.Network.Packet
 
 			switch (BootpOPCode)
 			{
+				default:
 				case BOOTPOPCode.BootRequest:
-					packet = new DHCPPacket(ServiceType);
+					packet = new(ServiceType);
 					packet.ServerName = Environment.MachineName;
 					packet.HardwareType = HardwareType;
 					packet.HardwareLength = HardwareLength;
@@ -278,24 +302,45 @@ namespace Netboot.Network.Packet
 					packet.BootpOPCode = BOOTPOPCode.BootReply;
 					packet.HardwareAddress = HardwareAddress;
 
-					packet.AddOption(new DHCPOption(54, packet.ServerIP));
-					packet.AddOption(GetOption(97));
-					packet.AddOption(new DHCPOption(60, "PXEClient", Encoding.ASCII));
+					packet.AddOption(new(54, packet.ServerIP));
+
+					var opt97 = GetOption(97);
+					if (opt97 != null)
+						packet.AddOption(opt97);
+
+					switch (GetVendorIdent)
+					{
+						case PXEVendorID.PXEClient:
+							packet.AddOption(new(60, "PXEClient", Encoding.ASCII));
+							break;
+						case PXEVendorID.PXEServer:
+							packet.AddOption(new(60, "PXEClient", Encoding.ASCII));
+							break;
+						case PXEVendorID.AAPLBSDPC:
+							packet.AddOption(new(60, "APPLBSDPC", Encoding.ASCII));
+							break;
+						case PXEVendorID.None:
+						case PXEVendorID.Msft:
+						default:
+							break;
+					}
+					packet.AddOption(new(60, "PXEClient", Encoding.ASCII));
 
 					switch (msgType)
 					{
 						case DHCPMessageType.Discover:
-							packet.AddOption(new DHCPOption(53, (byte)DHCPMessageType.Offer));
+							packet.AddOption(new(53, (byte)DHCPMessageType.Offer));
 							break;
 						case DHCPMessageType.Request:
 						case DHCPMessageType.Inform:
-							packet.AddOption(new DHCPOption(53, (byte)DHCPMessageType.Ack));
+							packet.AddOption(new(53, (byte)DHCPMessageType.Ack));
 							break;
 						default:
 							break;
 					}
 					break;
 				case BOOTPOPCode.BootReply:
+					packet = new DHCPPacket(ServiceType);
 					switch (msgType)
 					{
 						case DHCPMessageType.Offer:
@@ -305,8 +350,6 @@ namespace Netboot.Network.Packet
 						default:
 							break;
 					}
-					break;
-				default:
 					break;
 			}
 
@@ -318,7 +361,7 @@ namespace Netboot.Network.Packet
 			Options.OrderBy(key => key.Key);
 
 			if (!Options.ContainsKey(byte.MaxValue))
-				AddOption(new DHCPOption(byte.MaxValue));
+				AddOption(new (byte.MaxValue));
 
 			var length = 0;
 

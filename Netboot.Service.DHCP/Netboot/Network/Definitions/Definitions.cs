@@ -30,6 +30,15 @@ namespace Netboot.Network.Definitions
 		DHCP = 1666417251,
 	}
 
+	public enum PXEVendorID : byte
+	{
+		None,
+		PXEClient,
+		PXEServer,
+		AAPLBSDPC,
+		Msft,
+	}
+
 	public enum DHCPMessageType
 	{
 		None = 0,

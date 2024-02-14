@@ -14,7 +14,7 @@ namespace Netboot.Services
 
 		public Dictionary<string, IClient> Clients { get; set; } = [];
 
-		public List<ushort> Ports { get; } = new List<ushort>();
+		public List<ushort> Ports { get; } = [];
 
 		public string ServiceType { get; }
 
@@ -41,7 +41,7 @@ namespace Netboot.Services
 
 		public bool Initialize(XmlNode xmlConfigNode)
 		{
-			AddServer.Invoke(this, new AddServerEventArgs(ServiceType, Ports));
+			AddServer.Invoke(this, new(ServiceType, Ports));
 			return true;
 		}
 

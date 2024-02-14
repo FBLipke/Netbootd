@@ -24,7 +24,6 @@ namespace Netboot
 
 		}
 
-
 		void ParseArguments(string[] args)
 		{
 			foreach (var arg in args)
@@ -128,12 +127,6 @@ namespace Netboot
 			Console.WriteLine("Netboot 0.1a ({0})", Functions.IsLittleEndian()
 				? "LE (LittleEndian)" : "BE (BigEndian)");
 
-			foreach (string arg in cmdArgs)
-			{
-				Console.WriteLine(arg);
-			}
-
-
 			ConfigFile = Path.Combine(WorkingDirectory, "Config", "Netboot.xml");
 
 			if (!File.Exists(ConfigFile))
@@ -144,7 +137,7 @@ namespace Netboot
 			var xmlFile = new XmlDocument();
 			xmlFile.Load(ConfigFile);
 
-			XmlNodeList services = xmlFile.SelectNodes("Netboot/Configuration/Services/Service");
+			var services = xmlFile.SelectNodes("Netboot/Configuration/Services/Service");
 			foreach (var service in Services.Values)
 			{
 
@@ -183,7 +176,7 @@ namespace Netboot
 			server.DataSent += (sender, e) =>
 			{
 				Functions.InvokeMethod(Services[e.ServiceType], "Handle_DataSent",
-					new object[] { new object[] { sender, e } });
+					new object[] { new[] { sender, e } });
 			};
 
 			server.DataReceived += (sender, e) =>
