@@ -11,7 +11,7 @@ namespace Netboot.Service.BINL
 		{
 			ServiceType = serviceType;
 		}
-		public List<ushort> Ports => throw new NotImplementedException();
+		public List<ushort> Ports { get; set; } = [];
 
 		public string ServiceType { get; }
 

@@ -14,7 +14,7 @@ namespace Netboot.Services
 
 		public Dictionary<string, IClient> Clients { get; set; } = [];
 
-		public List<ushort> Ports { get; } = [];
+		public List<ushort> Ports { get; set; } = [];
 
 		public string ServiceType { get; }
 

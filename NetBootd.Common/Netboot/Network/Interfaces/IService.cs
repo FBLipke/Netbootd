@@ -12,7 +12,7 @@ namespace Netboot.Services.Interfaces
 		event AddServerEventHandler? AddServer;
 		event ServerSendPacketEventHandler? ServerSendPacket;
 
-		List<ushort> Ports { get; }
+		List<ushort> Ports { get; set; }
 
         string ServiceType { get; }
 

@@ -9,7 +9,7 @@ using System.Xml;
 using static Netboot.Services.Interfaces.IService;
 using System.Linq;
 
-namespace Netboot.Service.DHCP
+namespace Netboot.Services.DHCP
 {
 	public class DHCPService : IService
 	{
@@ -18,7 +18,7 @@ namespace Netboot.Service.DHCP
 			ServiceType = serviceType;
 		}
 
-		public List<ushort> Ports { get; } = new List<ushort>();
+		public List<ushort> Ports { get; set; } = [];
 
 		public string ServiceType { get; }
 
