@@ -33,7 +33,7 @@ namespace Netboot.Utility
 			switch (srcType)
 			{
 				case "nt5":
-					var ini = new INIFile(Path.Combine(SourcePath, "I386", "txtsetup.sif".ToUpperInvariant()));
+					var ini = new INIFile(Path.Combine(Directory.GetCurrentDirectory(), "txtsetup.sif".ToUpperInvariant()));
 					ini.Open();
 					break;
 				default:
