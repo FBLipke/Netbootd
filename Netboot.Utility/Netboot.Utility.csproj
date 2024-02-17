@@ -5,7 +5,6 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <BaseOutputPath>..\</BaseOutputPath>
   </PropertyGroup>
 
   <ItemGroup>
@@ -13,16 +12,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Config\Netboot.xml">
+    <None Update="LAYOUT.INF">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="TFTPRoot\Boot\x86\apitest.0">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="TFTPRoot\Boot\x86\bisconfig.0">
+    <None Update="TXTSETUP.SIF">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>

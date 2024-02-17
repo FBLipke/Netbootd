@@ -3,7 +3,7 @@ using System.Net;
 
 namespace Netboot.Network.Client
 {
-    public class BaseClient : IClient
+    public class BaseClient : IClient, IDisposable
     {
         public Guid SocketId { get; set; }
         public Guid ServerId { get; set; }
@@ -25,7 +25,7 @@ namespace Netboot.Network.Client
         {
         }
 
-        public void Dispose()
+        public virtual void Dispose()
         {
         }
     }

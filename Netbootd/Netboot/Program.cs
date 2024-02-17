@@ -28,6 +28,7 @@ namespace Netbootd.Netboot
 			{
 				NetbootBase.Start();
 
+				#region "keep program alive"
 				var x = string.Empty;
 
 				var heartbeatThread = new Thread(new ThreadStart(HeartBeat));
@@ -35,6 +36,7 @@ namespace Netbootd.Netboot
 
 				while (x != "!exit")
 					x = Console.ReadLine();
+				#endregion
 
 				heartbeatThread.Join();
 			}

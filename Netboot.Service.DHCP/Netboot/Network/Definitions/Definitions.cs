@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Netboot.Common;
+using System.Net;
 
 namespace Netboot.Network.Definitions
 {
@@ -39,53 +36,209 @@ namespace Netboot.Network.Definitions
 		Msft,
 	}
 
+	public enum PXEVendorEncOptions : byte
+	{
+		MultiCastIPAddress = 1,
+		MulticastClientPort = 2,
+		MulticastServerPort = 3,
+		MulticastTFTPTimeout = 4,
+		MulticastTFTPDelay = 5,
+		DiscoveryControl = 6,
+		DiscoveryMulticastAddress = 7,
+		BootServers = 8,
+		BootMenue = 9,
+		MenuPrompt = 10,
+		MulticastAddressAllocation = 11,
+		CredentialTypes = 12,
+		BootItem = 71,
+		End = byte.MaxValue
+	}
+
+	public class BootServer
+	{
+		public List<IPAddress> Addresses
+		{
+			get; private set;
+		}
+
+		public string Hostname{ get; private set; }
+		
+		public ushort Type { get; private set; }
+
+		public BootServer(string hostname, BootServerTypes type = BootServerTypes.MicrosoftWindowsNT)
+		{
+			Type = (ushort)type;
+			Hostname = hostname;
+
+			Addresses = Functions.DNSLookup(Environment.MachineName)
+				.Where(a => a.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork).ToList();
+		}
+
+		public enum BootServerTypes : ushort
+		{
+			PXEBootstrapServer = 0,
+			MicrosoftWindowsNT = 1,
+			IntelLCM = 2,
+			DOSUNDI = 3,
+			NECESMPRO = 4,
+			IBMWSoD = 5,
+			IBMLCCM = 6,
+			CAUnicenterTNG = 7,
+			HPOpenView = 8,
+			Reserved = 9,
+			Vendor = 32768,
+			ApiTest = ushort.MaxValue
+		}
+
+		public BootServer(IPAddress addr, BootServerTypes bootServerType = BootServerTypes.PXEBootstrapServer)
+		{
+			Hostname = addr.ToString();
+			Type = (ushort)bootServerType;
+
+			Addresses = new List<IPAddress>
+			{
+				addr
+			};
+		}
+	}
+
 	public enum DHCPMessageType
 	{
-		None = 0,
-		/// <summary>
-		/// Sent by the client as the first step of the DHCP client/server interaction.
-		/// The purpose of the DHCPDISCOVER is for the client to "discover" what servers are out there and what network parameters they have to offer.
-		/// </summary>
 		Discover = 1,
-		/// <summary>
-		/// Sent by the server to the client in response to a DHCPDISCOVER. The server uses the DHCPOFFER message to "offer" an IP address,
-		/// lease time, and network configuration parameters to the client.
-		/// </summary>
 		Offer = 2,
-		/// <summary>
-		/// Sent by the client to the server in response to a DHCPOFFER. The "server identifier"
-		/// field of the DHCPREQUEST indicates which server the client has chosen to further interact with.
-		/// All servers that sent the client a DHCPOFFER receive the DHCPREQUEST. The ones that are not chosen simply use the message as notification
-		/// that they have not been chosen. The server that is chosen responds to the request, either with a DHCPACK or a DHCPNAK.
-		/// </summary>
 		Request = 3,
-		/// <summary>
-		/// Sent by the server to the client in response to a DHCPREQUEST. The DHCPACK indicates that the server "acknowledges" the request,
-		/// and the DHCPACK message contains fields which indicate the IP address, lease time,
-		/// and network configuration parameters that the client is being configured with.
-		/// </summary>
-		Ack = 4,
-		/// <summary>
-		/// Sent by the server to the client in response to a DHCPREQUEST. The DHCPNAK indicates that the server does not acknowledge the request,
-		/// and does not agree to lease the specified IP address.
-		/// </summary>
-		Nak = 5,
-		/// <summary>
-		/// Sent by the client to the server to give up an IP address lease. If the client knows that it no longer needs an IP address,
-		/// it should send the server a DHCPRELEASE.
-		/// </summary>
-		Release = 6,
-		/// <summary>
-		/// Sent by the client to the server in response to a DHCPACK. If the client receives a DHCPACK, but, for some reason,
-		/// is not satisfied with the lease time and/or network parameters in the message,it can send the server a DHCPDECLINE
-		/// indicating that it refuses to use the IP address. 
-		/// </summary>
-		Decline = 7
+		Decline = 4,
+		Ack = 5,
+		Nak = 6,
+		Release = 7,
+		Inform = 8,
+		ForceRenew = 9,
+		LeaseQuery = 10,
+		LeaseUnassined = 11,
+		LeaseUnknown = 12,
+		LeaseActive = 13,
+		BulkLeaseQuery = 14,
+		LeaseQueryDone = 15,
+		ActiveLeaseQuery = 16,
+		LeasequeryStatus = 17,
+		Tls = 18
 	}
 
 	public enum BOOTPOPCode : byte
 	{
 		BootRequest = 1,
 		BootReply = 2
+	}
+
+	public enum DHCPOptions : byte
+	{
+		Pad = byte.MinValue,
+		SubnetMask = 1,
+		TimeOffset = 2,
+		Router = 3,
+		TimeServer = 4,
+		NameServer = 5,
+		DomainNameServer = 6,
+		LogServer = 7,
+		CookieServer = 8,
+		LPRServer = 9,
+		ImpressServer = 10,
+		ResourceLocServer = 11,
+		ClientHostName = 12,
+		BootFileSize = 13,
+		MeritDump = 14,
+		DomainName = 15,
+		SwapServer = 16,
+		RootPath = 17,
+		ExtensionsPath = 18,
+		IpForwarding = 19,
+		NonLocalSourceRouting = 20,
+		PolicyFilter = 21,
+		MaximumDatagramReAssemblySize = 22,
+		DefaultIPTimeToLive = 23,
+		PathMTUAgingTimeout = 24,
+		PathMTUPlateauTable = 25,
+		InterfaceMTU = 26,
+		AllSubnetsAreLocal = 27,
+		BroadcastAddress = 28,
+		PerformMaskDiscovery = 29,
+		MaskSupplier = 30,
+		PerformRouterDiscovery = 31,
+		RouterSolicitationAddress = 32,
+		StaticRoute = 33,
+		TrailerEncapsulation = 34,
+		ARPCacheTimeout = 35,
+		EthernetEncapsulation = 36,
+		TCPDefaultTTL = 37,
+		TCPKeepaliveInterval = 38,
+		TCPKeepaliveGarbage = 39,
+		NetworkInformationServiceDomain = 40,
+		NetworkInformationServers = 41,
+		NetworkTimeProtocolServers = 42,
+		VendorSpecificInformation = 43,
+		NetBIOSoverTCPIPNameServer = 44,
+		NetBIOSoverTCPIPDatagramDistributionServer = 45,
+		NetBIOSoverTCPIPNodeType = 46,
+		NetBIOSoverTCPIPScope = 47,
+		XWindowSystemFontServer = 48,
+		XWindowSystemDisplayManager = 49,
+		RequestedIPAddress = 50,
+		IPAddressLeaseTime = 51,
+		OptionOverload = 52,
+		DHCPMessageType = 53,
+		ServerIdentifier = 54,
+		ParameterRequestList = 55,
+		Message = 56,
+		MaximumDHCPMessageSize = 57,
+		RenewalTimeValue_T1 = 58,
+		RebindingTimeValue_T2 = 59,
+		Vendorclassidentifier = 60,
+		ClientIdentifier = 61,
+		NetworkInformationServicePlusDomain = 64,
+		NetworkInformationServicePlusServers = 65,
+		TFTPServerName = 66,
+		BootfileName = 67,
+		MobileIPHomeAgent = 68,
+		SMTPServer = 69,
+		POP3Server = 70,
+		NNTPServer = 71,
+		DefaultWWWServer = 72,
+		DefaultFingerServer = 73,
+		DefaultIRCServer = 74,
+		StreetTalkServer = 75,
+		STDAServer = 76,
+		UserClass = 77,
+		Architecture = 93,
+		ClientInterfaceIdent = 94,
+		GUID = 97,
+		VOIPTFTPServer = 120,
+
+		#region "PXELinux"
+		MAGICOption = 208,
+		ConfigurationFile = 209,
+		PathPrefix = 210,
+		RebootTime = 211,
+		#endregion
+
+		#region "Windows Deployment Server"
+		WDSNBP = 250,
+		BCDPath = 252,
+		#endregion
+
+		End = byte.MaxValue
+	}
+
+	public enum Architecture : ushort
+	{
+		x86PC = 0,
+		NECPC98 = 1,
+		EFIItanium = 2,
+		DECAlpha = 3,
+		Arcx86 = 4,
+		IntelLeanClient = 5,
+		EFI_IA32 = 6,
+		EFIByteCode = 7,
+		EFI_xScale = 8,
+		EFI_x8664 = 9
 	}
 }

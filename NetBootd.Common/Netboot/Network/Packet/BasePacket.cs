@@ -1,6 +1,8 @@
-﻿using Netboot.Network.Interfaces;
+﻿using Netboot.Common;
+using Netboot.Network.Interfaces;
+using System.Buffers.Binary;
 using System.Net;
-using System.Runtime.CompilerServices;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Netboot.Network.Packet
 {
@@ -9,8 +11,6 @@ namespace Netboot.Network.Packet
 		public MemoryStream? Buffer { get; set; }
 
 		public string ServiceType { get; set; } = string.Empty;
-
-		public BasePacket() { }
 
 		public BasePacket(string serviceType, byte[] data)
 		{
@@ -21,6 +21,12 @@ namespace Netboot.Network.Packet
 		public BasePacket(string serviceType)
 		{
 			Buffer = new();
+			ServiceType = serviceType;
+		}
+
+		public BasePacket(string serviceType, int length)
+		{
+			Buffer = new(length);
 			ServiceType = serviceType;
 		}
 
@@ -36,34 +42,38 @@ namespace Netboot.Network.Packet
 
 		public byte Read_UINT8(long position = 0)
 		{
-			Buffer.Position = position != 0 ? position : 0;
+			var curPos = Buffer.Position;
 
-			return Convert.ToByte(Buffer.ReadByte());
+			Buffer.Position = position != 0 ? position : 0;
+			var result = Convert.ToByte(Buffer.ReadByte());
+			Buffer.Position = curPos;
+			
+			return result;
 		}
 
 		public int Write_UINT8(byte value, long position = 0)
 		{
 			Buffer.Position = position != 0 ? position : 0;
-
 			Buffer.WriteByte(value);
 
 			return sizeof(byte);
 		}
 
-		public byte[] Read_Bytes(long size)
+		public byte[] Read_Bytes(long size, bool swapEndianess = false)
 		{
 			var bytes = new byte[size];
 			Buffer.Read(bytes, 0, bytes.Length);
 
+			if (swapEndianess)
+				Array.Reverse(bytes);
+
 			return bytes;
 		}
 
-		public void Write_Bytes(byte[] input, int length = 0)
+		public int Write_Bytes(byte[] input)
 		{
-			var buffer = new byte[length != 0 ? length : input.Length];
-			Array.Copy(input, 0, buffer, 0, input.Length);
-
-			Buffer.Write(buffer, 0, buffer.Length);
+			Buffer.Write(input, 0, input.Length);
+			return input.Length;
 		}
 
 		public IPAddress Read_IPAddress() => new(Read_Bytes(IPAddress.None.GetAddressBytes().Length));
@@ -72,9 +82,13 @@ namespace Netboot.Network.Packet
 
 		public ushort Read_UINT16() => BitConverter.ToUInt16(Read_Bytes(2));
 
-		public void Write_UINT16(ushort value) => Write_Bytes(BitConverter.GetBytes(value));
+		public void Write_UINT16(ushort value)
+		{
+			var bytes = BitConverter.GetBytes(value);
+			Write_Bytes(bytes);
+		}
 
-		public uint Read_UINT32() => BitConverter.ToUInt32(Read_Bytes(sizeof(uint)));
+		public uint Read_UINT32(bool swapEndianess = false) => BitConverter.ToUInt32(Read_Bytes(sizeof(uint)));
 
 		public void Write_UINT32(uint value) => Write_Bytes(BitConverter.GetBytes(value));
 	}

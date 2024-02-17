@@ -1,18 +1,28 @@
-﻿using Netboot.Network.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Net;
 
 namespace Netboot.Network.Client
 {
-	internal class DHCPClient : BaseClient
+	public class DHCPClient : BaseClient
 	{
+		public class RBCPClient
+		{
+			public ushort Layer { get; set; }
+
+			public ushort Item { get; set; }
+
+			public RBCPClient()
+			{
+				Layer = 0;
+				Item = 0;
+			}
+		}
+
 		public DHCPClient(string clientId, string serviceType, IPEndPoint remoteEndpoint, Guid serverid, Guid socketId)
 			: base(clientId, serviceType, remoteEndpoint, serverid, socketId)
 		{
+			RBCP = new RBCPClient();
 		}
+
+		public RBCPClient RBCP { get; private set; }
 	}
 }

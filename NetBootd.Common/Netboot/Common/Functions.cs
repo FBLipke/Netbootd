@@ -1,11 +1,35 @@
-﻿using System.Net.NetworkInformation;
-using System.Net;
-using System.Linq;
+﻿using System.Net;
+using System.Net.NetworkInformation;
 
-namespace Netboot
+namespace Netboot.Common
 {
-    public static class Functions
+	public static partial class Functions
     {
+		public static string ReplaceSlashes(string input)
+		{
+			var slash = "/";
+
+			switch (Environment.OSVersion.Platform)
+			{
+				case PlatformID.Win32NT:
+				case PlatformID.Win32S:
+				case PlatformID.Win32Windows:
+				case PlatformID.WinCE:
+				case PlatformID.Xbox:
+					slash = "\\";
+					break;
+				default:
+				case PlatformID.Other:
+				case PlatformID.MacOSX:
+				case PlatformID.Unix:
+					slash = "/";
+					break;
+
+			}
+
+			return input.Replace("/", slash);
+		}
+
 		public static void InvokeMethod(object obj, string name, object?[]? args)
         {
             try

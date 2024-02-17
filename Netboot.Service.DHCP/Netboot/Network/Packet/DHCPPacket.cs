@@ -1,5 +1,6 @@
-﻿using Netboot.Common.Netboot.Common;
+﻿using Netboot.Common;
 using Netboot.Network.Definitions;
+using System.Buffers.Binary;
 using System.Linq;
 using System.Net;
 using System.Text;
@@ -20,10 +21,47 @@ namespace Netboot.Network.Packet
 		{
 		}
 
+		public DHCPPacket(string serviceType, int length) : base(serviceType, length)
+		{
+		}
+
 		public BOOTPOPCode BootpOPCode
 		{
 			get => (BOOTPOPCode)Read_UINT8();
 			set => Write_UINT8(Convert.ToByte(value));
+		}
+
+		public List<DHCPOption> GetEncOptions(byte opt)
+		{
+			var dict = new List<DHCPOption>();
+
+			var optionData = GetOption(opt)?.Data;
+			if (optionData == null)
+				return new List<DHCPOption>();
+
+			for (var i = 0; i < optionData.Length;)
+			{
+				var o = optionData[i];
+
+				if (o != byte.MaxValue)
+				{
+					var len = optionData[i + 1];
+					var data = new byte[len];
+
+					Array.Copy(optionData, (i + 2), data, 0, len);
+
+					dict.Add(new DHCPOption(o, data));
+
+					i += 2 + len;
+				}
+				else
+				{
+					dict.Add(new DHCPOption(o));
+					break;
+				}
+			}
+
+			return dict;
 		}
 
 		public PXEVendorID GetVendorIdent
@@ -32,14 +70,23 @@ namespace Netboot.Network.Packet
 			{
 				var vendorId = PXEVendorID.None;
 
-				if (Options.ContainsKey(60))
+				if (Options.ContainsKey((byte)DHCPOptions.Vendorclassidentifier))
 				{
-					var option = GetOption(60);
+					var option = GetOption((byte)DHCPOptions.Vendorclassidentifier);
 					
 					if (option == null)
 						return vendorId;
 
-					var ident = option.Data.GetString().Trim().Split(':', 1).FirstOrDefault();
+					var identStr = option.Data.GetString().Trim();
+					var delim = new char[] { ':' };
+
+					if (identStr.Contains(':'))
+						delim = [':'];
+					else if (identStr.Contains(' '))
+						delim = [' '];
+
+					var ident = identStr.Split(delim).FirstOrDefault();
+
 					if (!string.IsNullOrEmpty(ident))
 						Enum.TryParse(ident, out vendorId);
 				}
@@ -168,13 +215,25 @@ namespace Netboot.Network.Packet
 		{
 			get
 			{
+				var curPOS = Buffer.Position;
+				var mac = new byte[HardwareLength];
 				Buffer.Position = 28;
-				return Read_Bytes(HardwareLength);
+				Buffer.Read(mac, 0, mac.Length);
+				Buffer.Position = curPOS;
+
+				return mac;
 			}
 			set
 			{
+				var curPOS = Buffer.Position;
+
+				var mac = new byte[16];
+				Array.Copy(value, 0, mac, 0, value.Length);
+
 				Buffer.Position = 28;
-				Write_Bytes(value, 16);
+				Write_Bytes(mac);
+
+				Buffer.Position = curPOS;
 			}
 		}
 
@@ -182,13 +241,24 @@ namespace Netboot.Network.Packet
 		{
 			get
 			{
+				var curPOS = Buffer.Position;
 				Buffer.Position = 44;
-				return Encoding.ASCII.GetString(Read_Bytes(64));
+				var result = Encoding.ASCII.GetString(Read_Bytes(64));
+				Buffer.Position = curPOS;
+
+				return result;
 			}
 			set
 			{
+				var curPos = Buffer.Position;
+				var serverName = Encoding.ASCII.GetBytes(value);
+				var bytes = new byte[64];
+				Array.Copy(serverName, 0, bytes, 0, serverName.Length);
+
 				Buffer.Position = 44;
-				Write_Bytes(Encoding.ASCII.GetBytes(value), 64);
+				Write_Bytes(bytes);
+
+				Buffer.Position = curPos;
 			}
 		}
 
@@ -196,13 +266,24 @@ namespace Netboot.Network.Packet
 		{
 			get
 			{
+				var curPOS = Buffer.Position;
+
 				Buffer.Position = 108;
-				return Encoding.ASCII.GetString(Read_Bytes(128));
+				var result = Encoding.ASCII.GetString(Read_Bytes(128));
+				Buffer.Position = curPOS;
+
+				return result;
 			}
 			set
 			{
+				var curPos = Buffer.Position;
+				var fileName = Encoding.ASCII.GetBytes(value);
+				var bytes = new byte[128];
+				Array.Copy(fileName, 0, bytes, 0, fileName.Length);
+
 				Buffer.Position = 108;
-				Write_Bytes(Encoding.ASCII.GetBytes(value), 128);
+				Write_Bytes(fileName);
+				Buffer.Position = curPos;
 			}
 		}
 
@@ -244,14 +325,17 @@ namespace Netboot.Network.Packet
 			{
 				Buffer.Position = i;
 
+				// Option
 				var opt = (byte)Buffer.ReadByte();
 
 				if (opt != byte.MaxValue)
 				{
+					// Length
 					Buffer.Position = i + 1;
 					var len = Buffer.ReadByte();
-					var data = new byte[len];
 
+					// Data					
+					var data = new byte[len];
 					Buffer.Position = i + 2;
 					Buffer.Read(data, 0, len);
 
@@ -261,6 +345,7 @@ namespace Netboot.Network.Packet
 				}
 				else
 				{
+					// Options like 255
 					AddOption(new(opt));
 					break;
 				}
@@ -268,23 +353,21 @@ namespace Netboot.Network.Packet
 
 			Options.OrderBy(key => key.Key);
 			Buffer.Position = curPos;
-
-			if (HasOption(77) && GetOption(77).Data.GetString().Contains("PXE"))
-			{
-				Console.WriteLine("[W] Option 77: Non RFC compilant option data! (iPXE)");
-			}
 		}
 
 		public DHCPPacket CreateResponse(IPAddress serverIP)
 		{
 			DHCPPacket packet = null;
-			var msgType = (DHCPMessageType)GetOption(53).Data[0];
+			var msgType = (DHCPMessageType)GetOption((byte)DHCPOptions.DHCPMessageType).Data[0];
+
+			var expectedLength = BinaryPrimitives.ReadUInt16LittleEndian
+				(GetOption((byte)DHCPOptions.MaximumDHCPMessageSize).Data);
 
 			switch (BootpOPCode)
 			{
 				default:
 				case BOOTPOPCode.BootRequest:
-					packet = new(ServiceType);
+					packet = new(ServiceType, expectedLength);
 					packet.ServerName = Environment.MachineName;
 					packet.HardwareType = HardwareType;
 					packet.HardwareLength = HardwareLength;
@@ -300,45 +383,48 @@ namespace Netboot.Network.Packet
 					packet.BootpOPCode = BOOTPOPCode.BootReply;
 					packet.HardwareAddress = HardwareAddress;
 
-					packet.AddOption(new(54, packet.ServerIP));
-
-					var opt97 = GetOption(97);
-					if (opt97 != null)
-						packet.AddOption(opt97);
+					packet.AddOption(new((byte)DHCPOptions.ServerIdentifier, packet.ServerIP));
 
 					switch (GetVendorIdent)
 					{
 						case PXEVendorID.PXEClient:
-							packet.AddOption(new(60, "PXEClient", Encoding.ASCII));
+							packet.AddOption(new((byte)DHCPOptions.Vendorclassidentifier, "PXEClient", Encoding.ASCII));
 							break;
 						case PXEVendorID.PXEServer:
-							packet.AddOption(new(60, "PXEClient", Encoding.ASCII));
+							packet.AddOption(new((byte)DHCPOptions.Vendorclassidentifier, "PXEServer", Encoding.ASCII));
 							break;
 						case PXEVendorID.AAPLBSDPC:
-							packet.AddOption(new(60, "APPLBSDPC", Encoding.ASCII));
+							packet.AddOption(new((byte)DHCPOptions.Vendorclassidentifier, "APPLBSDPC", Encoding.ASCII));
 							break;
 						case PXEVendorID.None:
 						case PXEVendorID.Msft:
 						default:
 							break;
 					}
-					packet.AddOption(new(60, "PXEClient", Encoding.ASCII));
 
 					switch (msgType)
 					{
 						case DHCPMessageType.Discover:
-							packet.AddOption(new(53, (byte)DHCPMessageType.Offer));
+							packet.AddOption(new((byte)DHCPOptions.DHCPMessageType, (byte)DHCPMessageType.Offer));
 							break;
 						case DHCPMessageType.Request:
 						case DHCPMessageType.Inform:
-							packet.AddOption(new(53, (byte)DHCPMessageType.Ack));
+							packet.AddOption(new((byte)DHCPOptions.DHCPMessageType, (byte)DHCPMessageType.Ack));
+
+							if (Options.ContainsKey(43))
+								packet.Options.Add(43, Options[43]);
 							break;
 						default:
 							break;
 					}
+
+					var opt97 = GetOption((byte)DHCPOptions.GUID);
+					if (opt97 != null)
+						packet.AddOption(opt97);
+					
 					break;
 				case BOOTPOPCode.BootReply:
-					packet = new DHCPPacket(ServiceType);
+					packet = new DHCPPacket(ServiceType, expectedLength);
 					switch (msgType)
 					{
 						case DHCPMessageType.Offer:
@@ -373,16 +459,21 @@ namespace Netboot.Network.Packet
 
 			foreach (var option in Options.Values)
 			{
-				// Write Option number
-				offset += Write_UINT8(option.Option, offset);
+				#region "DHCP Option Number"
+				offset += Write_UINT8(Convert.ToByte(option.Option), offset);
 				Buffer.Position = offset;
+
 				if (option.Option == byte.MaxValue)
 					break;
+				#endregion
 
+				#region "DHCP Option Length"
 				// Write Option length
-				offset += Write_UINT8(option.Length,offset);
+				offset += Write_UINT8(option.Length, offset);
 				Buffer.Position = offset;
+				#endregion
 
+				#region "DHCP Option Data"
 				// Write Option data
 				if (option.Length != 1)
 				{
@@ -390,9 +481,10 @@ namespace Netboot.Network.Packet
 					offset += option.Length;
 				}
 				else
-					offset += Write_UINT8(Convert.ToByte(option.Data[0]), offset);
+					offset += Write_UINT8(Convert.ToByte(option.Data.First()), offset);
 
 				Buffer.Position = offset;
+				#endregion
 			}
 
 			Buffer.SetLength(offset);

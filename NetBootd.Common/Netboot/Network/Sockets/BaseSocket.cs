@@ -51,7 +51,7 @@ namespace Netboot.Network.Sockets
 		public event DataReceivedEventHandler? DataReceived;
 		public event DataSendEventHandler? DataSent;
 
-		SocketState socketState;
+		SocketState? socketState;
 		EndPoint localendpoint;
 		EndPoint remoteendpoint;
 		Guid SocketId;
@@ -98,8 +98,6 @@ namespace Netboot.Network.Sockets
 					SocketFlags.None, ref localendpoint, new(EndReceive), socketState);
 
 				Listening = true;
-
-				Console.WriteLine($"[I] Listening on {localendpoint}");
 			}
 			catch (SocketException ex)
 			{
@@ -140,8 +138,10 @@ namespace Netboot.Network.Sockets
 				socketState.socket.BeginReceiveFrom(socketState.buffer, 0, socketState.buffer.Length,
 					SocketFlags.None, ref localendpoint, new(EndReceive), socketState);
 			}
-			catch (ObjectDisposedException)
+			catch (ObjectDisposedException ex)
 			{
+				Console.WriteLine(ex);
+				Listening = false;
 			}
 			catch (SocketException ex)
 			{
@@ -156,14 +156,13 @@ namespace Netboot.Network.Sockets
 
 			try
 			{
-			var bytesSent = socketState.socket.SendTo(buffer, 0, (int)packet.Buffer.Length,
-				SocketFlags.None, client.RemoteEntpoint);
+				var bytesSent = socketState.socket.SendTo(buffer, 0, (int)packet.Buffer.Length,
+					SocketFlags.None, client.RemoteEntpoint);
 			}
 			catch (SocketException ex)
 			{
 				Console.WriteLine(ex);
 			}
-
 		}
 
 		public void Dispose()

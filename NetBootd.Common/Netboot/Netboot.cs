@@ -4,7 +4,7 @@ using Netboot.Services.Interfaces;
 using Netboot.Services;
 using System.Reflection;
 using System.Xml;
-using System.Linq;
+using Netboot.Common;
 
 namespace Netboot
 {
@@ -17,11 +17,11 @@ namespace Netboot
 
 		public static string WorkingDirectory = Directory.GetCurrentDirectory();
 		public static string ConfigFile = string.Empty;
+		public static string BootServerRoot = Path.Combine(WorkingDirectory, "BootServer");
 
 		public NetbootBase(string[] args)
 		{
 			cmdArgs = args;
-
 		}
 
 		void ParseArguments(string[] args)
@@ -83,9 +83,9 @@ namespace Netboot
 			{
 				var ass = Assembly.LoadFrom(module.FullName);
 				foreach (var (t, serviceType) in from t in ass.GetTypes()
-					where (t.IsSubclassOf(typeof(IService)) || t.GetInterfaces().Contains(typeof(IService))) && t.IsAbstract == false
-						let serviceType = module.Name.Split('.')[2].Trim().ToUpper()
-							select (t, serviceType))
+												 where (t.IsSubclassOf(typeof(IService)) || t.GetInterfaces().Contains(typeof(IService))) && t.IsAbstract == false
+												 let serviceType = module.Name.Split('.')[2].Trim().ToUpper()
+												 select (t, serviceType))
 				{
 					try
 					{
@@ -112,6 +112,9 @@ namespace Netboot
 
 			service.ServerSendPacket += (sender, e) =>
 			{
+				if (Servers[e.ServerId].ServiceType != e.ServiceType)
+					return;
+
 				Servers[e.ServerId].Send(e.SocketId, e.Packet, e.Client);
 			};
 
@@ -132,13 +135,14 @@ namespace Netboot
 
 			LoadServices();
 
+
+			#region "Read Config File"
 			var xmlFile = new XmlDocument();
 			xmlFile.Load(ConfigFile);
 
 			var services = xmlFile.SelectNodes("Netboot/Configuration/Services/Service");
 			foreach (var service in Services.Values)
 			{
-
 				foreach (XmlNode xmlnode in services)
 				{
 					var node = xmlnode.Attributes.GetNamedItem("type");
@@ -149,6 +153,8 @@ namespace Netboot
 				}
 			}
 
+			#endregion
+			
 			return true;
 		}
 
@@ -160,8 +166,6 @@ namespace Netboot
 			foreach (var server in Servers.Values.ToList())
 				server.Start();
 		}
-
-		private object heartbeatLock = new();
 
 		public void Heartbeat()
 		{

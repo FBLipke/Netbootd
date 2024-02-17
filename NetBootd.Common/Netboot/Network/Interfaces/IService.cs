@@ -16,8 +16,6 @@ namespace Netboot.Services.Interfaces
 
         string ServiceType { get; }
 
-        Dictionary<string, IClient> Clients { get; set; }
-
         void Handle_DataReceived(object sender, DataReceivedEventArgs e);
         void Handle_DataSent(object sender, DataSentEventArgs e);
 
