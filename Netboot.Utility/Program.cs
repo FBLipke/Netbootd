@@ -4,7 +4,7 @@ namespace Netboot.Utility
 {
 	internal class Program
 	{
-		public static Utility NetbootUtil;
+		public static Utility? NetbootUtil;
 
 		static void Main(string[] args)
 		{
@@ -26,7 +26,6 @@ namespace Netboot.Utility
 					NetbootUtil.RunCommand(x.Split(' ', StringSplitOptions.RemoveEmptyEntries));
 			}
 			#endregion
-
 
 			CurrentDomain_ProcessExit(null, EventArgs.Empty);
 		}

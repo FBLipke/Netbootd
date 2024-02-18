@@ -48,7 +48,7 @@ namespace Netboot.Service.TFTP
 
 		public void Handle_DataReceived(object sender, DataReceivedEventArgs e)
         {
-            Console.WriteLine("[I] Got TFTP Request from: {0}", e.RemoteEndpoint);
+
 
             var clientid = e.RemoteEndpoint.Address.ToString();
             AddClient(clientid, e.ServiceType, e.RemoteEndpoint, e.ServerId, e.SocketId);
@@ -58,15 +58,13 @@ namespace Netboot.Service.TFTP
             switch (requestPacket.TFTPOPCode)
             {
                 case TFTPOPCodes.RRQ:
-                    Console.WriteLine("[I] Got RRQ !");
-					Handle_Read_Request(e.ServerId, e.SocketId, clientid, requestPacket);
+					Console.WriteLine("[I] Got TFTP Request from: {0}", e.RemoteEndpoint);
+                    Handle_Read_Request(e.ServerId, e.SocketId, clientid, requestPacket);
                     break;
                 case TFTPOPCodes.ACK:
-					Console.WriteLine("[I] Got ACK !");
 					Handle_ACK_Request(e.ServerId, e.SocketId, clientid, requestPacket);
 					break;
                 case TFTPOPCodes.ERR:
-					Console.WriteLine("[I] Got ERR !");
 					Handle_Error_Request(e.ServerId, e.SocketId, clientid, requestPacket);
 					break;
 				default:

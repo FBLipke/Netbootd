@@ -9,6 +9,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="TFTPRoot\OSChooser\englisch\**" />
+    <EmbeddedResource Remove="TFTPRoot\OSChooser\englisch\**" />
+    <None Remove="TFTPRoot\OSChooser\englisch\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\NetBootd.Common\Netboot.Common.csproj" />
   </ItemGroup>
 
@@ -19,12 +25,66 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="TFTPRoot\Boot\x86\apitest.0">
+    <None Include="TFTPRoot\Boot\x86\NTLDR">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="TFTPRoot\Boot\x86\bisconfig.0">
+    <None Include="TFTPRoot\Boot\x86\startrom.n12">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Include="TFTPRoot\OSChooser\english\00004e22.osc" />
+    <None Include="TFTPRoot\OSChooser\english\00004e23.osc" />
+    <None Include="TFTPRoot\OSChooser\english\00004e24.osc" />
+    <None Include="TFTPRoot\OSChooser\english\00004e25.osc" />
+    <None Include="TFTPRoot\OSChooser\english\00004e26.osc" />
+    <None Include="TFTPRoot\OSChooser\english\00004e28.osc">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="TFTPRoot\OSChooser\english\00004e29.osc" />
+    <None Include="TFTPRoot\OSChooser\english\00004e2a.osc" />
+    <None Include="TFTPRoot\OSChooser\english\00004e2f.osc" />
+    <None Include="TFTPRoot\OSChooser\english\00004e30.osc" />
+    <None Include="TFTPRoot\OSChooser\english\00004e43.osc" />
+    <None Include="TFTPRoot\OSChooser\english\00004e45.osc" />
+    <None Include="TFTPRoot\OSChooser\english\00004e47.osc" />
+    <None Include="TFTPRoot\OSChooser\english\00004e48.osc" />
+    <None Include="TFTPRoot\OSChooser\english\00004e4b.osc" />
+    <None Include="TFTPRoot\OSChooser\english\00004e4c.osc" />
+    <None Include="TFTPRoot\OSChooser\english\00004e4e.osc" />
+    <None Include="TFTPRoot\OSChooser\english\00004e4f.osc" />
+    <None Include="TFTPRoot\OSChooser\english\00004e50.osc" />
+    <None Include="TFTPRoot\OSChooser\english\00004e51.osc" />
+    <None Include="TFTPRoot\OSChooser\english\00004e52.osc" />
+    <None Include="TFTPRoot\OSChooser\english\00004e53.osc" />
+    <None Include="TFTPRoot\OSChooser\english\choice.osc" />
+    <None Include="TFTPRoot\OSChooser\english\choichlp.osc" />
+    <None Include="TFTPRoot\OSChooser\english\custhelp.osc" />
+    <None Include="TFTPRoot\OSChooser\english\custom.osc" />
+    <None Include="TFTPRoot\OSChooser\english\dupauto.osc" />
+    <None Include="TFTPRoot\OSChooser\english\dupcust.osc" />
+    <None Include="TFTPRoot\OSChooser\english\install.osc" />
+    <None Include="TFTPRoot\OSChooser\english\login.osc">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="TFTPRoot\OSChooser\english\loginhlp.osc">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="TFTPRoot\OSChooser\english\nochoice.osc" />
+    <None Include="TFTPRoot\OSChooser\english\nooses.osc" />
+    <None Include="TFTPRoot\OSChooser\english\osauto.osc" />
+    <None Include="TFTPRoot\OSChooser\english\oschoice.osc" />
+    <None Include="TFTPRoot\OSChooser\english\oscust.osc" />
+    <None Include="TFTPRoot\OSChooser\english\rstrterr.osc" />
+    <None Include="TFTPRoot\OSChooser\english\tools.osc" />
+    <None Include="TFTPRoot\OSChooser\english\toolshlp.osc" />
+    <None Include="TFTPRoot\OSChooser\english\warning.osc" />
+    <None Include="TFTPRoot\OSChooser\english\welcome.osc" />
+    <None Include="TFTPRoot\OSChooser\english\welcome.osc">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="TFTPRoot\OSChooser\german\" />
   </ItemGroup>
 
 </Project>

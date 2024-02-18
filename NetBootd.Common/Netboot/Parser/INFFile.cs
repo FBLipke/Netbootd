@@ -1,18 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Netboot.Common
+﻿namespace Netboot.Common
 {
-
 	public class INIFile
 	{
-		Dictionary<string, List<KeyValuePair<string, string>>> Sections 
-			= new Dictionary<string, List<KeyValuePair<string,string>>>();
+		Dictionary<string, Dictionary<string, string>> Sections 
+			= new Dictionary<string, Dictionary<string, string>>();
 		string FilePath = string.Empty;
-
 
 		public INIFile(string filePath)
 		{
@@ -39,7 +31,7 @@ namespace Netboot.Common
 						sectionName = line.Substring(1, line.IndexOf(']') - 1);
 
 						if (!Sections.ContainsKey(sectionName))
-							Sections.Add(sectionName, new List<KeyValuePair<string, string>>());
+							Sections.Add(sectionName, new Dictionary<string, string>());
 					}
                     else
                     {
@@ -51,28 +43,49 @@ namespace Netboot.Common
 						var key = lineParts[0].Trim();
 						var value = lineParts[1].Trim();
 
-
-						Sections[sectionName].Add(new KeyValuePair<string, string> { key, value } );
-
-
-
-
-
-
-
-
-
-
-
-
-
-						Console.WriteLine("{0} = {1}", key, value);
+						if (!Sections[sectionName].ContainsKey(key))
+							Sections[sectionName].Add(key, value);
                     }
                 }
-
-
 			}
 		}
 
+		public void Dump()
+		{
+			foreach (var section in Sections)
+			{
+				Console.WriteLine($"[{section.Key}]");
+
+				foreach (var value in section.Value)
+				{
+					Console.WriteLine($"{value.Key} = {value.Value}");
+				}
+
+				Console.WriteLine("");
+			}
+		}
+
+		public bool HasSection(string section)
+			=> Sections.ContainsKey(section);
+
+		public string GetValue(string section, string key, string defaultValue = "")
+		{
+			var value = Sections[section][key];
+			return !string.IsNullOrEmpty(value) ? value : defaultValue;
+		}
+
+		public void SetValue(string section, string key, string value)
+		{
+			if (!Sections.ContainsKey(section))
+				Sections.Add(section, new Dictionary<string, string>());
+
+			if (!Sections[section].ContainsKey(key))
+				Sections[section].Add(key,value);
+			else
+				Sections[section][key] = value;
+		}
+
+		public List<string> GetSectionKeys(string section)
+			=> Sections[section].Keys.ToList();
 	}
 }

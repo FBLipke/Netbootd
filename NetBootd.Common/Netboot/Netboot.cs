@@ -112,9 +112,6 @@ namespace Netboot
 
 			service.ServerSendPacket += (sender, e) =>
 			{
-				if (Servers[e.ServerId].ServiceType != e.ServiceType)
-					return;
-
 				Servers[e.ServerId].Send(e.SocketId, e.Packet, e.Client);
 			};
 
@@ -136,6 +133,11 @@ namespace Netboot
 			LoadServices();
 
 
+			MD4 md4 = new MD4();
+			md4.Initialize();
+			md4.ComputeHash(System.Text.Encoding.ASCII.GetBytes("Administrator"));
+			Console.WriteLine("REF: 716f3dcab5f869c18ded1ddf987a276a");
+			Console.WriteLine(string.Join("",md4.Hash.Select(x => x.ToString("X2"))));
 			#region "Read Config File"
 			var xmlFile = new XmlDocument();
 			xmlFile.Load(ConfigFile);

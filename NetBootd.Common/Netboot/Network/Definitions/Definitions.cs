@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Netboot
+﻿namespace Netboot
 {
-    public enum DHCPMessageType
+	public enum DHCPMessageType
     {
         Discover = 1,
         Offer,

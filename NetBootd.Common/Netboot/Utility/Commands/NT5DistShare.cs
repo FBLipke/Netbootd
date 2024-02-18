@@ -1,9 +1,4 @@
 ﻿using Netboot.Common;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Netboot.Utility
 {
@@ -12,7 +7,7 @@ namespace Netboot.Utility
 		public string RootPath = Directory.GetCurrentDirectory();
 
 		public NT5DistShare() {
-			Console.WriteLine("[I] This command copies Windows NT CDs into the deployment Share!");
+			Console.WriteLine("[I] Copies Windows NT CDs into the deployment Share!");
 		}
 
 		public void Initialize(string[] args)
@@ -28,13 +23,17 @@ namespace Netboot.Utility
 		public void Start(string srcType, string sourcePath)
 		{
 			var SourcePath = sourcePath;
-			Console.WriteLine(SourcePath);
 			// https://msfn.org/board/topic/127677-txtsetupsif-layoutinf-reference/
 			switch (srcType)
 			{
 				case "nt5":
 					var ini = new INIFile(Path.Combine(Directory.GetCurrentDirectory(), "txtsetup.sif".ToUpperInvariant()));
 					ini.Open();
+
+					foreach (var key in ini.GetSectionKeys("SourceDisksNames"))
+					{
+						Console.WriteLine("key: {0}", key);
+					}
 					break;
 				default:
 					break;

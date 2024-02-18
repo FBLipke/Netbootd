@@ -30,8 +30,6 @@ namespace Netboot.Services.DHCP
 		public event AddServerEventHandler? AddServer;
 		public event ServerSendPacketEventHandler? ServerSendPacket;
 
-		ulong i;
-
 		public void Dispose()
 		{
 			foreach (var client in Clients.Values)
@@ -126,7 +124,6 @@ namespace Netboot.Services.DHCP
 		{
 		}
 
-
 		private void Handle_RBCP_Request(string client, DHCPPacket request)
 		{
 			var venEncOpts = request.GetEncOptions(43);
@@ -193,7 +190,7 @@ namespace Netboot.Services.DHCP
 			var serverIP = NetbootBase.Servers[server].Get_IPAddress(socket);
 			var response = packet.CreateResponse(serverIP);
 
-			response.FileName = "Boot/x86/apitest.0";
+			response.FileName = "Boot\\x86\\startrom.n12";
 
 			Handle_RBCP_Request(client, packet);
 			var vendorOptions = new List<DHCPOption>
@@ -209,8 +206,6 @@ namespace Netboot.Services.DHCP
 			response.CommitOptions();
 			ServerSendPacket.Invoke(this, new(ServiceType, server, socket, response, Clients[client]));
 		}
-
-
 
 		private void Handle_DHCP_Request(Guid server, Guid socket, string client, DHCPPacket packet)
 		{
@@ -242,7 +237,7 @@ namespace Netboot.Services.DHCP
 				}
 			}
 
-			response.FileName = "Boot/x86/apitest.0";
+			response.FileName = "Boot\\x86\\startrom.n12";
 
 			response.CommitOptions();
 			ServerSendPacket.Invoke(this, new(ServiceType, server, socket, response, Clients[client]));
