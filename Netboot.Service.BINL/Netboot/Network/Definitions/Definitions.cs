@@ -1,5 +1,8 @@
 ﻿namespace Netboot.Network.Definitions
 {
+
+
+
 	public enum BINLMessageTypes : uint
 	{
 		/// <summary>

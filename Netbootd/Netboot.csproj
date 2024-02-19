@@ -10,8 +10,11 @@
 
   <ItemGroup>
     <Compile Remove="TFTPRoot\OSChooser\englisch\**" />
+    <Compile Remove="TFTPRoot\OSChooser\german\**" />
     <EmbeddedResource Remove="TFTPRoot\OSChooser\englisch\**" />
+    <EmbeddedResource Remove="TFTPRoot\OSChooser\german\**" />
     <None Remove="TFTPRoot\OSChooser\englisch\**" />
+    <None Remove="TFTPRoot\OSChooser\german\**" />
   </ItemGroup>
 
   <ItemGroup>
@@ -25,12 +28,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="TFTPRoot\Boot\x86\NTLDR">
+    <None Include="Config\nt5.yaml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="TFTPRoot\Boot\x86\startrom.n12">
+    <None Include="Dumps\AUT_NTLMSSP.bin">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Include="Dumps\CHL_NTLMSSP.bin" />
+    <None Include="Dumps\dupp.pcap" />
+    <None Include="Dumps\NEG_NTLMSSP.bin" />
     <None Include="TFTPRoot\OSChooser\english\00004e22.osc" />
     <None Include="TFTPRoot\OSChooser\english\00004e23.osc" />
     <None Include="TFTPRoot\OSChooser\english\00004e24.osc" />
@@ -77,14 +83,21 @@
     <None Include="TFTPRoot\OSChooser\english\tools.osc" />
     <None Include="TFTPRoot\OSChooser\english\toolshlp.osc" />
     <None Include="TFTPRoot\OSChooser\english\warning.osc" />
-    <None Include="TFTPRoot\OSChooser\english\welcome.osc" />
-    <None Include="TFTPRoot\OSChooser\english\welcome.osc">
+    <None Include="TFTPRoot\OSChooser\i386\NTLDR">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="TFTPRoot\OSChooser\german\" />
+    <None Include="TFTPRoot\OSChooser\i386\startrom.n12">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="TFTPRoot\OSChooser\welcome.osc">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="TFTPRoot\Setup\German\Images\win2000.srv\i386\templates\ristndrd.sif">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="TFTPRoot\tmp\000000000000000000008A98147E1BFE.sif">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

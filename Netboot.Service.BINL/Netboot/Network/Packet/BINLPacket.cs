@@ -72,6 +72,21 @@ namespace Netboot.Network.Packet
 			}
 		}
 
+		public NTLMSSPPacket NTLMSSP
+		{
+			get
+			{
+				var curPOS = Buffer.Position;
+				Buffer.Position = 8;
+				var ntlmsspBytes = Read_Bytes(Length);
+
+				var result = new NTLMSSPPacket(ServiceType, ntlmsspBytes);
+				Buffer.Position = curPOS;
+
+				return result;
+			}
+		}
+
 		public uint Sequence
 		{
 			get

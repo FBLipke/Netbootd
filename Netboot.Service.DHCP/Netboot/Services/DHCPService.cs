@@ -190,7 +190,7 @@ namespace Netboot.Services.DHCP
 			var serverIP = NetbootBase.Servers[server].Get_IPAddress(socket);
 			var response = packet.CreateResponse(serverIP);
 
-			response.FileName = "Boot\\x86\\startrom.n12";
+			response.FileName = "OSChooser\\i386\\startrom.n12";
 
 			Handle_RBCP_Request(client, packet);
 			var vendorOptions = new List<DHCPOption>
@@ -237,7 +237,7 @@ namespace Netboot.Services.DHCP
 				}
 			}
 
-			response.FileName = "Boot\\x86\\startrom.n12";
+			response.FileName = "OSChooser\\i386\\startrom.n12";
 
 			response.CommitOptions();
 			ServerSendPacket.Invoke(this, new(ServiceType, server, socket, response, Clients[client]));

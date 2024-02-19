@@ -4,6 +4,7 @@
 	{
 		Dictionary<string, Dictionary<string, string>> Sections 
 			= new Dictionary<string, Dictionary<string, string>>();
+
 		string FilePath = string.Empty;
 
 		public INIFile(string filePath)
@@ -31,7 +32,7 @@
 						sectionName = line.Substring(1, line.IndexOf(']') - 1);
 
 						if (!Sections.ContainsKey(sectionName))
-							Sections.Add(sectionName, new Dictionary<string, string>());
+							Sections.Add(sectionName, []);
 					}
                     else
                     {
@@ -57,9 +58,7 @@
 				Console.WriteLine($"[{section.Key}]");
 
 				foreach (var value in section.Value)
-				{
 					Console.WriteLine($"{value.Key} = {value.Value}");
-				}
 
 				Console.WriteLine("");
 			}
@@ -77,11 +76,9 @@
 		public void SetValue(string section, string key, string value)
 		{
 			if (!Sections.ContainsKey(section))
-				Sections.Add(section, new Dictionary<string, string>());
+				Sections.Add(section, []);
 
-			if (!Sections[section].ContainsKey(key))
-				Sections[section].Add(key,value);
-			else
+			if (!Sections[section].TryAdd(key, value))
 				Sections[section][key] = value;
 		}
 

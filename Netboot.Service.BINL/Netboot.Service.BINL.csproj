@@ -11,7 +11,9 @@
 
 	<ItemGroup>
 		<Compile Include="Netboot\Network\Client\BINLClient.cs" />
+		<Compile Include="Netboot\Network\Definitions\SecurityBuffer.cs" />
 		<Compile Include="Netboot\Network\Packet\BINLPacket.cs" />
+		<Compile Include="Netboot\Network\Packet\NTLMSSPPacket.cs" />
 		<Compile Include="Netboot\Services\BINLService.cs" />
 		<Compile Include="Netboot\Network\Definitions\Definitions.cs" />
 	</ItemGroup>

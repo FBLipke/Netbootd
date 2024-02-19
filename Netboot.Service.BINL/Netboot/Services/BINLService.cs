@@ -1,4 +1,7 @@
-﻿using Netboot.Network.Client;
+﻿using Netboot.Common;
+using Netboot.Common.Netboot.Common.Definitions;
+using Netboot.Common.Netboot.Cryptography;
+using Netboot.Network.Client;
 using Netboot.Network.Definitions;
 using Netboot.Network.EventHandler;
 using Netboot.Network.Interfaces;
@@ -8,6 +11,7 @@ using System.Net;
 using System.Net.NetworkInformation;
 using System.Text;
 using System.Xml;
+using YamlDotNet.Serialization;
 
 namespace Netboot.Service.BINL
 {
@@ -42,7 +46,11 @@ namespace Netboot.Service.BINL
 			var oscml = new StringBuilder("");
 
 			// We may have more than one OSes with different languages on the server.
-			if (directories.Count() > 1)
+
+
+			// WELCOME\nLANGUAGE=ENGLISH\n
+
+			if (directories.Count() > 32)
 			{
 				oscml.AppendLine("<OSCML>");
 				oscml.AppendLine("<META KEY=ENTER HREF=\"LOGIN\">");
@@ -58,7 +66,8 @@ namespace Netboot.Service.BINL
 				oscml.AppendFormat("<SELECT NAME=\"LANGUAGE\" SIZE={0}>", directories.Count());
 
 				foreach (var Language in directories)
-					oscml.AppendFormat($"<OPTION VALUE=\"{Language.Name.ToUpper()}\"> {Language.Name}");
+					if (Language.Name != "i386")
+						oscml.AppendFormat($"<OPTION VALUE=\"{Language.Name.ToUpper()}\"> {Language.Name}");
 
 				oscml.AppendLine("</SELECT>");
 				oscml.AppendLine("</FORM>");
@@ -67,14 +76,21 @@ namespace Netboot.Service.BINL
 			}
 			else
 			{
-				var x = IPGlobalProperties.GetIPGlobalProperties().DomainName;
-					Console.WriteLine(x);
-				var screen = System.Text.Encoding.ASCII.GetString(packet.Data);
+				var screen = Encoding.ASCII.GetString(packet.Data);
 
-				var fileContent = File.ReadAllText(Path.Combine(OSChooserDir.FullName, "english",
-					string.IsNullOrEmpty(screen) ? "welcome.osc" : string.Format($"{screen.ToLowerInvariant()}.osc")));
+				var fileContent = File.ReadAllText(Path.Combine(OSChooserDir.FullName,
+					string.IsNullOrEmpty(screen) ? "welcome.osc" : Path.Combine("english",
+					string.Format($"{screen.ToLowerInvariant()}.osc"))));
 				
 				fileContent = fileContent.Replace("\r\n", "\n");
+
+				var domain = IPGlobalProperties.GetIPGlobalProperties().DomainName;
+				var hostname = Environment.MachineName;
+
+				if (!domain.Contains('.') && !string.IsNullOrEmpty(domain))
+					domain = string.Join(".",hostname,domain); // HOSTNAME.LOCALDOMAIN
+				
+				fileContent = fileContent.Replace("%MACHINEDOMAIN%", string.IsNullOrEmpty(domain) ? hostname : domain);
 				oscml.Append(fileContent);
 			}
 			#endregion
@@ -93,8 +109,30 @@ namespace Netboot.Service.BINL
 
 		public void Handle_NEG_Request(Guid server, Guid socket, string client, BINLPacket packet)
 		{
+			var ntlmrequest = packet.NTLMSSP;
+			var response = new NTLMSSPPacket(ServiceType,ntlmssp_message_type.Challenge);
+
+			switch (ntlmrequest.MessageType)
+			{
+				case ntlmssp_message_type.Negotiate:
+					Console.WriteLine("[I] NTLM Negotiate! (Flags: {0})", ntlmrequest.Flags);
+					response.Flags = ntlmrequest.Flags;
+					response.Challenge = Functions.NTLMChallenge();
+					response.Context = new byte[8];
+					break;
+				case ntlmssp_message_type.Challenge:
+					Console.WriteLine("[I] NTLM Challenge!");
+					break;
+				case ntlmssp_message_type.Authenticate:
+					Console.WriteLine("[I] NTLM Authenticate!");
+					break;
+				default:
+					Console.WriteLine("[I] imvalid Type!");
+					return;
+			}
 
 		}
+
 		void AddClient(string clientId, string serviceType, IPEndPoint remoteEndpoint, Guid serverId, Guid socketId)
 		{
 			if (!Clients.ContainsKey(clientId))
@@ -116,6 +154,9 @@ namespace Netboot.Service.BINL
 			{
 				case BINLMessageTypes.RequestUnsigned:
 					Handle_RQU_Request(e.ServerId, e.SocketId, clientid, request);
+					break;
+				case BINLMessageTypes.Negotiate:
+					Handle_NEG_Request(e.ServerId, e.SocketId, clientid, request);
 					break;
 				default:
 					break;

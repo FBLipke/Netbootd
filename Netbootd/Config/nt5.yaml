@@ -1,0 +1,14 @@
+name: Windows NT/2Kx/XP/2003 CD
+tag: nt5
+sourceDiskFiles:
+  ris:
+    OSCHOICE.EXE: /OSChooser/NTLDR
+    STARTROM.N12: /OSChooser/Startrom.n12
+    STARTROM.COM: /OSChooser/Startrom.com
+    WELCOME.OSC: /OSChooser/Welcome.osc
+  arch:
+    x86: i386
+    x64: amd64
+    alpha: alpha
+  extract:
+    osc.cab: /OSChooser/english/

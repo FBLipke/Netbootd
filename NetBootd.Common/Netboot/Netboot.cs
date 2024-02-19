@@ -5,6 +5,8 @@ using Netboot.Services;
 using System.Reflection;
 using System.Xml;
 using Netboot.Common;
+using YamlDotNet.Serialization.NamingConventions;
+using YamlDotNet.Serialization;
 
 namespace Netboot
 {
@@ -118,6 +120,7 @@ namespace Netboot
 			Services.Add(service.ServiceType, service);
 
 			Console.WriteLine($"[I] Added Service for '{service.ServiceType}'");
+
 		}
 
 		public bool Initialize()
@@ -156,7 +159,11 @@ namespace Netboot
 			}
 
 			#endregion
-			
+
+
+			var deserializer = new DeserializerBuilder()
+				.WithNamingConvention(UnderscoredNamingConvention.Instance)  // see height_in_inches in sample yml 
+				.Build();
 			return true;
 		}
 
@@ -195,7 +202,7 @@ namespace Netboot
 					else
 						Functions.InvokeMethod(Services[e.ServiceType], "Handle_DataReceived", new[] { sender, e });
 				}
-				catch (KeyNotFoundException ex)
+				catch (KeyNotFoundException)
 				{
 					Console.WriteLine($"[E] Cant find Service for '{e.ServiceType}'");
 				}
