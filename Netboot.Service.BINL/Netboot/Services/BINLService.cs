@@ -1,6 +1,18 @@
-﻿using Netboot.Common;
+﻿/*
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+using Netboot.Common;
 using Netboot.Common.Netboot.Common.Definitions;
-using Netboot.Common.Netboot.Cryptography;
 using Netboot.Network.Client;
 using Netboot.Network.Definitions;
 using Netboot.Network.EventHandler;
@@ -11,7 +23,6 @@ using System.Net;
 using System.Net.NetworkInformation;
 using System.Text;
 using System.Xml;
-using YamlDotNet.Serialization;
 
 namespace Netboot.Service.BINL
 {
@@ -81,15 +92,15 @@ namespace Netboot.Service.BINL
 				var fileContent = File.ReadAllText(Path.Combine(OSChooserDir.FullName,
 					string.IsNullOrEmpty(screen) ? "welcome.osc" : Path.Combine("english",
 					string.Format($"{screen.ToLowerInvariant()}.osc"))));
-				
+
 				fileContent = fileContent.Replace("\r\n", "\n");
 
 				var domain = IPGlobalProperties.GetIPGlobalProperties().DomainName;
 				var hostname = Environment.MachineName;
 
 				if (!domain.Contains('.') && !string.IsNullOrEmpty(domain))
-					domain = string.Join(".",hostname,domain); // HOSTNAME.LOCALDOMAIN
-				
+					domain = string.Join(".", hostname, domain); // HOSTNAME.LOCALDOMAIN
+
 				fileContent = fileContent.Replace("%MACHINEDOMAIN%", string.IsNullOrEmpty(domain) ? hostname : domain);
 				oscml.Append(fileContent);
 			}
@@ -110,7 +121,7 @@ namespace Netboot.Service.BINL
 		public void Handle_NEG_Request(Guid server, Guid socket, string client, BINLPacket packet)
 		{
 			var ntlmrequest = packet.NTLMSSP;
-			var response = new NTLMSSPPacket(ServiceType,ntlmssp_message_type.Challenge);
+			var response = new NTLMSSPPacket(ServiceType, ntlmssp_message_type.Challenge);
 
 			switch (ntlmrequest.MessageType)
 			{
@@ -148,7 +159,7 @@ namespace Netboot.Service.BINL
 			var request = new BINLPacket(ServiceType, e.Packet);
 			var clientid = e.RemoteEndpoint.Address.ToString();
 
-			AddClient(clientid,ServiceType,e.RemoteEndpoint,e.ServerId,e.SocketId);
+			AddClient(clientid, ServiceType, e.RemoteEndpoint, e.ServerId, e.SocketId);
 
 			switch (request.MessageType)
 			{
@@ -174,7 +185,7 @@ namespace Netboot.Service.BINL
 		public bool Initialize(XmlNode xmlConfigNode)
 		{
 			RootPath = Path.Combine(Directory.GetCurrentDirectory(), "TFTPRoot");
-			return false;
+			return true;
 		}
 
 		public void Start()

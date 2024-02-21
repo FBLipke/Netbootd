@@ -11,21 +11,21 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-namespace Netboot.Network.Client.RBCP
+namespace Netboot.Network.Client
 {
-	public class BootMenueEntry
+	public partial class DHCPClient
 	{
-		public ushort Id { get; private set; }
-
-		public string Description { get; private set; }
-
-		public byte Length { get; private set; }
-
-		public BootMenueEntry(ushort id, string desc)
+		public class RBCPClient
 		{
-			Id = id;
-			Description = desc;
-			Length = (byte)Description.Length;
+			public ushort Layer { get; set; }
+
+			public ushort Item { get; set; }
+
+			public RBCPClient()
+			{
+				Layer = 0;
+				Item = 0;
+			}
 		}
 	}
 }

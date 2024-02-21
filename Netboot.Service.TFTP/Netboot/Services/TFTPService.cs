@@ -1,4 +1,17 @@
-﻿using Netboot.Common;
+﻿/*
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+using Netboot.Common;
 using Netboot.Network.Client;
 using Netboot.Network.EventHandler;
 using Netboot.Service.TFTP.Netboot.Network;
@@ -10,25 +23,25 @@ using System.Xml;
 namespace Netboot.Service.TFTP
 {
 	public class TFTPService : IService
-    {        
-        public TFTPService(string serviceType)
-        {
-            ServiceType = serviceType;
-        }
+	{
+		public TFTPService(string serviceType)
+		{
+			ServiceType = serviceType;
+		}
 
-        public string ServiceType { get; }
+		public string ServiceType { get; }
 
-        public string RootPath { get; set; }
+		public string RootPath { get; set; }
 
-        public Dictionary<string, TFTPClient> Clients { get; set; } = [];
+		public Dictionary<string, TFTPClient> Clients { get; set; } = [];
 
-        public List<ushort> Ports { get; set; } = [];
+		public List<ushort> Ports { get; set; } = [];
 
-        public event IService.AddServerEventHandler? AddServer;
-        public event IService.ServerSendPacketEventHandler? ServerSendPacket;
+		public event IService.AddServerEventHandler? AddServer;
+		public event IService.ServerSendPacketEventHandler? ServerSendPacket;
 
-        public void Dispose()
-        {
+		public void Dispose()
+		{
 			foreach (var client in Clients.Values)
 				client.Dispose();
 
@@ -39,7 +52,7 @@ namespace Netboot.Service.TFTP
 		void AddClient(string clientId, string serviceType, IPEndPoint remoteEndpoint, Guid serverId, Guid socketId)
 		{
 			if (!Clients.ContainsKey(clientId))
-				Clients.Add(clientId, new TFTPClient(clientId, serviceType, remoteEndpoint, serverId, socketId));
+				Clients.Add(clientId, new(clientId, serviceType, remoteEndpoint, serverId, socketId));
 			else
 			{
 				Clients[clientId].RemoteEntpoint = remoteEndpoint;
@@ -47,35 +60,35 @@ namespace Netboot.Service.TFTP
 		}
 
 		public void Handle_DataReceived(object sender, DataReceivedEventArgs e)
-        {
+		{
 
 
-            var clientid = e.RemoteEndpoint.Address.ToString();
-            AddClient(clientid, e.ServiceType, e.RemoteEndpoint, e.ServerId, e.SocketId);
+			var clientid = e.RemoteEndpoint.Address.ToString();
+			AddClient(clientid, e.ServiceType, e.RemoteEndpoint, e.ServerId, e.SocketId);
 
-            var requestPacket = new TFTPPacket(e.ServiceType, e.Packet);
+			var requestPacket = new TFTPPacket(e.ServiceType, e.Packet);
 
-            switch (requestPacket.TFTPOPCode)
-            {
-                case TFTPOPCodes.RRQ:
+			switch (requestPacket.TFTPOPCode)
+			{
+				case TFTPOPCodes.RRQ:
 					Console.WriteLine("[I] Got TFTP Request from: {0}", e.RemoteEndpoint);
-                    Handle_Read_Request(e.ServerId, e.SocketId, clientid, requestPacket);
-                    break;
-                case TFTPOPCodes.ACK:
+					Handle_Read_Request(e.ServerId, e.SocketId, clientid, requestPacket);
+					break;
+				case TFTPOPCodes.ACK:
 					Handle_ACK_Request(e.ServerId, e.SocketId, clientid, requestPacket);
 					break;
-                case TFTPOPCodes.ERR:
+				case TFTPOPCodes.ERR:
 					Handle_Error_Request(e.ServerId, e.SocketId, clientid, requestPacket);
 					break;
 				default:
-                    break;
-            }
-        }
+					break;
+			}
+		}
 
-        public void Handle_Read_Request(Guid server, Guid socket, string client, TFTPPacket packet)
-        {
-            if (packet.Options.ContainsKey("tsize"))
-                Clients[client].BytesToRead = long.Parse(packet.Options["tsize"]);
+		public void Handle_Read_Request(Guid server, Guid socket, string client, TFTPPacket packet)
+		{
+			if (packet.Options.ContainsKey("tsize"))
+				Clients[client].BytesToRead = long.Parse(packet.Options["tsize"]);
 
 			if (!packet.Options.ContainsKey("file"))
 			{
@@ -83,18 +96,18 @@ namespace Netboot.Service.TFTP
 				return;
 			}
 
-            Clients[client].FileName = Functions.ReplaceSlashes(Path.Combine(RootPath, packet.Options["file"]));
+			Clients[client].FileName = Functions.ReplaceSlashes(Path.Combine(RootPath, packet.Options["file"]));
 
-            var fileExists = Clients[client].OpenFile();
+			var fileExists = Clients[client].OpenFile();
 
 			var response = new TFTPPacket(ServiceType, !fileExists ? TFTPOPCodes.ERR : TFTPOPCodes.OCK);
 
 			if (!fileExists)
 			{
-                response.ErrorCode = TFTPErrorCode.FileNotFound;
-                response.ErrorMessage = Clients[client].FileName;
-                
-                Console.WriteLine("[E] TFTP: File not found: {0}", Clients[client].FileName);
+				response.ErrorCode = TFTPErrorCode.FileNotFound;
+				response.ErrorMessage = Clients[client].FileName;
+
+				Console.WriteLine("[E] TFTP: File not found: {0}", Clients[client].FileName);
 			}
 			else
 			{
@@ -119,36 +132,37 @@ namespace Netboot.Service.TFTP
 				response.CommitOptions();
 			}
 
-            ServerSendPacket?.Invoke(this, new(ServiceType, server, socket, response, Clients[client]));
+			ServerSendPacket?.Invoke(this, new(ServiceType, server, socket, response, Clients[client]));
 		}
 
 		public void Handle_DataSent(object sender, DataSentEventArgs e)
-        {
-        }
+		{
+		}
 
-        public void Handle_Error_Request(Guid server, Guid socket, string client, TFTPPacket packet)
-        {
-            Console.WriteLine("[E] TFTP: ({0}): {1}!", packet.ErrorCode, packet.ErrorMessage);
-        }
+		public void Handle_Error_Request(Guid server, Guid socket, string client, TFTPPacket packet)
+		{
+			Console.WriteLine("[E] TFTP: ({0}): {1}!", packet.ErrorCode, packet.ErrorMessage);
+		}
 
 		public void Heartbeat()
-        {
-        }
+		{
+			GC.Collect();
+		}
 
-        public bool Initialize(XmlNode xmlConfigNode)
-        {
-            RootPath = Path.Combine(NetbootBase.WorkingDirectory, "TFTPRoot");
+		public bool Initialize(XmlNode xmlConfigNode)
+		{
+			RootPath = Path.Combine(NetbootBase.WorkingDirectory, "TFTPRoot");
 
 			var ports = xmlConfigNode.Attributes.GetNamedItem("port").Value.Split(',').ToList();
-            if (ports.Count > 0)
-            {
-                Ports.AddRange(from port in ports
-                    select ushort.Parse(port.Trim()));
-            }
+			if (ports.Count > 0)
+			{
+				Ports.AddRange(from port in ports
+							   select ushort.Parse(port.Trim()));
+			}
 
-            AddServer?.Invoke(this, new(ServiceType, Ports));
-            return true;
-        }
+			AddServer?.Invoke(this, new(ServiceType, Ports));
+			return true;
+		}
 
 		public void Handle_ACK_Request(Guid server, Guid socket, string client, TFTPPacket packet)
 		{
@@ -186,7 +200,7 @@ namespace Netboot.Service.TFTP
 				if (Clients[client].BytesRead == Clients[client].BytesToRead)
 					break;
 			}
-			
+
 			Clients[client].CloseFile();
 
 			if (Clients[client].BytesRead == Clients[client].BytesToRead)
@@ -194,11 +208,11 @@ namespace Netboot.Service.TFTP
 		}
 
 		public void Start()
-        {
-        }
+		{
+		}
 
-        public void Stop()
-        {
+		public void Stop()
+		{
 		}
 	}
 }

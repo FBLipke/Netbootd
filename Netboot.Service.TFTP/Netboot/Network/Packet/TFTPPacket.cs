@@ -1,4 +1,17 @@
-﻿using Netboot.Common;
+﻿/*
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+using Netboot.Common;
 using Netboot.Network.Packet;
 using System.Buffers.Binary;
 using System.Text;
@@ -14,12 +27,14 @@ namespace Netboot.Service.TFTP.Netboot.Network.Packet
 			ParsePacket();
 		}
 
-		public TFTPPacket(string serviceType, TFTPOPCodes opCode) : base(serviceType) { 
+		public TFTPPacket(string serviceType, TFTPOPCodes opCode) : base(serviceType)
+		{
 			ParsePacket();
 			TFTPOPCode = opCode;
 		}
 
-		public byte[] Data {
+		public byte[] Data
+		{
 			get
 			{
 				switch (TFTPOPCode)
@@ -103,7 +118,7 @@ namespace Netboot.Service.TFTP.Netboot.Network.Packet
 				Buffer.Position = 2;
 
 				var result = BinaryPrimitives.ReadUInt16BigEndian(Read_Bytes(2));
-				
+
 				Buffer.Position = curPos;
 				return result;
 			}
@@ -119,7 +134,8 @@ namespace Netboot.Service.TFTP.Netboot.Network.Packet
 			}
 		}
 
-		public TFTPOPCodes TFTPOPCode { 
+		public TFTPOPCodes TFTPOPCode
+		{
 			get
 			{
 				var curPos = Buffer.Position;
@@ -136,7 +152,7 @@ namespace Netboot.Service.TFTP.Netboot.Network.Packet
 				var curPos = Buffer.Position;
 				Buffer.Position = 0;
 
-				BinaryPrimitives.WriteUInt16BigEndian(bytes,(ushort)value);
+				BinaryPrimitives.WriteUInt16BigEndian(bytes, (ushort)value);
 				Write_Bytes(bytes);
 				Buffer.Position = curPos;
 			}

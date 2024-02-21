@@ -1,12 +1,26 @@
-﻿using Netboot.Network.Server;
+﻿/*
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+using Netboot.Common;
+using Netboot.Common.Netboot.Cryptography;
 using Netboot.Network.Interfaces;
-using Netboot.Services.Interfaces;
+using Netboot.Network.Server;
 using Netboot.Services;
+using Netboot.Services.Interfaces;
 using System.Reflection;
 using System.Xml;
-using Netboot.Common;
-using YamlDotNet.Serialization.NamingConventions;
 using YamlDotNet.Serialization;
+using YamlDotNet.Serialization.NamingConventions;
 
 namespace Netboot
 {
@@ -140,7 +154,7 @@ namespace Netboot
 			md4.Initialize();
 			md4.ComputeHash(System.Text.Encoding.ASCII.GetBytes("Administrator"));
 			Console.WriteLine("REF: 716f3dcab5f869c18ded1ddf987a276a");
-			Console.WriteLine(string.Join("",md4.Hash.Select(x => x.ToString("X2"))));
+			Console.WriteLine(string.Join("", md4.Hash.Select(x => x.ToString("X2"))));
 			#region "Read Config File"
 			var xmlFile = new XmlDocument();
 			xmlFile.Load(ConfigFile);

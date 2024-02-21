@@ -1,14 +1,26 @@
-﻿using Netboot.Common;
+﻿/*
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 using Netboot.Network.Interfaces;
-using System.Buffers.Binary;
 using System.Net;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Netboot.Network.Packet
 {
 	public abstract class BasePacket : IPacket
 	{
 		public MemoryStream? Buffer { get; set; }
+
+		long lastPosition { get; set; }
 
 		public string ServiceType { get; set; } = string.Empty;
 
@@ -40,6 +52,15 @@ namespace Netboot.Network.Packet
 			GC.SuppressFinalize(this);
 		}
 
+		public void SetPosition(long position)
+		{
+			lastPosition = Buffer.Position;
+			Buffer.Position = position;
+		}
+
+		public void RestorePosition()
+		{ Buffer.Position = lastPosition; }
+
 		public byte Read_UINT8(long position = 0)
 		{
 			var curPos = Buffer.Position;
@@ -47,7 +68,7 @@ namespace Netboot.Network.Packet
 			Buffer.Position = position != 0 ? position : 0;
 			var result = Convert.ToByte(Buffer.ReadByte());
 			Buffer.Position = curPos;
-			
+
 			return result;
 		}
 

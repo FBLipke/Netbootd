@@ -2,11 +2,12 @@
 <Netboot>
 	<Configuration>
 		<Services>
-			<Service type="dhcp" port="67,4011" />
+			<Service type="dhcp" port="67,4011" behavior="65532" />
 			<Service type="binl" port="44776" />
 			<Service type="tftp" port="69" />
 		</Services>
 		<Bootservers>
+			<CurrentBootserver type ="1" />
 			<Bootserver type="0">
 				<Bootfiles>
 					<Bootfile arch="0">wdsnbp.com</Bootfile>

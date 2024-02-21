@@ -1,4 +1,16 @@
-﻿using Netboot.Common;
+﻿/*
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 using Netboot.Common.Netboot.Common.Definitions;
 using Netboot.Network.Definitions;
 using System.Buffers.Binary;
@@ -13,11 +25,11 @@ namespace Netboot.Network.Packet
 		{
 			MessageType = essageType;
 		}
-		
+
 		public NTLMSSPPacket(string serviceType, byte[] data) : base(serviceType, data)
 		{
 			var curPOS = Buffer.Position;
-			
+
 			switch (MessageType)
 			{
 				case ntlmssp_message_type.Challenge:

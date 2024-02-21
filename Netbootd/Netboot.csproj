@@ -25,6 +25,21 @@
     <None Update="Config\Netboot.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="TFTPRoot\Boot\x86\default.bcd">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="TFTPRoot\Boot\x86\pxeboot.n12">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="TFTPRoot\Boot\x86\pxelinux.0">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="TFTPRoot\Boot\x86\pxelinux.cfg\default">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="TFTPRoot\Boot\x86\wdsnbp.com">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
   <ItemGroup>
@@ -37,6 +52,7 @@
     <None Include="Dumps\CHL_NTLMSSP.bin" />
     <None Include="Dumps\dupp.pcap" />
     <None Include="Dumps\NEG_NTLMSSP.bin" />
+    <None Include="TFTPRoot\Boot\x86\default" />
     <None Include="TFTPRoot\OSChooser\english\00004e22.osc" />
     <None Include="TFTPRoot\OSChooser\english\00004e23.osc" />
     <None Include="TFTPRoot\OSChooser\english\00004e24.osc" />
@@ -84,6 +100,9 @@
     <None Include="TFTPRoot\OSChooser\english\toolshlp.osc" />
     <None Include="TFTPRoot\OSChooser\english\warning.osc" />
     <None Include="TFTPRoot\OSChooser\i386\NTLDR">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="TFTPRoot\OSChooser\i386\startrom.com">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="TFTPRoot\OSChooser\i386\startrom.n12">

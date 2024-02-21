@@ -1,7 +1,19 @@
-﻿using Netboot.Common;
+﻿/*
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+using Netboot.Common;
 using Netboot.Network.Definitions;
 using System.Buffers.Binary;
-using System.Linq;
 using System.Net;
 using System.Text;
 
@@ -73,7 +85,7 @@ namespace Netboot.Network.Packet
 				if (Options.ContainsKey((byte)DHCPOptions.Vendorclassidentifier))
 				{
 					var option = GetOption((byte)DHCPOptions.Vendorclassidentifier);
-					
+
 					if (option == null)
 						return vendorId;
 
@@ -117,13 +129,16 @@ namespace Netboot.Network.Packet
 		{
 			get
 			{
-				Buffer.Position = 4;
-				return Read_UINT32();
+				SetPosition(4);
+				var result = Read_UINT32();
+				RestorePosition();
+				return result;
 			}
 			set
 			{
-				Buffer.Position = 4;
+				SetPosition(4);
 				Write_UINT32(value);
+				RestorePosition();
 			}
 		}
 
@@ -131,13 +146,16 @@ namespace Netboot.Network.Packet
 		{
 			get
 			{
-				Buffer.Position = 8;
-				return Read_UINT16();
+				SetPosition(8);
+				var result = Read_UINT16();
+				RestorePosition();
+				return result;
 			}
 			set
 			{
-				Buffer.Position = 8;
+				SetPosition(8);
 				Write_UINT16(value);
+				RestorePosition();
 			}
 		}
 
@@ -145,13 +163,17 @@ namespace Netboot.Network.Packet
 		{
 			get
 			{
-				Buffer.Position = 10;
-				return Read_UINT16();
+				SetPosition(16);
+				var result = Read_UINT16();
+				RestorePosition();
+
+				return result;
 			}
 			set
 			{
-				Buffer.Position = 10;
+				SetPosition(16);
 				Write_UINT16(value);
+				RestorePosition();
 			}
 		}
 
@@ -159,13 +181,17 @@ namespace Netboot.Network.Packet
 		{
 			get
 			{
-				Buffer.Position = 12;
-				return Read_IPAddress();
+				SetPosition(12);
+				var result = Read_IPAddress();
+				RestorePosition();
+
+				return result;
 			}
 			set
 			{
-				Buffer.Position = 12;
+				SetPosition(12);
 				Write_IPAddress(value);
+				RestorePosition();
 			}
 		}
 
@@ -173,13 +199,17 @@ namespace Netboot.Network.Packet
 		{
 			get
 			{
-				Buffer.Position = 16;
-				return Read_IPAddress();
+				SetPosition(16);
+				var result = Read_IPAddress();
+				RestorePosition();
+
+				return result;
 			}
 			set
 			{
-				Buffer.Position = 16;
+				SetPosition(16);
 				Write_IPAddress(value);
+				RestorePosition();
 			}
 		}
 
@@ -187,13 +217,17 @@ namespace Netboot.Network.Packet
 		{
 			get
 			{
-				Buffer.Position = 20;
-				return Read_IPAddress();
+				SetPosition(20);
+				var result = Read_IPAddress();
+				RestorePosition();
+
+				return result;
 			}
 			set
 			{
-				Buffer.Position = 20;
+				SetPosition(20);
 				Write_IPAddress(value);
+				RestorePosition();
 			}
 		}
 
@@ -201,13 +235,17 @@ namespace Netboot.Network.Packet
 		{
 			get
 			{
-				Buffer.Position = 24;
-				return Read_IPAddress();
+				SetPosition(24);
+				var result = Read_IPAddress();
+				RestorePosition();
+
+				return result;
 			}
 			set
 			{
-				Buffer.Position = 24;
+				SetPosition(24);
 				Write_IPAddress(value);
+				RestorePosition();
 			}
 		}
 
@@ -215,25 +253,20 @@ namespace Netboot.Network.Packet
 		{
 			get
 			{
-				var curPOS = Buffer.Position;
-				var mac = new byte[HardwareLength];
-				Buffer.Position = 28;
-				Buffer.Read(mac, 0, mac.Length);
-				Buffer.Position = curPOS;
+				SetPosition(28);
+				var mac = Read_Bytes(HardwareLength);
+				RestorePosition();
 
 				return mac;
 			}
 			set
 			{
-				var curPOS = Buffer.Position;
-
 				var mac = new byte[16];
 				Array.Copy(value, 0, mac, 0, value.Length);
 
-				Buffer.Position = 28;
+				SetPosition(28);
 				Write_Bytes(mac);
-
-				Buffer.Position = curPOS;
+				RestorePosition();
 			}
 		}
 
@@ -241,24 +274,22 @@ namespace Netboot.Network.Packet
 		{
 			get
 			{
-				var curPOS = Buffer.Position;
-				Buffer.Position = 44;
+				SetPosition(44);
 				var result = Encoding.ASCII.GetString(Read_Bytes(64));
-				Buffer.Position = curPOS;
+				RestorePosition();
 
 				return result;
 			}
 			set
 			{
-				var curPos = Buffer.Position;
+
 				var serverName = Encoding.ASCII.GetBytes(value);
 				var bytes = new byte[64];
 				Array.Copy(serverName, 0, bytes, 0, serverName.Length);
 
-				Buffer.Position = 44;
+				SetPosition(44);
 				Write_Bytes(bytes);
-
-				Buffer.Position = curPos;
+				RestorePosition();
 			}
 		}
 
@@ -266,24 +297,22 @@ namespace Netboot.Network.Packet
 		{
 			get
 			{
-				var curPOS = Buffer.Position;
-
-				Buffer.Position = 108;
+				SetPosition(108);
 				var result = Encoding.ASCII.GetString(Read_Bytes(128));
-				Buffer.Position = curPOS;
+				RestorePosition();
 
 				return result;
 			}
 			set
 			{
-				var curPos = Buffer.Position;
+
 				var fileName = Encoding.ASCII.GetBytes(value);
 				var bytes = new byte[128];
 				Array.Copy(fileName, 0, bytes, 0, fileName.Length);
 
-				Buffer.Position = 108;
+				SetPosition(108);
 				Write_Bytes(fileName);
-				Buffer.Position = curPos;
+				RestorePosition();
 			}
 		}
 
@@ -360,8 +389,8 @@ namespace Netboot.Network.Packet
 			DHCPPacket packet = null;
 			var msgType = (DHCPMessageType)GetOption((byte)DHCPOptions.DHCPMessageType).Data[0];
 
-			var expectedLength = BinaryPrimitives.ReadUInt16LittleEndian
-				(GetOption((byte)DHCPOptions.MaximumDHCPMessageSize).Data);
+			var expectedLength = HasOption((byte)DHCPOptions.MaximumDHCPMessageSize) ? BinaryPrimitives.ReadUInt16LittleEndian
+				(GetOption((byte)DHCPOptions.MaximumDHCPMessageSize).Data) : 0;
 
 			switch (BootpOPCode)
 			{
@@ -421,7 +450,7 @@ namespace Netboot.Network.Packet
 					var opt97 = GetOption((byte)DHCPOptions.GUID);
 					if (opt97 != null)
 						packet.AddOption(opt97);
-					
+
 					break;
 				case BOOTPOPCode.BootReply:
 					packet = new DHCPPacket(ServiceType, expectedLength);
@@ -445,7 +474,7 @@ namespace Netboot.Network.Packet
 			Options.OrderBy(key => key.Key);
 
 			if (!Options.ContainsKey(byte.MaxValue))
-				AddOption(new (byte.MaxValue));
+				AddOption(new(byte.MaxValue));
 
 			var length = 0;
 

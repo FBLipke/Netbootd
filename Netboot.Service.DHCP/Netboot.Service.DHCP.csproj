@@ -11,8 +11,11 @@
 
   <ItemGroup>
     <Compile Include="Netboot\Network\Client\DHCPClient.cs" />
+    <Compile Include="Netboot\Network\Client\RBCP\RBCPClient.cs" />
     <Compile Include="Netboot\Network\Client\RBCP\BootMenueEntry.cs" />
-    <Compile Include="Netboot\Network\Client\RBCP\Functions.cs" />
+    <Compile Include="Netboot\Network\Definitions\Functions.cs" />
+    <Compile Include="Netboot\Network\Client\WDS\WDSClient.cs" />
+    <Compile Include="Netboot\Network\Definitions\BootServer.cs" />
     <Compile Include="Netboot\Network\Definitions\Definitions.cs" />
     <Compile Include="Netboot\Network\Definitions\DHCPOption.cs" />
     <Compile Include="Netboot\Network\Packet\DHCPPacket.cs" />

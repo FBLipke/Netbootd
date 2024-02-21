@@ -1,18 +1,32 @@
-﻿using Netboot.Common;
+﻿/*
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+using Netboot.Common;
 using Netboot.Network.Client;
 using Netboot.Network.Definitions;
 using Netboot.Network.EventHandler;
-using Netboot.Network.Interfaces;
 using Netboot.Network.Packet;
 using Netboot.Services.Interfaces;
 using System.Buffers.Binary;
 using System.Net;
+using System.Text;
 using System.Xml;
+using YamlDotNet.Serialization;
 using static Netboot.Services.Interfaces.IService;
 
 namespace Netboot.Services.DHCP
 {
-	public class DHCPService : IService
+    public class DHCPService : IService
 	{
 		public DHCPService(string serviceType)
 		{
@@ -24,6 +38,8 @@ namespace Netboot.Services.DHCP
 		public List<ushort> Ports { get; set; } = [];
 
 		public string ServiceType { get; }
+
+		public BootServerTypes BootServerType { get; private set; }
 
 		public Dictionary<string, DHCPClient> Clients { get; set; } = [];
 
@@ -67,7 +83,7 @@ namespace Netboot.Services.DHCP
 							Thread.Sleep(10);
 							switch ((DHCPMessageType)requestPacket.GetOption((byte)DHCPOptions.DHCPMessageType).Data[0])
 							{
-								
+
 								case DHCPMessageType.Discover:
 									Clients[clientid].RemoteEntpoint.Address = IPAddress.Broadcast;
 									Handle_DHCP_Discover(e.ServerId, e.SocketId, clientid, requestPacket);
@@ -105,12 +121,15 @@ namespace Netboot.Services.DHCP
 		{
 			var ports = xmlConfigNode.Attributes.GetNamedItem("port").Value.Split(',').ToList();
 			if (ports.Count > 0)
-			{
 				Ports.AddRange(from port in ports
-					select ushort.Parse(port.Trim()));
-			}
+							   select ushort.Parse(port.Trim()));
 
-			bootServers.Add(new BootServer(Environment.MachineName));
+			BootServerType = (BootServerTypes)ushort.Parse(xmlConfigNode.Attributes.GetNamedItem("behavior").Value);
+
+			Console.WriteLine($"Behavior set to: {BootServerType}");
+
+
+			bootServers.Add(new BootServer(Environment.MachineName, BootServerType));
 
 			AddServer?.Invoke(this, new(ServiceType, Ports));
 			return true;
@@ -161,7 +180,7 @@ namespace Netboot.Services.DHCP
 						Clients[client].RBCP.Item = BinaryPrimitives.ReadUInt16BigEndian(itemType);
 
 						var itemLayer = new byte[sizeof(ushort)];
-						Array.Copy(option.Data,2, itemLayer, 0, itemLayer.Length);
+						Array.Copy(option.Data, 2, itemLayer, 0, itemLayer.Length);
 						Clients[client].RBCP.Layer = BinaryPrimitives.ReadUInt16BigEndian(itemLayer);
 
 						Console.WriteLine("PXE Item: {0}", Clients[client].RBCP.Item);
@@ -190,14 +209,14 @@ namespace Netboot.Services.DHCP
 			var serverIP = NetbootBase.Servers[server].Get_IPAddress(socket);
 			var response = packet.CreateResponse(serverIP);
 
-			response.FileName = "OSChooser\\i386\\startrom.n12";
+			response.FileName = GetBootfile();
 
 			Handle_RBCP_Request(client, packet);
 			var vendorOptions = new List<DHCPOption>
 			{
-				Functions.GenerateBootServersList(bootServers),
-				Functions.GenerateBootMenue(bootServers),
-				Functions.GenerateBootMenuePrompt(),
+                Network.Definitions.Functions.GenerateBootServersList(bootServers),
+                Network.Definitions.Functions.GenerateBootMenue(bootServers),
+                Network.Definitions.Functions.GenerateBootMenuePrompt(),
 				new DHCPOption(6,3)
 			};
 
@@ -211,7 +230,7 @@ namespace Netboot.Services.DHCP
 		{
 			#region "Ensure that we respond only to DHCP requests which are for us!"
 			var serverIP = NetbootBase.Servers[server].Get_IPAddress(socket);
-			
+
 			if (packet.Options.ContainsKey((byte)DHCPOptions.ServerIdentifier))
 			{
 				var serverIdent = new IPAddress(packet.Options[(byte)DHCPOptions.ServerIdentifier].Data);
@@ -221,7 +240,7 @@ namespace Netboot.Services.DHCP
 			#endregion
 
 			var response = packet.CreateResponse(serverIP);
-				Handle_RBCP_Request(client, packet);
+			Handle_RBCP_Request(client, packet);
 
 			var layer = 0;
 
@@ -237,13 +256,75 @@ namespace Netboot.Services.DHCP
 				}
 			}
 
-			response.FileName = "OSChooser\\i386\\startrom.n12";
+			response.FileName = GetBootfile();
+
+			switch (BootServerType)
+			{
+				case BootServerTypes.MicrosoftWindowsNT:
+					response.AddOption(new DHCPOption(251, "Boot/x86/ris/oschoice.exe", Encoding.ASCII));
+					response.AddOption(new DHCPOption(254, "Boot/x86/ris/boot.ini", Encoding.ASCII));
+					break;
+				case BootServerTypes.Linux:
+					response.AddOption(new DHCPOption(210, "/linux", Encoding.ASCII));
+					break;
+				default:
+					break;
+			}
 
 			response.CommitOptions();
 			ServerSendPacket.Invoke(this, new(ServiceType, server, socket, response, Clients[client]));
 
 			if (Clients.ContainsKey(client))
 				Clients.Remove(client);
+		}
+
+		private string GetBootfile()
+		{
+			var bFile = string.Empty;
+
+			switch (BootServerType)
+			{
+				case BootServerTypes.PXEBootstrapServer:
+					bFile = "Boot/x86/bstrap.0";
+					break;
+				case BootServerTypes.MicrosoftWindowsNT:
+					bFile = "OSChooser\\i386\\startrom.n12";
+					break;
+				case BootServerTypes.IntelLCM:
+					break;
+				case BootServerTypes.DOSUNDI:
+					break;
+				case BootServerTypes.NECESMPRO:
+					break;
+				case BootServerTypes.IBMWSoD:
+					break;
+				case BootServerTypes.IBMLCCM:
+					break;
+				case BootServerTypes.CAUnicenterTNG:
+					break;
+				case BootServerTypes.HPOpenView:
+					break;
+				case BootServerTypes.Reserved:
+					break;
+				case BootServerTypes.Vendor:
+					break;
+				case BootServerTypes.Linux:
+					bFile = "Boot/x86/pxelinux.0";
+					break;
+				case BootServerTypes.BISConfig:
+					bFile = "Boot/x86/bisconfig";
+					break;
+				case BootServerTypes.WindowsDeploymentServer:
+					bFile = "Boot\\x86\\wdsnbp.com";
+					break;
+				case BootServerTypes.ApiTest:
+					bFile = "Boot/x86/apitest.0";
+					break;
+				default:
+					break;
+			}
+
+			return bFile;
 		}
 
 		public void Heartbeat()

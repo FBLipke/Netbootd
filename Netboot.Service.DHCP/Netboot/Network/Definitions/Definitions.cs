@@ -1,5 +1,15 @@
-﻿using Netboot.Common;
-using System.Net;
+﻿/*
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
 
 namespace Netboot.Network.Definitions
 {
@@ -27,6 +37,25 @@ namespace Netboot.Network.Definitions
 		DHCP = 1666417251,
 	}
 
+	public enum BootServerTypes : ushort
+	{
+		PXEBootstrapServer = 0,
+		MicrosoftWindowsNT = 1,
+		IntelLCM = 2,
+		DOSUNDI = 3,
+		NECESMPRO = 4,
+		IBMWSoD = 5,
+		IBMLCCM = 6,
+		CAUnicenterTNG = 7,
+		HPOpenView = 8,
+		Reserved = 9,
+		Vendor = 32768,
+		Linux = ushort.MaxValue - 3,
+		BISConfig = ushort.MaxValue - 2,
+		WindowsDeploymentServer = ushort.MaxValue - 1,
+		ApiTest = ushort.MaxValue
+	}
+
 	public enum PXEVendorID : byte
 	{
 		None,
@@ -50,56 +79,26 @@ namespace Netboot.Network.Definitions
 		MenuPrompt = 10,
 		MulticastAddressAllocation = 11,
 		CredentialTypes = 12,
+		NetworkCardPath = 64,
+		ManInfo = 65,
+		OSInformation = 66,
+		BootOSInfo = 67,
+		PromptInfo = 68,
+		OSInformation2 = 69,
+		BootOSInfo2 = 70,
 		BootItem = 71,
-		End = byte.MaxValue
-	}
 
-	public class BootServer
-	{
-		public List<IPAddress> Addresses
-		{
-			get; private set;
-		}
-
-		public string Hostname{ get; private set; }
+		#region "LCM Options"
+		LCMServer = 179,
+		LCMDomain = 180,
+		LCMNicOptions = 181,
+		LCMWorkGroup = 190,
+		LCMDiscovery = 191,
+		LCMConfigured = 192,
+		LCMVersion = 193,
+		#endregion
 		
-		public ushort Type { get; private set; }
-
-		public BootServer(string hostname, BootServerTypes type = BootServerTypes.MicrosoftWindowsNT)
-		{
-			Type = (ushort)type;
-			Hostname = hostname;
-
-			Addresses = Functions.DNSLookup(Environment.MachineName)
-				.Where(a => a.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork).ToList();
-		}
-
-		public enum BootServerTypes : ushort
-		{
-			PXEBootstrapServer = 0,
-			MicrosoftWindowsNT = 1,
-			IntelLCM = 2,
-			DOSUNDI = 3,
-			NECESMPRO = 4,
-			IBMWSoD = 5,
-			IBMLCCM = 6,
-			CAUnicenterTNG = 7,
-			HPOpenView = 8,
-			Reserved = 9,
-			Vendor = 32768,
-			ApiTest = ushort.MaxValue
-		}
-
-		public BootServer(IPAddress addr, BootServerTypes bootServerType = BootServerTypes.PXEBootstrapServer)
-		{
-			Hostname = addr.ToString();
-			Type = (ushort)bootServerType;
-
-			Addresses = new List<IPAddress>
-			{
-				addr
-			};
-		}
+		End = byte.MaxValue
 	}
 
 	public enum DHCPMessageType
@@ -208,6 +207,9 @@ namespace Netboot.Network.Definitions
 		StreetTalkServer = 75,
 		STDAServer = 76,
 		UserClass = 77,
+		ClientIdGUID = 85,
+		SystemArchitecture = 90,
+		NeworkSpecifier = 91,
 		Architecture = 93,
 		ClientInterfaceIdent = 94,
 		GUID = 97,
@@ -220,25 +222,124 @@ namespace Netboot.Network.Definitions
 		RebootTime = 211,
 		#endregion
 
-		#region "Windows Deployment Server"
+		#region "Microsoft WDS / RIS (2003)"
 		WDSNBP = 250,
+		NTLDRLoaderPath = 251,
 		BCDPath = 252,
+		BootIni = 253,
+		BootIniPath = 254,
 		#endregion
 
 		End = byte.MaxValue
 	}
 
+	public enum NicSpecType
+	{
+		UNDI = 1,
+		Pci,
+		PNP
+	}
+
 	public enum Architecture : ushort
 	{
-		x86PC = 0,
-		NECPC98 = 1,
-		EFIItanium = 2,
-		DECAlpha = 3,
-		Arcx86 = 4,
-		IntelLeanClient = 5,
-		EFI_IA32 = 6,
-		EFIByteCode = 7,
-		EFI_xScale = 8,
-		EFI_x8664 = 9
+		X86PC = 0,
+		NECPC98,
+		EFIItanium,
+		DECAlpha,
+		Arcx86,
+		IntelLeanClient,
+		EFI_IA32,
+		EFIByteCode,
+		EFI_xScale,
+		EFI_x8664,
+		ARM32_EFI,
+		ARM64_EFI,
+		PowerPCOpenFW,
+		PowerPCePAPR,
+		PowerOpalV3,
+		X86EfiHttp,
+		X64EfiHttp,
+		EfiHttp,
+		Arm32EfiHttp,
+		Arm64EfiHttp,
+		PCBiosHttp,
+		Arm32Uboot,
+		Arm64UBoot,
+		Arm32UbootHttp,
+		Arm64UbootHttp,
+		RiscV32EFi,
+		RiscV32EFiHttp,
+		RiscV64EFi,
+		RiscV64EFiHttp,
+		RiscV128Efi,
+		RiscV128EfiHttp,
+		S390Basic,
+		S390Extended,
+		MIPS32Efi,
+		MIPS64Efi,
+		SunWay32Efi,
+		SunWay64Efi,
+		LoongArch32Efi,
+		LoongArch32EfiHttp,
+		LoongArch64Efi,
+		LoongArch64EfiHttp,
+		ArmRPIBoot
+	}
+
+	/// <summary>
+	/// Options used by the Windows Deployment Server NBP
+	/// </summary>
+	public enum WDSNBPOptions
+	{
+		Unknown = 0,
+		Architecture = 1,
+		NextAction = 2,
+		PollInterval = 3,
+		PollRetryCount = 4,
+		RequestID = 5,
+		Message = 6,
+		VersionQuery = 7,
+		ServerVersion = 8,
+		ReferralServer = 9,
+		PXEClientPrompt = 11,
+		PxePromptDone = 12,
+		NBPVersion = 13,
+		ActionDone = 14,
+		AllowServerSelection = 15,
+		ServerFeatures = 16,
+
+		End = byte.MaxValue
+	}
+
+	/// <summary>
+	/// Options used by the PXEClientPrompt and PXEPromptDone
+	/// </summary>
+	public enum PXEPromptOptionValues
+	{
+		Unknown,
+		OptIn,
+		NoPrompt,
+		OptOut
+	}
+
+	/// <summary>
+	/// Options used by the WDSNBPOptions.NBPVersion
+	/// </summary>
+	public enum NBPVersionValues
+	{
+		Seven = 0x0700,
+		Eight = 0x0800,
+		Unknown = ushort.MinValue
+	}
+
+	/// <summary>
+	/// Options used by the WDSNBPOptions.NextAction
+	/// </summary>
+	public enum NextActionOptionValues : int
+	{
+		Drop = 0,
+		Approval = 1,
+		Referral = 3,
+		Abort = 5
 	}
 }
