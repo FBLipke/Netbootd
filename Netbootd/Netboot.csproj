@@ -40,6 +40,12 @@
     <None Update="TFTPRoot\Boot\x86\wdsnbp.com">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="TFTPRoot\linux\ldlinux.c32">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="TFTPRoot\linux\memdisk">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
   <ItemGroup>

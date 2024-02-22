@@ -129,7 +129,7 @@ namespace Netboot.Network.Definitions
         {
             var timeout = Convert.ToByte(byte.MaxValue);
             var prompt = Encoding.ASCII.GetBytes("Select Server...");
-            var promptbuffer = new byte[1 + prompt.Length];
+            var promptbuffer = new byte[1 + prompt.Length + 1];
             var offset = 0;
 
             promptbuffer[offset] = timeout;

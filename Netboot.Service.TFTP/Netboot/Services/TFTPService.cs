@@ -51,18 +51,14 @@ namespace Netboot.Service.TFTP
 
 		void AddClient(string clientId, string serviceType, IPEndPoint remoteEndpoint, Guid serverId, Guid socketId)
 		{
-			if (!Clients.ContainsKey(clientId))
+			if (!Clients.TryGetValue(clientId, out TFTPClient? value))
 				Clients.Add(clientId, new(clientId, serviceType, remoteEndpoint, serverId, socketId));
 			else
-			{
-				Clients[clientId].RemoteEntpoint = remoteEndpoint;
-			}
+				value.RemoteEntpoint = remoteEndpoint;
 		}
 
 		public void Handle_DataReceived(object sender, DataReceivedEventArgs e)
 		{
-
-
 			var clientid = e.RemoteEndpoint.Address.ToString();
 			AddClient(clientid, e.ServiceType, e.RemoteEndpoint, e.ServerId, e.SocketId);
 
@@ -111,7 +107,6 @@ namespace Netboot.Service.TFTP
 			}
 			else
 			{
-
 				if (packet.Options.ContainsKey("blksize"))
 					Clients[client].BlockSize = ushort.Parse(packet.Options["blksize"]);
 
@@ -157,7 +152,7 @@ namespace Netboot.Service.TFTP
 			if (ports.Count > 0)
 			{
 				Ports.AddRange(from port in ports
-							   select ushort.Parse(port.Trim()));
+					select ushort.Parse(port.Trim()));
 			}
 
 			AddServer?.Invoke(this, new(ServiceType, Ports));

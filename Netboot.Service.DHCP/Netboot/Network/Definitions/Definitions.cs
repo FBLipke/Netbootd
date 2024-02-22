@@ -126,7 +126,7 @@ namespace Netboot.Network.Definitions
 	public enum BOOTPOPCode : byte
 	{
 		BootRequest = 1,
-		BootReply = 2
+		BootReply
 	}
 
 	public enum DHCPOptions : byte
@@ -323,7 +323,7 @@ namespace Netboot.Network.Definitions
 	}
 
 	/// <summary>
-	/// Options used by the WDSNBPOptions.NBPVersion
+	/// Options used by the NBPVersion
 	/// </summary>
 	public enum NBPVersionValues
 	{

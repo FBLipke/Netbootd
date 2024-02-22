@@ -26,7 +26,7 @@ using static Netboot.Services.Interfaces.IService;
 
 namespace Netboot.Services.DHCP
 {
-    public class DHCPService : IService
+	public class DHCPService : IService
 	{
 		public DHCPService(string serviceType)
 		{
@@ -58,9 +58,7 @@ namespace Netboot.Services.DHCP
 		{
 			var client = new DHCPClient(clientId, serviceType, remoteEndpoint, serverId, socketId);
 
-			if (!Clients.ContainsKey(clientId))
-				Clients.Add(clientId, client);
-			else
+			if (!Clients.TryAdd(clientId, client))
 				Clients[clientId] = client;
 		}
 
@@ -213,11 +211,11 @@ namespace Netboot.Services.DHCP
 
 			Handle_RBCP_Request(client, packet);
 			var vendorOptions = new List<DHCPOption>
-			{
-                Network.Definitions.Functions.GenerateBootServersList(bootServers),
-                Network.Definitions.Functions.GenerateBootMenue(bootServers),
-                Network.Definitions.Functions.GenerateBootMenuePrompt(),
-				new DHCPOption(6,3)
+			{Network.Definitions.Functions.GenerateBootMenuePrompt(),
+				Network.Definitions.Functions.GenerateBootServersList(bootServers),
+				Network.Definitions.Functions.GenerateBootMenue(bootServers),
+
+				new DHCPOption(6,(byte)3)
 			};
 
 			response.AddOption(new DHCPOption(43, vendorOptions));
