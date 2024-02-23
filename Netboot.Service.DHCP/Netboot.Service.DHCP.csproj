@@ -21,6 +21,7 @@
     <Compile Include="Netboot\Network\Packet\DHCPPacket.cs" />
     <Compile Include="Netboot\Services\DHCPService.cs" />
     <Compile Include="Netboot\Services\EventHandler\DHCPServiceBehaviorEventargs.cs" />
+    <Compile Include="Netboot\Services\UpdateBootfileEventargs.cs" />
   </ItemGroup>
 
   <ItemGroup>

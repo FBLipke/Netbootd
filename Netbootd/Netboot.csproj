@@ -28,6 +28,9 @@
     <None Update="TFTPRoot\Boot\x86\default.bcd">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="TFTPRoot\Boot\x86\dosundi.0">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="TFTPRoot\Boot\x86\pxeboot.n12">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -59,6 +62,9 @@
     <None Include="Dumps\dupp.pcap" />
     <None Include="Dumps\NEG_NTLMSSP.bin" />
     <None Include="TFTPRoot\Boot\x86\default" />
+    <None Include="TFTPRoot\Boot\x86\dosundi.1">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="TFTPRoot\OSChooser\english\00004e22.osc" />
     <None Include="TFTPRoot\OSChooser\english\00004e23.osc" />
     <None Include="TFTPRoot\OSChooser\english\00004e24.osc" />

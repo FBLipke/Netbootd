@@ -46,7 +46,7 @@ namespace Netboot.Network.Server
 		public void Add(IPEndPoint endPoint)
 		{
 			var socketID = Guid.NewGuid();
-			var socket = new BaseSocket(ServerId, socketID, ServiceType, endPoint);
+			var socket = new BaseSocket(ServerId, socketID, ServiceType, endPoint,true);
 
 			socket.DataSent += (sender, e) =>
 			{

@@ -2,12 +2,12 @@
 <Netboot>
 	<Configuration>
 		<Services>
-			<Service type="dhcp" port="67,4011" behavior="65532" timeout="30" >
+			<Service type="dhcp" port="67,4011" behavior="3" timeout="30" delay="10">
 				<DHCP behavior="65532">
 					<Option type="3" id ="251" value="" />
 				</DHCP>
 			</Service>
-			<Service type="binl" port="44776" />
+			<Service type="binl" port="44776,1638" />
 			<Service type="tftp" port="69" />
 		</Services>
 	</Configuration>

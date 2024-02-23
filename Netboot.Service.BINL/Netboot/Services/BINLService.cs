@@ -46,6 +46,10 @@ namespace Netboot.Service.BINL
 
 		public void Dispose()
 		{
+			foreach (var client in Clients.Values)
+				client.Dispose();
+
+			Ports.Clear();
 		}
 
 		public void Handle_RQU_Request(Guid server, Guid socket, string client, BINLPacket packet)

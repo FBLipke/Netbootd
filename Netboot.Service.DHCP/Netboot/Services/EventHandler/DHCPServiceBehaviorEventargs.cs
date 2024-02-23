@@ -21,10 +21,13 @@ namespace Netboot.Services.DHCP
 
 		public byte MenueTimeout { get; private set; }
 
-		public DHCPServiceBehaviorEventargs(BootServerTypes bootServerType, byte timeout)
+		public byte RespondDelay { get; private set; }
+
+		public DHCPServiceBehaviorEventargs(BootServerTypes bootServerType, byte timeout, byte respondDelay)
 		{
 			BootServerType = bootServerType;
 			MenueTimeout = timeout;
+			RespondDelay = respondDelay;
 		}
 	}
 }

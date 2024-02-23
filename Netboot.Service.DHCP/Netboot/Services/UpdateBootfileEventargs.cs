@@ -11,30 +11,21 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Netboot.Network.Packet;
-using System.Net;
-
-namespace Netboot.Network.Client
+namespace Netboot.Services.DHCP
 {
-	public partial class DHCPClient : BaseClient
+
+	public class UpdateBootfileEventargs
 	{
-		public DHCPClient(string clientId, string serviceType, IPEndPoint remoteEndpoint, Guid serverid, Guid socketId)
-			: base(clientId, serviceType, remoteEndpoint, serverid, socketId)
-		{
-			RBCP = new RBCPClient();
-			WDS = new WDSClient();
-		}
+		public string Bootfile { get; private set; }
 
-		public RBCPClient RBCP { get; private set; }
+		public string Client { get; private set; }
 
-		public WDSClient WDS { get; private set; }
+		public ushort Layer { get; private set; }
 
-		public DHCPPacket Response { get; set; }
-
-		public override void Dispose()
-		{
-			Response.Dispose();
-			base.Dispose();
+		public UpdateBootfileEventargs(string bootfile, ushort layer, string client) {
+			Bootfile = bootfile;
+			Layer = layer;
+			Client = client;
 		}
 	}
 }

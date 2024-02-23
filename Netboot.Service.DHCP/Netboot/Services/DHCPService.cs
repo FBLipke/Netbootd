@@ -14,6 +14,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 using Netboot.Network.Client;
 using Netboot.Network.Definitions;
 using Netboot.Network.EventHandler;
+using Netboot.Network.Interfaces;
 using Netboot.Network.Packet;
 using Netboot.Services.Interfaces;
 using System.Buffers.Binary;
@@ -29,10 +30,14 @@ namespace Netboot.Services.DHCP
 		public delegate void DHCPServiceBehaviorEventHandler(object sender, DHCPServiceBehaviorEventargs e);
 		public event DHCPServiceBehaviorEventHandler DHCPServiceBehavior;
 
+		public delegate void UpdateBootfileEventHandler(object sender, UpdateBootfileEventargs e);
+		public event UpdateBootfileEventHandler UpdateBootfile;
+
 		public DHCPService(string serviceType)
 		{
 			ServiceType = serviceType;
 
+			#region "ServiceBehavior"
 			DHCPServiceBehavior += (sender, e) =>
 			{
 				BootServerType = e.BootServerType;
@@ -45,8 +50,15 @@ namespace Netboot.Services.DHCP
 					value.Type = e.BootServerType;
 
 				MenueTimeout = e.MenueTimeout;
+				RespondDelay = e.RespondDelay;
 
 				Console.WriteLine($"Bootserver behavior set to: {BootServerType}");
+			};
+			#endregion
+
+			UpdateBootfile += (sender, e) => {
+				Console.WriteLine("Bootfile changes to: {0}", e.Bootfile);
+				Clients[e.Client].Response.FileName = e.Bootfile;
 			};
 		}
 
@@ -59,6 +71,8 @@ namespace Netboot.Services.DHCP
 		public BootServerTypes BootServerType { get; private set; }
 
 		public byte MenueTimeout { get; private set; } = byte.MaxValue;
+
+		public byte RespondDelay { get; private set; } = 1;
 
 		public Dictionary<string, DHCPClient> Clients { get; set; } = [];
 
@@ -84,6 +98,8 @@ namespace Netboot.Services.DHCP
 		public void Handle_DataReceived(object sender, DataReceivedEventArgs e)
 		{
 			var requestPacket = new DHCPPacket(e.ServiceType, e.Packet);
+			
+			Thread.Sleep(RespondDelay);
 
 			switch (requestPacket.GetVendorIdent)
 			{
@@ -97,24 +113,23 @@ namespace Netboot.Services.DHCP
 					switch (requestPacket.BootpOPCode)
 					{
 						case BOOTPOPCode.BootRequest:
-							Thread.Sleep(10);
 							switch ((DHCPMessageType)requestPacket.GetOption((byte)DHCPOptions.DHCPMessageType).Data[0])
 							{
-
 								case DHCPMessageType.Discover:
 									Clients[clientid].RemoteEntpoint.Address = IPAddress.Broadcast;
 									Handle_DHCP_Discover(e.ServerId, e.SocketId, clientid, requestPacket);
 									break;
 								case DHCPMessageType.Request:
 									Handle_DHCP_Request(e.ServerId, e.SocketId, clientid, requestPacket);
+									if (Clients.ContainsKey(clientid))
+										Clients.Remove(clientid);
 									break;
 								case DHCPMessageType.Inform:
 									break;
 								case DHCPMessageType.Release:
+								default:
 									if (Clients.ContainsKey(clientid))
 										Clients.Remove(clientid);
-									break;
-								default:
 									break;
 							}
 							break;
@@ -143,8 +158,9 @@ namespace Netboot.Services.DHCP
 
 			var bservType = (BootServerTypes)ushort.Parse(xmlConfigNode.Attributes.GetNamedItem("behavior").Value);
 			var menueTimeout = byte.Parse(xmlConfigNode.Attributes.GetNamedItem("timeout").Value);
-			
-			DHCPServiceBehavior.Invoke(this, new(bservType, menueTimeout));
+			var respondDelay = byte.Parse(xmlConfigNode.Attributes.GetNamedItem("delay").Value);
+
+			DHCPServiceBehavior.Invoke(this, new(bservType, menueTimeout, respondDelay));
 
 			AddServer?.Invoke(this, new(ServiceType, Ports));
 			return true;
@@ -160,7 +176,7 @@ namespace Netboot.Services.DHCP
 
 		private void Handle_RBCP_Request(string client, DHCPPacket request)
 		{
-			var venEncOpts = request.GetEncOptions(43);
+			var venEncOpts = request.GetEncOptions((byte)DHCPOptions.VendorSpecificInformation);
 			foreach (var option in venEncOpts)
 			{
 				switch ((PXEVendorEncOptions)option.Option)
@@ -211,7 +227,6 @@ namespace Netboot.Services.DHCP
 						}
 						break;
 					case PXEVendorEncOptions.End:
-						break;
 					default:
 						break;
 				}
@@ -221,13 +236,15 @@ namespace Netboot.Services.DHCP
 		private void Handle_DHCP_Discover(Guid server, Guid socket, string client, DHCPPacket packet)
 		{
 			var serverIP = NetbootBase.Servers[server].Get_IPAddress(socket);
-			var response = packet.CreateResponse(serverIP);
-
-			response.FileName = GetBootfile();
+			Clients[client].Response = packet.CreateResponse(serverIP);
+			UpdateBootfile?.Invoke(server, new(GetBootfile(client), 0, client));
 
 			Handle_RBCP_Request(client, packet);
+
+
 			var vendorOptions = new List<DHCPOption>
 			{
+				new DHCPOption(1, IPAddress.Parse("224.0.1.2")),
 				Functions.GenerateBootMenuePrompt(MenueTimeout),
 				Functions.GenerateBootServersList(bootServers),
 				Functions.GenerateBootMenue(bootServers),
@@ -235,10 +252,10 @@ namespace Netboot.Services.DHCP
 				new((byte)PXEVendorEncOptions.DiscoveryControl, (byte)3)
 			};
 
-			response.AddOption(new(43, vendorOptions));
+			Clients[client].Response.AddOption(new(43, vendorOptions));
 
-			response.CommitOptions();
-			ServerSendPacket.Invoke(this, new(ServiceType, server, socket, response, Clients[client]));
+			Clients[client].Response.CommitOptions();
+			ServerSendPacket.Invoke(this, new(ServiceType, server, socket, Clients[client].Response, Clients[client]));
 		}
 
 		private void Handle_DHCP_Request(Guid server, Guid socket, string client, DHCPPacket packet)
@@ -254,39 +271,40 @@ namespace Netboot.Services.DHCP
 			}
 			#endregion
 
-			var response = packet.CreateResponse(serverIP);
+			Clients[client].Response = packet.CreateResponse(serverIP);
 			Handle_RBCP_Request(client, packet);
 
-			response.FileName = GetBootfile();
+			UpdateBootfile?.Invoke(server, new(GetBootfile(client), 0, client));
 
 			switch (BootServerType)
 			{
 				case BootServerTypes.MicrosoftWindowsNT:
-					response.AddOption(new (251, "Boot/x86/ris/oschoice.exe", Encoding.ASCII));
-					response.AddOption(new (254, "Boot/x86/ris/boot.ini", Encoding.ASCII));
+					Clients[client].Response.AddOption(new (251, "Boot/x86/ris/oschoice.exe", Encoding.ASCII));
+					Clients[client].Response.AddOption(new (254, "Boot/x86/ris/boot.ini", Encoding.ASCII));
 					break;
 				case BootServerTypes.Linux:
-					response.AddOption(new (210, "/linux", Encoding.ASCII));
+					Clients[client].Response.AddOption(new (210, "/linux", Encoding.ASCII));
 					break;
 				default:
 					break;
 			}
 
-			response.CommitOptions();
-			ServerSendPacket.Invoke(this, new(ServiceType, server, socket, response, Clients[client]));
+			Clients[client].Response.CommitOptions();
+			ServerSendPacket.Invoke(this, new(ServiceType, server, socket, Clients[client].Response, Clients[client]));
 
 			if (Clients.ContainsKey(client))
 				Clients.Remove(client);
 		}
 
-		private string GetBootfile()
+		private string GetBootfile(string client)
 		{
 			var bFile = string.Empty;
+			var layer = Clients[client].RBCP.Layer;
 
 			switch (BootServerType)
 			{
 				case BootServerTypes.PXEBootstrapServer:
-					bFile = "Boot/x86/bstrap.0";
+					bFile = $"Boot/x86/bstrap.{layer}";
 					break;
 				case BootServerTypes.MicrosoftWindowsNT:
 					bFile = "OSChooser\\i386\\startrom.n12";
@@ -294,6 +312,7 @@ namespace Netboot.Services.DHCP
 				case BootServerTypes.IntelLCM:
 					break;
 				case BootServerTypes.DOSUNDI:
+					bFile = $"Boot/x86/dosundi.{layer}";
 					break;
 				case BootServerTypes.NECESMPRO:
 					break;
@@ -313,13 +332,13 @@ namespace Netboot.Services.DHCP
 					bFile = "Boot/x86/pxelinux.0";
 					break;
 				case BootServerTypes.BISConfig:
-					bFile = "Boot/x86/bisconfig";
+					bFile = "Boot/x86/bisconfig.0";
 					break;
 				case BootServerTypes.WindowsDeploymentServer:
 					bFile = "Boot\\x86\\wdsnbp.com";
 					break;
 				case BootServerTypes.ApiTest:
-					bFile = "Boot/x86/apitest.0";
+					bFile = $"Boot/x86/apitest.{layer}";
 					break;
 				default:
 					break;

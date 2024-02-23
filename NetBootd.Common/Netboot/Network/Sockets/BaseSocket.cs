@@ -39,7 +39,9 @@ namespace Netboot.Network.Sockets
 		public bool Listening { get; private set; }
 		public int BufferLength { get; private set; }
 
-		public BaseSocket(Guid serverId, Guid socketId, string serviceType, IPEndPoint localep, int buffersize = ushort.MaxValue)
+		public bool Multicast { get; private set; }
+
+		public BaseSocket(Guid serverId, Guid socketId, string serviceType, IPEndPoint localep, bool multicast = false, int buffersize = ushort.MaxValue)
 		{
 			localendpoint = localep;
 			remoteendpoint = new IPEndPoint(IPAddress.Any, 0);
@@ -47,6 +49,7 @@ namespace Netboot.Network.Sockets
 			SocketId = socketId;
 			ServerId = serverId;
 			ServiceType = serviceType;
+			Multicast = multicast;
 
 			socketState = new SocketState
 			{
@@ -62,10 +65,18 @@ namespace Netboot.Network.Sockets
 		{
 			if (socketState == null)
 				return;
+
 			try
 			{
 				socketState.socket?.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
 				socketState.socket?.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.Broadcast, true);
+/*
+				if (Multicast)
+				{
+					socketState.socket?.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership,
+						new MulticastOption(IPAddress.Parse("224.0.1.2")));
+				}
+*/
 				socketState.socket?.Bind(localendpoint);
 
 				socketState.socket?.BeginReceiveFrom(socketState.buffer, 0, socketState.buffer.Length,
