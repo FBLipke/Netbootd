@@ -2,24 +2,13 @@
 <Netboot>
 	<Configuration>
 		<Services>
-			<Service type="dhcp" port="67,4011" behavior="65532" />
+			<Service type="dhcp" port="67,4011" behavior="65532" timeout="30" >
+				<DHCP behavior="65532">
+					<Option type="3" id ="251" value="" />
+				</DHCP>
+			</Service>
 			<Service type="binl" port="44776" />
 			<Service type="tftp" port="69" />
 		</Services>
-		<Bootservers>
-			<CurrentBootserver type ="1" />
-			<Bootserver type="0">
-				<Bootfiles>
-					<Bootfile arch="0">wdsnbp.com</Bootfile>
-					<Bootfile arch="9">wdsnbp.com</Bootfile>
-				</Bootfiles>
-			</Bootserver>
-			<Bootserver type="1">
-				<Bootfiles>
-					<Bootfile arch="0">startrom.n12</Bootfile>
-					<Bootfile arch="9">startrom.n12</Bootfile>
-				</Bootfiles>
-			</Bootserver>
-		</Bootservers>
 	</Configuration>
 </Netboot>

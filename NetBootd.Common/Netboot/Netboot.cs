@@ -99,9 +99,9 @@ namespace Netboot
 			{
 				var ass = Assembly.LoadFrom(module.FullName);
 				foreach (var (t, serviceType) in from t in ass.GetTypes()
-												 where (t.IsSubclassOf(typeof(IService)) || t.GetInterfaces().Contains(typeof(IService))) && t.IsAbstract == false
-												 let serviceType = module.Name.Split('.')[2].Trim().ToUpper()
-												 select (t, serviceType))
+					where (t.IsSubclassOf(typeof(IService)) || t.GetInterfaces().Contains(typeof(IService))) && t.IsAbstract == false
+						let serviceType = module.Name.Split('.')[2].Trim().ToUpper()
+							select (t, serviceType))
 				{
 					try
 					{
@@ -134,7 +134,6 @@ namespace Netboot
 			Services.Add(service.ServiceType, service);
 
 			Console.WriteLine($"[I] Added Service for '{service.ServiceType}'");
-
 		}
 
 		public bool Initialize()

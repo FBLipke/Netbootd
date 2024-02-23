@@ -37,8 +37,7 @@ namespace Netboot.Network.Server
 
 			var addresses = Functions.GetIPAddresses();
 			foreach (var (address, port) in from address in addresses
-											from port in ports
-											select (address, port))
+				from port in ports select (address, port))
 			{
 				Add(new(address, port));
 			}

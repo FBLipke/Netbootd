@@ -74,7 +74,7 @@ namespace Netboot.Network.Definitions
 		MulticastTFTPDelay = 5,
 		DiscoveryControl = 6,
 		DiscoveryMulticastAddress = 7,
-		BootServers = 8,
+		BootServer = 8,
 		BootMenue = 9,
 		MenuPrompt = 10,
 		MulticastAddressAllocation = 11,

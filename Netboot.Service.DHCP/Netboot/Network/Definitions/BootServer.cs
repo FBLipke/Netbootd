@@ -21,11 +21,11 @@ namespace Netboot.Network.Definitions
 
 		public string Hostname { get; private set; }
 
-		public ushort Type { get; private set; }
+		public BootServerTypes Type { get; set; }
 
 		public BootServer(string hostname, BootServerTypes bootServerType = BootServerTypes.MicrosoftWindowsNT)
 		{
-			Type = (ushort)bootServerType;
+			Type = bootServerType;
 			Hostname = hostname;
 
 			Addresses = Functions.DNSLookup(Environment.MachineName)
@@ -35,7 +35,7 @@ namespace Netboot.Network.Definitions
 		public BootServer(IPAddress addr, BootServerTypes bootServerType = BootServerTypes.PXEBootstrapServer)
 		{
 			Hostname = addr.ToString();
-			Type = (ushort)bootServerType;
+			Type = bootServerType;
 
 			Addresses =
 			[

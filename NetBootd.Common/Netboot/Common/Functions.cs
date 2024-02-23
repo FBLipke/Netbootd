@@ -43,7 +43,7 @@ namespace Netboot.Common
 			var ulChallenge = new uint[2];
 			var ulNegate = (uint)rand.Next();
 
-			for (int i = 0; i < ulChallenge.Length; i++)
+			for (var i = 0; i < ulChallenge.Length; i++)
 				ulChallenge[i] = (uint)rand.Next();
 
 			var x = ulNegate & 0x1;

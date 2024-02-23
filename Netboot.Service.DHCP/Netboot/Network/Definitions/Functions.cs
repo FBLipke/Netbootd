@@ -18,127 +18,128 @@ using System.Text;
 
 namespace Netboot.Network.Definitions
 {
-    public static partial class Functions
-    {
-        /// <summary>
-        /// Generate a Bootserver list...
-        /// Item Format: [Type(2)][IPCount(1)][LIST(IPADDR)]
-        /// </summary>
-        /// <param name="serverlist"></param>
-        /// <returns></returns>
-        public static DHCPOption GenerateBootServersList(List<BootServer> serverlist)
-        {
-            var ipBlock = 0;
-            #region "How many bytes does we need for the IPAdresses"
-            foreach (var server in serverlist)
-            {
-                var addresses = server.Addresses;
-                if (!addresses.Any() || string.IsNullOrEmpty(server.Hostname))
-                    continue;
+	public static partial class Functions
+	{
+		public static DHCPOption GenerateBootServersList(Dictionary<string, BootServer> serverlist)
+		{
+			var ipBlock = 0;
+			#region "How many bytes does we need for the IPAdresses"
+			foreach (var server in serverlist)
+			{
+				var addresses = server.Value.Addresses;
+				if (!addresses.Any() || string.IsNullOrEmpty(server.Value.Hostname))
+					continue;
 
-                var ipLength = server.Addresses.First().GetAddressBytes().Length;
+				var ipLength = server.Value.Addresses.First().GetAddressBytes().Length;
 
-                ipBlock += server.Addresses.Count;
-            }
-            #endregion
+				ipBlock += server.Value.Addresses.Count;
+			}
+			#endregion
 
-            var serverListBlock = new byte[sizeof(byte) + ipBlock * 4 + sizeof(ushort)];
-            var offset = 0;
+			var serverListBlock = new byte[sizeof(byte) + ipBlock * 4 + sizeof(ushort)];
+			var offset = 0;
 
-            foreach (var server in serverlist)
-            {
-                var addresses = server.Addresses;
-                if (!addresses.Any() || string.IsNullOrEmpty(server.Hostname))
-                    continue;
+			foreach (var server in serverlist)
+			{
+				var addresses = server.Value.Addresses;
+				if (!addresses.Any() || string.IsNullOrEmpty(server.Value.Hostname))
+					continue;
 
-                #region "Server Type"
-                var typeBytes = new byte[sizeof(ushort)];
-                BinaryPrimitives.WriteUInt16BigEndian(typeBytes, server.Type);
-                Array.Copy(typeBytes, 0, serverListBlock, offset, typeBytes.Length);
-                offset += typeBytes.Length;
-                #endregion
+				#region "Bootserver Type (Option)"
+				var typeBytes = new byte[sizeof(ushort)];
+				BinaryPrimitives.WriteUInt16BigEndian(typeBytes, (ushort)server.Value.Type);
+				Array.Copy(typeBytes, 0, serverListBlock, offset, typeBytes.Length);
+				offset += typeBytes.Length;
+				#endregion
 
-                #region "IPAddress count"
-                serverListBlock[offset] = Convert.ToByte(addresses.Count());
-                offset += sizeof(byte);
-                #endregion
+				#region "IPAddress count (Length)"
+				serverListBlock[offset] = Convert.ToByte(addresses.Count());
+				offset += sizeof(byte);
+				#endregion
 
-                #region "Addresses"
-                foreach (var addr in addresses)
-                {
-                    var addrBytes = addr.GetAddressBytes();
-                    Array.Copy(addrBytes, 0, serverListBlock, offset, addrBytes.Length);
-                    offset += addrBytes.Length;
-                }
-                #endregion
-            }
+				#region "Addresses"
+				foreach (var addr in addresses)
+				{
+					var addrBytes = addr.GetAddressBytes();
+					Array.Copy(addrBytes, 0, serverListBlock, offset, addrBytes.Length);
+					offset += addrBytes.Length;
+				}
+				#endregion
+			}
 
-            return new DHCPOption(8, serverListBlock);
-        }
+			return new((byte)PXEVendorEncOptions.BootServer, serverListBlock);
+		}
 
-        public static DHCPOption GenerateBootMenue(List<BootServer> servers)
-        {
-            #region Setup the Menue itself...
-            var bootmenue = new List<BootMenueEntry>
-            {
-                new BootMenueEntry(0, "Local Boot")
-            };
+		public static DHCPOption GenerateBootMenue(Dictionary<string, BootServer> servers)
+		{
+			#region Setup the Menue itself...
+			var bootmenue = new List<BootMenueEntry>
+			{
+				new(0, "Local Boot")
+			};
 
-            foreach (var server in servers)
-            {
-                if (!server.Addresses.Any() || string.IsNullOrEmpty(server.Hostname))
-                    continue;
+			foreach (var server in servers)
+			{
+				if (!server.Value.Addresses.Any() || string.IsNullOrEmpty(server.Value.Hostname))
+					continue;
 
-                bootmenue.Add(new BootMenueEntry(server.Type, server.Hostname));
-            }
-            #endregion
+				bootmenue.Add(new((ushort)server.Value.Type, server.Value.Hostname));
+			}
+			#endregion
 
-            var length = 0;
-            foreach (var entry in bootmenue)
-                length += entry.Description.Length + sizeof(ushort);
+			var length = 0;
+			foreach (var entry in bootmenue)
+				length += entry.Description.Length + sizeof(ushort);
 
-            var menuebuffer = new byte[length + 3];
-            var offset = 0;
+			var menuebuffer = new byte[length + 3];
+			var offset = 0;
 
-            foreach (var entry in bootmenue)
-            {
-                // Type
-                var typeBytes = new byte[sizeof(ushort)];
-                BinaryPrimitives.WriteUInt16BigEndian(typeBytes, entry.Id);
-                Array.Copy(typeBytes, 0, menuebuffer, offset, typeBytes.Length);
-                offset += typeBytes.Length;
+			foreach (var entry in bootmenue)
+			{
+				#region "Option"
+				var typeBytes = new byte[sizeof(ushort)];
+				BinaryPrimitives.WriteUInt16BigEndian(typeBytes, entry.Id);
+				Array.Copy(typeBytes, 0, menuebuffer, offset, typeBytes.Length);
+				offset += typeBytes.Length;
+				#endregion
 
-                // Length of Description
-                var descLen = Convert.ToByte(entry.Description.Length);
-                menuebuffer[offset] = descLen;
-                offset += sizeof(byte);
+				#region "Length"
+				menuebuffer[offset] = Convert.ToByte(entry.Description.Length);
+				offset += sizeof(byte);
+				#endregion
 
-                // Description
-                var descBytes = Encoding.ASCII.GetBytes(entry.Description);
-                Array.Copy(descBytes, 0, menuebuffer, offset, descBytes.Length);
-                offset += descBytes.Length;
-            }
+				#region "Description"
+				var descBytes = Encoding.ASCII.GetBytes(entry.Description);
+				Array.Copy(descBytes, 0, menuebuffer, offset, descBytes.Length);
+				offset += descBytes.Length;
+				#endregion
+			}
 
-            return new DHCPOption(9, menuebuffer);
-        }
+			return new((byte)PXEVendorEncOptions.BootMenue, menuebuffer);
+		}
 
-        public static List<IPAddress> DNSLookup(string hostname)
-            => Dns.GetHostAddresses(hostname).ToList();
+		public static List<IPAddress> DNSLookup(string hostname)
+			=> Dns.GetHostAddresses(hostname).ToList();
 
-        public static DHCPOption GenerateBootMenuePrompt()
-        {
-            var timeout = Convert.ToByte(byte.MaxValue);
-            var prompt = Encoding.ASCII.GetBytes("Select Server...");
-            var promptbuffer = new byte[1 + prompt.Length + 1];
-            var offset = 0;
+		public static DHCPOption GenerateBootMenuePrompt(byte timeout)
+		{
+			var prompt = Encoding.ASCII.GetBytes( timeout == byte.MaxValue ? "Select Server..." :
+				"Press [F8] to boot from Network or [esc] to cancel...");
+			
+			var promptbuffer = new byte[1 + prompt.Length];
+			var offset = 0;
 
-            promptbuffer[offset] = timeout;
-            offset += sizeof(byte);
+			#region "Timeout"
+			promptbuffer[offset] = timeout;
+			offset += sizeof(byte);
+			#endregion
 
-            Array.Copy(prompt, 0, promptbuffer, offset, prompt.Length);
+			#region "Prompt"
+			Array.Copy(prompt, 0, promptbuffer, offset, prompt.Length);
+			#endregion
 
-            return new DHCPOption(10, promptbuffer);
-        }
+			return new((byte)PXEVendorEncOptions.MenuPrompt, promptbuffer);
+		}
 
-    }
+	}
 }
