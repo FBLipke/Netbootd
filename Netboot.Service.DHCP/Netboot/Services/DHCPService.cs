@@ -14,7 +14,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 using Netboot.Network.Client;
 using Netboot.Network.Definitions;
 using Netboot.Network.EventHandler;
-using Netboot.Network.Interfaces;
 using Netboot.Network.Packet;
 using Netboot.Services.Interfaces;
 using System.Buffers.Binary;
@@ -25,7 +24,7 @@ using static Netboot.Services.Interfaces.IService;
 
 namespace Netboot.Services.DHCP
 {
-	public class DHCPService : IService
+    public class DHCPService : IService
 	{
 		public delegate void DHCPServiceBehaviorEventHandler(object sender, DHCPServiceBehaviorEventargs e);
 		public event DHCPServiceBehaviorEventHandler DHCPServiceBehavior;
@@ -72,7 +71,11 @@ namespace Netboot.Services.DHCP
 
 		public byte MenueTimeout { get; private set; } = byte.MaxValue;
 
-		public byte RespondDelay { get; private set; } = 1;
+        /// <summary>
+        /// We may respond too quickly, so we should respond with x milliseconds delay,
+		/// so that the DHCP server can respond before us.
+        /// </summary>
+        public byte RespondDelay { get; private set; } = 10;
 
 		public Dictionary<string, DHCPClient> Clients { get; set; } = [];
 
@@ -81,9 +84,10 @@ namespace Netboot.Services.DHCP
 
 		public void Dispose()
 		{
-			foreach (var client in Clients.Values)
+			foreach (var client in Clients.Values.ToList())
 				client.Dispose();
 
+			Clients.Clear();
 			Ports.Clear();
 		}
 
@@ -98,7 +102,6 @@ namespace Netboot.Services.DHCP
 		public void Handle_DataReceived(object sender, DataReceivedEventArgs e)
 		{
 			var requestPacket = new DHCPPacket(e.ServiceType, e.Packet);
-			
 			Thread.Sleep(RespondDelay);
 
 			switch (requestPacket.GetVendorIdent)
@@ -213,18 +216,6 @@ namespace Netboot.Services.DHCP
 						var itemLayer = new byte[sizeof(ushort)];
 						Array.Copy(option.Data, 2, itemLayer, 0, itemLayer.Length);
 						Clients[client].RBCP.Layer = BinaryPrimitives.ReadUInt16BigEndian(itemLayer);
-
-						switch (Clients[client].RBCP.Layer)
-						{
-							case 0:
-								Console.WriteLine("[RBCP] Layer: Client Bootfile request...");
-								break;
-							case 1:
-								Console.WriteLine("[RBCP] Layer: Client Credential request...");
-								break;
-							default:
-								break;
-						}
 						break;
 					case PXEVendorEncOptions.End:
 					default:
