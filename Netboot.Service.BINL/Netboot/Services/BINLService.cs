@@ -93,9 +93,11 @@ namespace Netboot.Service.BINL
 			{
 				var screen = Encoding.ASCII.GetString(packet.Data);
 
-				var fileContent = File.ReadAllText(Path.Combine(OSChooserDir.FullName,
+                var fileContent = File.ReadAllText(Path.Combine(OSChooserDir.FullName,
 					string.IsNullOrEmpty(screen) ? "welcome.osc" : Path.Combine("english",
 					string.Format($"{screen.ToLowerInvariant()}.osc"))));
+
+				Console.WriteLine($"[I] OSChooser Screen Request: {screen.ToLowerInvariant()}");
 
 				fileContent = fileContent.Replace("\r\n", "\n");
 

@@ -82,7 +82,7 @@ UseWholeDisk = Yes
 
 [OSChooser]
 Description ="Microsoft Windows 2000 Server"
-Help ="Windows 2000 Professional wird automatisch installiert, ohne dass der Benutzer zur Eingabe aufgefordert wird."
+Help ="Windows 2000 Server wird automatisch installiert, ohne dass der Benutzer zur Eingabe aufgefordert wird."
 LaunchFile = "Setup\German\IMAGES\win2000.srv\i386\templates\startrom.com"
 ImageType =Flat
 Version="5.0"

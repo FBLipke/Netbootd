@@ -2,9 +2,14 @@
 <Netboot>
 	<Configuration>
 		<Services>
-			<Service type="dhcp" port="67,4011" behavior="3" timeout="30" delay="10">
+			<Service type="dhcp" port="67,4011" behavior="1" timeout="30" delay="10">
+				<Multicast addr="224.0.1.2" cport="40001" sport="69" startdelay="10" timeout="10" discovery="3" />
+				<DHCP behavior="1">
+					<Option id ="251" type="string">OSChooser\i386\NTLDR</Option>
+					<Option id ="254" type="string">OSChooser\i386\boot.ini</Option>
+				</DHCP>
 				<DHCP behavior="65532">
-					<Option type="3" id ="251" value="" />
+					<Option id ="210" type="string">/linux</Option>
 				</DHCP>
 			</Service>
 			<Service type="binl" port="44776,1638" />

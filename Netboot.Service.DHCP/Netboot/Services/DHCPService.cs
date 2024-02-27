@@ -24,7 +24,7 @@ using static Netboot.Services.Interfaces.IService;
 
 namespace Netboot.Services.DHCP
 {
-    public class DHCPService : IService
+	public class DHCPService : IService
 	{
 		public delegate void DHCPServiceBehaviorEventHandler(object sender, DHCPServiceBehaviorEventargs e);
 		public event DHCPServiceBehaviorEventHandler DHCPServiceBehavior;
@@ -44,7 +44,7 @@ namespace Netboot.Services.DHCP
 				var hostname = Environment.MachineName;
 
 				if (!bootServers.TryGetValue(hostname, out BootServer? value))
-					bootServers.Add(hostname, new (hostname, BootServerType));
+					bootServers.Add(hostname, new(hostname, BootServerType));
 				else
 					value.Type = e.BootServerType;
 
@@ -67,15 +67,29 @@ namespace Netboot.Services.DHCP
 
 		public string ServiceType { get; }
 
+		private IPAddress McastDiscoveryAddress { get; set; } = IPAddress.Parse("224.0.1.2");
+
+        private ushort McastClientPort { get; set; } = 4001;
+
+        private ushort McastServerPort { get; set; } = 69;
+
+        private byte DiscoveryControl { get; set; } = 3;
+
+        private ushort MulticastTimeout { get; set; } = 10;
+
+        private ushort MulticastDelay { get; set; } = 10;
+
+        public Dictionary<BootServerTypes, Dictionary<DHCPOptions, byte[]>> ServiceDHCPOptions { get; private set; } = [];
+
 		public BootServerTypes BootServerType { get; private set; }
 
 		public byte MenueTimeout { get; private set; } = byte.MaxValue;
 
-        /// <summary>
-        /// We may respond too quickly, so we should respond with x milliseconds delay,
+		/// <summary>
+		/// We may respond too quickly, so we should respond with x milliseconds delay,
 		/// so that the DHCP server can respond before us.
-        /// </summary>
-        public byte RespondDelay { get; private set; } = 10;
+		/// </summary>
+		public byte RespondDelay { get; private set; } = 10;
 
 		public Dictionary<string, DHCPClient> Clients { get; set; } = [];
 
@@ -163,9 +177,66 @@ namespace Netboot.Services.DHCP
 			var menueTimeout = byte.Parse(xmlConfigNode.Attributes.GetNamedItem("timeout").Value);
 			var respondDelay = byte.Parse(xmlConfigNode.Attributes.GetNamedItem("delay").Value);
 
-			DHCPServiceBehavior.Invoke(this, new(bservType, menueTimeout, respondDelay));
+			DHCPServiceBehavior.Invoke(this, new (bservType, menueTimeout, respondDelay));
 
-			AddServer?.Invoke(this, new(ServiceType, Ports));
+            #region "Read Multicast settings"
+            var mcastSettings = xmlConfigNode.SelectNodes("Multicast");
+
+			foreach (XmlNode mcastSetting in mcastSettings)
+			{
+                McastDiscoveryAddress = IPAddress.Parse(mcastSetting.Attributes.GetNamedItem("addr").Value);
+                McastClientPort = ushort.Parse(mcastSetting.Attributes.GetNamedItem("cport").Value);
+                McastServerPort = ushort.Parse(mcastSetting.Attributes.GetNamedItem("sport").Value);
+
+                MulticastDelay = ushort.Parse(mcastSetting.Attributes.GetNamedItem("startdelay").Value);
+                MulticastTimeout = ushort.Parse(mcastSetting.Attributes.GetNamedItem("timeout").Value);
+                DiscoveryControl = byte.Parse(mcastSetting.Attributes.GetNamedItem("discovery").Value);
+            }
+
+            #endregion
+
+            #region "Read behavior based DHCP Options"
+            var dhcpList = xmlConfigNode.SelectNodes("DHCP");
+			foreach (XmlNode dhcp in dhcpList)
+			{
+				var behavior = (BootServerTypes)ushort.Parse(dhcp.Attributes.GetNamedItem("behavior").Value);
+				if(!ServiceDHCPOptions.ContainsKey(behavior))
+					ServiceDHCPOptions.Add(behavior, new Dictionary<DHCPOptions, byte[]>());
+                
+				
+				var optionList = dhcp.SelectNodes("Option");
+				foreach(XmlNode option in optionList)
+				{
+					var opt = (DHCPOptions)byte.Parse(option.Attributes.GetNamedItem("id").Value);
+					var dataTypeRaw = option.Attributes.GetNamedItem("type").Value;
+
+					switch (dataTypeRaw)
+					{
+						case "string":
+                            ServiceDHCPOptions[behavior].Add(opt, Encoding.ASCII.GetBytes(option.InnerText));
+                            break;
+                        case "uint8":
+							var x = new byte[1] { byte.Parse(option.Value) };
+                            ServiceDHCPOptions[behavior].Add(opt, x);
+                            break;
+                        case "uint16":
+                            ServiceDHCPOptions[behavior].Add(opt, BitConverter.GetBytes(ushort.Parse(option.InnerText)));
+                            break;
+                        case "uint32":
+                            ServiceDHCPOptions[behavior].Add(opt, BitConverter.GetBytes(uint.Parse(option.InnerText)));
+                            break;
+                        case "ipaddr":
+                            ServiceDHCPOptions[behavior].Add(opt, IPAddress.Parse(option.InnerText).GetAddressBytes());
+                            break;
+                        default:
+							break;
+					}
+                }
+			}
+            #endregion
+
+            AddServer?.Invoke(this, new(ServiceType, Ports));
+
 			return true;
 		}
 
@@ -232,15 +303,15 @@ namespace Netboot.Services.DHCP
 
 			Handle_RBCP_Request(client, packet);
 
-
 			var vendorOptions = new List<DHCPOption>
 			{
-				new DHCPOption(1, IPAddress.Parse("224.0.1.2")),
+
+
 				Functions.GenerateBootMenuePrompt(MenueTimeout),
 				Functions.GenerateBootServersList(bootServers),
 				Functions.GenerateBootMenue(bootServers),
 
-				new((byte)PXEVendorEncOptions.DiscoveryControl, (byte)3)
+				new((byte)PXEVendorEncOptions.DiscoveryControl, DiscoveryControl),
 			};
 
 			Clients[client].Response.AddOption(new(43, vendorOptions));
@@ -267,18 +338,9 @@ namespace Netboot.Services.DHCP
 
 			UpdateBootfile?.Invoke(server, new(GetBootfile(client), 0, client));
 
-			switch (BootServerType)
-			{
-				case BootServerTypes.MicrosoftWindowsNT:
-					Clients[client].Response.AddOption(new (251, "Boot/x86/ris/oschoice.exe", Encoding.ASCII));
-					Clients[client].Response.AddOption(new (254, "Boot/x86/ris/boot.ini", Encoding.ASCII));
-					break;
-				case BootServerTypes.Linux:
-					Clients[client].Response.AddOption(new (210, "/linux", Encoding.ASCII));
-					break;
-				default:
-					break;
-			}
+			var options = ServiceDHCPOptions[BootServerType];
+			foreach (var option in options)
+                Clients[client].Response.AddOption(new((byte)option.Key, option.Value));
 
 			Clients[client].Response.CommitOptions();
 			ServerSendPacket.Invoke(this, new(ServiceType, server, socket, Clients[client].Response, Clients[client]));

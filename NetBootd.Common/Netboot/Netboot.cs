@@ -92,8 +92,9 @@ namespace Netboot
 		{
 			Add_Service(new BaseService("NONE"));
 
-			var serviceModules = new DirectoryInfo(WorkingDirectory)
-				.GetFiles("Netboot.Service.*.dll", SearchOption.AllDirectories);
+            #region "Load Service Modules"
+            var serviceModules = new DirectoryInfo(WorkingDirectory)
+				.GetFiles("Netboot.Service.*.dll", SearchOption.TopDirectoryOnly);
 
 			foreach (var module in serviceModules)
 			{
@@ -117,9 +118,10 @@ namespace Netboot
 					}
 				}
 			}
-		}
+            #endregion
+        }
 
-		public static void Add_Service(IService service)
+        public static void Add_Service(IService service)
 		{
 			service.AddServer += (sender, e) =>
 			{
@@ -148,12 +150,6 @@ namespace Netboot
 
 			LoadServices();
 
-
-			MD4 md4 = new MD4();
-			md4.Initialize();
-			md4.ComputeHash(System.Text.Encoding.ASCII.GetBytes("Administrator"));
-			Console.WriteLine("REF: 716f3dcab5f869c18ded1ddf987a276a");
-			Console.WriteLine(string.Join("", md4.Hash.Select(x => x.ToString("X2"))));
 			#region "Read Config File"
 			var xmlFile = new XmlDocument();
 			xmlFile.Load(ConfigFile);
@@ -173,10 +169,6 @@ namespace Netboot
 
 			#endregion
 
-
-			var deserializer = new DeserializerBuilder()
-				.WithNamingConvention(UnderscoredNamingConvention.Instance)  // see height_in_inches in sample yml 
-				.Build();
 			return true;
 		}
 
