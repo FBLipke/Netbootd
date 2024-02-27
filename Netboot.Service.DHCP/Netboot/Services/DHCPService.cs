@@ -56,12 +56,14 @@ namespace Netboot.Services.DHCP
 			#endregion
 
 			UpdateBootfile += (sender, e) => {
-				Console.WriteLine("Bootfile changes to: {0}", e.Bootfile);
+				Console.WriteLine("Bootfile changed to: {0}", e.Bootfile);
 				Clients[e.Client].Response.FileName = e.Bootfile;
 			};
 		}
 
 		Dictionary<string, BootServer> bootServers = [];
+
+		Dictionary<BootServerTypes, string> bootfiles = [];
 
 		public List<ushort> Ports { get; set; } = [];
 
@@ -193,10 +195,22 @@ namespace Netboot.Services.DHCP
                 DiscoveryControl = byte.Parse(mcastSetting.Attributes.GetNamedItem("discovery").Value);
             }
 
-            #endregion
+			#endregion
 
-            #region "Read behavior based DHCP Options"
-            var dhcpList = xmlConfigNode.SelectNodes("DHCP");
+			#region "Bootfiles from Config"
+
+			XmlNodeList bfiles = xmlConfigNode.SelectNodes("Bootfiles/Bootfile");
+			foreach (XmlNode bootfile in bfiles)
+			{
+				var behavior = (BootServerTypes)ushort.Parse(bootfile.Attributes.GetNamedItem("behavior").Value);
+				var file = bootfile.InnerText;
+
+				bootfiles.Add(behavior, file);
+			}
+			#endregion
+
+			#region "Read behavior based DHCP Options"
+			var dhcpList = xmlConfigNode.SelectNodes("DHCP");
 			foreach (XmlNode dhcp in dhcpList)
 			{
 				var behavior = (BootServerTypes)ushort.Parse(dhcp.Attributes.GetNamedItem("behavior").Value);
@@ -255,30 +269,6 @@ namespace Netboot.Services.DHCP
 			{
 				switch ((PXEVendorEncOptions)option.Option)
 				{
-					case PXEVendorEncOptions.MultiCastIPAddress:
-						break;
-					case PXEVendorEncOptions.MulticastClientPort:
-						break;
-					case PXEVendorEncOptions.MulticastServerPort:
-						break;
-					case PXEVendorEncOptions.MulticastTFTPTimeout:
-						break;
-					case PXEVendorEncOptions.MulticastTFTPDelay:
-						break;
-					case PXEVendorEncOptions.DiscoveryControl:
-						break;
-					case PXEVendorEncOptions.DiscoveryMulticastAddress:
-						break;
-					case PXEVendorEncOptions.BootServer:
-						break;
-					case PXEVendorEncOptions.BootMenue:
-						break;
-					case PXEVendorEncOptions.MenuPrompt:
-						break;
-					case PXEVendorEncOptions.MulticastAddressAllocation:
-						break;
-					case PXEVendorEncOptions.CredentialTypes:
-						break;
 					case PXEVendorEncOptions.BootItem:
 						var itemType = new byte[sizeof(ushort)];
 						Array.Copy(option.Data, 0, itemType, 0, itemType.Length);
@@ -288,7 +278,6 @@ namespace Netboot.Services.DHCP
 						Array.Copy(option.Data, 2, itemLayer, 0, itemLayer.Length);
 						Clients[client].RBCP.Layer = BinaryPrimitives.ReadUInt16BigEndian(itemLayer);
 						break;
-					case PXEVendorEncOptions.End:
 					default:
 						break;
 				}
@@ -303,18 +292,14 @@ namespace Netboot.Services.DHCP
 
 			Handle_RBCP_Request(client, packet);
 
-			var vendorOptions = new List<DHCPOption>
-			{
-
-
+			Clients[client].Response.AddOption(new((byte)DHCPOptions.VendorSpecificInformation,
+				new List<DHCPOption> {
 				Functions.GenerateBootMenuePrompt(MenueTimeout),
 				Functions.GenerateBootServersList(bootServers),
 				Functions.GenerateBootMenue(bootServers),
 
 				new((byte)PXEVendorEncOptions.DiscoveryControl, DiscoveryControl),
-			};
-
-			Clients[client].Response.AddOption(new(43, vendorOptions));
+			}));
 
 			Clients[client].Response.CommitOptions();
 			ServerSendPacket.Invoke(this, new(ServiceType, server, socket, Clients[client].Response, Clients[client]));
@@ -338,67 +323,39 @@ namespace Netboot.Services.DHCP
 
 			UpdateBootfile?.Invoke(server, new(GetBootfile(client), 0, client));
 
+			#region "Add Behavior specific DHCP Options"
 			var options = ServiceDHCPOptions[BootServerType];
+			
 			foreach (var option in options)
                 Clients[client].Response.AddOption(new((byte)option.Key, option.Value));
+			#endregion
 
 			Clients[client].Response.CommitOptions();
-			ServerSendPacket.Invoke(this, new(ServiceType, server, socket, Clients[client].Response, Clients[client]));
+			
+			ServerSendPacket.Invoke(this, new(ServiceType, server, socket,
+				Clients[client].Response, Clients[client]));
 
 			if (Clients.ContainsKey(client))
 				Clients.Remove(client);
 		}
 
-		private string GetBootfile(string client)
+		private string GetArchitecture(Architecture architecture)
 		{
-			var bFile = string.Empty;
-			var layer = Clients[client].RBCP.Layer;
-
-			switch (BootServerType)
+			return architecture switch
 			{
-				case BootServerTypes.PXEBootstrapServer:
-					bFile = $"Boot/x86/bstrap.{layer}";
-					break;
-				case BootServerTypes.MicrosoftWindowsNT:
-					bFile = "OSChooser\\i386\\startrom.n12";
-					break;
-				case BootServerTypes.IntelLCM:
-					break;
-				case BootServerTypes.DOSUNDI:
-					bFile = $"Boot/x86/dosundi.{layer}";
-					break;
-				case BootServerTypes.NECESMPRO:
-					break;
-				case BootServerTypes.IBMWSoD:
-					break;
-				case BootServerTypes.IBMLCCM:
-					break;
-				case BootServerTypes.CAUnicenterTNG:
-					break;
-				case BootServerTypes.HPOpenView:
-					break;
-				case BootServerTypes.Reserved:
-					break;
-				case BootServerTypes.Vendor:
-					break;
-				case BootServerTypes.Linux:
-					bFile = "Boot/x86/pxelinux.0";
-					break;
-				case BootServerTypes.BISConfig:
-					bFile = "Boot/x86/bisconfig.0";
-					break;
-				case BootServerTypes.WindowsDeploymentServer:
-					bFile = "Boot\\x86\\wdsnbp.com";
-					break;
-				case BootServerTypes.ApiTest:
-					bFile = $"Boot/x86/apitest.{layer}";
-					break;
-				default:
-					break;
-			}
-
-			return bFile;
+				Architecture.X86PC => "x86",
+				Architecture.EFI_x8664 => "x64",
+				Architecture.EFIItanium => "ia32",
+				Architecture.DECAlpha => "alpha",
+				Architecture.Arcx86 => "x86",
+				Architecture.EFIByteCode => "efi",
+				_ => "other",
+			};
 		}
+
+		private string GetBootfile(string client) => bootfiles[BootServerType]
+			.Replace("#layer#", string.Format("{0}", Clients[client].RBCP.Layer))
+				.Replace("#arch#", GetArchitecture(Architecture.X86PC));
 
 		public void Heartbeat()
 		{
