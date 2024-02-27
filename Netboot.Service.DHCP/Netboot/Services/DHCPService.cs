@@ -275,7 +275,7 @@ namespace Netboot.Services.DHCP
 						Clients[client].RBCP.Item = BinaryPrimitives.ReadUInt16BigEndian(itemType);
 
 						var itemLayer = new byte[sizeof(ushort)];
-						Array.Copy(option.Data, 2, itemLayer, 0, itemLayer.Length);
+						Array.Copy(option.Data, sizeof(ushort), itemLayer, 0, itemLayer.Length);
 						Clients[client].RBCP.Layer = BinaryPrimitives.ReadUInt16BigEndian(itemLayer);
 						break;
 					default:
@@ -321,7 +321,7 @@ namespace Netboot.Services.DHCP
 			Clients[client].Response = packet.CreateResponse(serverIP);
 			Handle_RBCP_Request(client, packet);
 
-			UpdateBootfile?.Invoke(server, new(GetBootfile(client), 0, client));
+			UpdateBootfile?.Invoke(server, new(GetBootfile(client), Clients[client].RBCP.Layer, client));
 
 			#region "Add Behavior specific DHCP Options"
 			var options = ServiceDHCPOptions[BootServerType];
