@@ -32,18 +32,13 @@ namespace Netboot.Network.Client
 
 		public NextActionOptionValues NextAction { get; set; }
 		
-		public string BCDPath { get; set; }
-
 		public string AdminMessage { get; set; } = "Waiting for Approval...";
-
 
         public bool ServerSelection { get; set; } = true;
 
-		public bool VersionQery { get; set; } = false;
-
 		public uint RequestId { get; set; } = 1;
 		
-		public string VersionQuery { get; set; }
+		public bool VersionQuery { get; set; }
 		
 		public NBPVersionValues ServerVersion { get; set; }
 		

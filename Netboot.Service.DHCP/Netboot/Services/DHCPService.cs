@@ -151,7 +151,7 @@ namespace Netboot.Services.DHCP
                     case WDSNBPOptions.Message:
                         break;
                     case WDSNBPOptions.VersionQuery:
-                        Clients[client].WDS.VersionQery = true;
+                        Clients[client].WDS.VersionQuery = true;
                         break;
                     case WDSNBPOptions.ServerVersion:
                         Clients[client].WDS.ServerVersion = (NBPVersionValues)wdsOption.AsUInt32();
@@ -240,8 +240,8 @@ namespace Netboot.Services.DHCP
 					var clientid = string.Join(":", requestPacket.HardwareAddress.Select(x => x.ToString("X2")));
 					AddClient(clientid, e.ServiceType, e.RemoteEndpoint, e.ServerId, e.SocketId);
 					
-					Console.WriteLine("[I] Got {1}Request from: {0}", Clients[clientid].RemoteEntpoint, !requestPacket.GatewayIP.Equals(IPAddress.Any)
-						? "relayed ": "");
+					Console.WriteLine("[I] Got {1}Request from: {0}", Clients[clientid].RemoteEntpoint,
+						!requestPacket.GatewayIP.Equals(IPAddress.Any) ? "relayed ": "");
 
 					switch (requestPacket.BootpOPCode)
 					{
@@ -281,12 +281,10 @@ namespace Netboot.Services.DHCP
 			}
 		}
 
-		public void Handle_DataSent(object sender, DataSentEventArgs e)
-		{
-			Console.WriteLine(e.RemoteEndpoint);
-		}
+        public void Handle_DataSent(object sender, DataSentEventArgs e)
+			=> Console.WriteLine(e.BytesSent);
 
-		public bool Initialize(XmlNode xmlConfigNode)
+        public bool Initialize(XmlNode xmlConfigNode)
 		{
 			var ports = xmlConfigNode.Attributes.GetNamedItem("port").Value.Split(',').ToList();
 			if (ports.Count > 0)

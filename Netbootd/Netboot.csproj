@@ -24,7 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="TFTPRoot\Boot\x86\Fonts\wgl4_boot.ttf">
+    <Content Include="TFTPRoot\Boot\Readme.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
@@ -37,6 +37,12 @@
     <None Update="Config\Netboot.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="TFTPRoot\Boot\x86\apitest.0">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="TFTPRoot\Boot\x86\bisconfig.0">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="TFTPRoot\Boot\x86\default.bcd">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -47,9 +53,6 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="TFTPRoot\Boot\x86\pxelinux.0">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="TFTPRoot\Boot\x86\pxelinux.cfg\default">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="TFTPRoot\Boot\x86\wdsnbp.com">
@@ -73,6 +76,7 @@
     <None Include="Dumps\CHL_NTLMSSP.bin" />
     <None Include="Dumps\dupp.pcap" />
     <None Include="Dumps\NEG_NTLMSSP.bin" />
+    <None Include="TFTPRoot\Boot\Readme.txt" />
     <None Include="TFTPRoot\Boot\x64\boot.wim">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -91,11 +95,9 @@
     <None Include="TFTPRoot\Boot\x86\boot.sdi">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="TFTPRoot\Boot\x86\default" />
     <None Include="TFTPRoot\Boot\x86\dosundi.1">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="TFTPRoot\Boot\x86\Fonts\wgl4_boot.ttf" />
     <None Include="TFTPRoot\OSChooser\english\00004e22.osc" />
     <None Include="TFTPRoot\OSChooser\english\00004e23.osc" />
     <None Include="TFTPRoot\OSChooser\english\00004e24.osc" />
