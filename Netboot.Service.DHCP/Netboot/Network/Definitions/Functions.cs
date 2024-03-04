@@ -11,16 +11,23 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Netboot.Network.Client;
 using Netboot.Network.Client.RBCP;
+using Netboot.Network.Interfaces;
+using Netboot.Network.Packet;
 using System.Buffers.Binary;
 using System.Net;
 using System.Text;
+using YamlDotNet.Serialization;
 
 namespace Netboot.Network.Definitions
 {
 	public static partial class Functions
 	{
-		public static DHCPOption GenerateBootServersList(Dictionary<string, BootServer> serverlist)
+       
+
+
+        public static DHCPOption GenerateBootServersList(Dictionary<string, BootServer> serverlist)
 		{
 			var ipBlock = 0;
 			#region "How many bytes does we need for the IPAdresses"

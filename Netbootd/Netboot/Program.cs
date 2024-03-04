@@ -30,6 +30,7 @@ namespace Netbootd.Netboot
 			}
 		}
 
+		[STAThread]
 		static void Main(string[] args)
 		{
 			var currentProcess = Process.GetCurrentProcess();

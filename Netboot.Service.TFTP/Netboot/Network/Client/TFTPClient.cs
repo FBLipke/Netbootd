@@ -12,91 +12,110 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 using Netboot.Common;
+using Netboot.Service.TFTP.Netboot.Network.Packet;
 using System.Net;
 
 namespace Netboot.Network.Client
 {
-	public class TFTPClient : BaseClient
-	{
-		public TFTPClient(string clientId, string serviceType, IPEndPoint remoteEndpoint, Guid serverid, Guid socketId)
-			: base(clientId, serviceType, remoteEndpoint, serverid, socketId)
-		{
-			BytesRead = 0;
-		}
+    public class TFTPClient : BaseClient
+    {
+        public TFTPClient(string clientId, string serviceType, IPEndPoint remoteEndpoint, Guid serverid, Guid socketId)
+            : base(clientId, serviceType, remoteEndpoint, serverid, socketId)
+        {
+            BytesRead = 0;
+        }
 
-		public ushort BlockSize { get; set; } = 4096;
+        public Dictionary<ushort, TFTPPacketBacklogEntry> PacketBacklog { get; set; } = [];
 
-		public ushort CurrentBlock { get; set; } = 0;
+        public ushort BlockSize { get; set; } = 4096;
 
-		public ushort TotalBlocks { get; set; } = ushort.MinValue;
+        public ushort CurrentBlock { get; set; } = 0;
 
-		public long BytesToRead { get; set; } = long.MinValue;
+        public ushort TotalBlocks { get; set; } = ushort.MinValue;
 
-		public long BytesRead { get; set; } = long.MinValue;
+        public long BytesToRead { get; set; } = long.MinValue;
 
-		public ushort WindowSize { get; set; } = 1;
+        public long BytesRead { get; set; } = long.MinValue;
 
-		public string FileName { get; set; } = string.Empty;
+        private bool isOpen = false;
 
-		public FileStream FileStream { get; internal set; }
+        public byte WindowSize { get; set; } = 1;
 
-		public bool OpenFile()
-		{
-			try
-			{
-				var fil = new FileInfo(Functions.ReplaceSlashes(FileName));
-				if (fil.Exists)
-				{
-					FileStream = new FileStream(fil.FullName, FileMode.Open, FileAccess.Read, FileShare.Read);
-					BytesToRead = FileStream.Length;
-					FileStream.Position = 0;
+        public ushort MSFTWindow { get; set; } = 31416;
 
-					if (BytesRead == BytesToRead)
-						CloseFile();
+        public string FileName { get; set; } = string.Empty;
 
-					return true;
-				}
-				else
-					return false;
-			}
-			catch (Exception ex)
-			{
-				if (BytesRead == BytesToRead)
-					CloseFile();
+         public FileStream FileStream { get; internal set; }
 
-				Console.WriteLine(ex.Message);
-				return false;
-			}
-		}
+        public bool OpenFile()
+        {
+            if (isOpen)
+                return true;
 
-		public byte[] ReadChunk(out int readedBytes)
-		{
-			var chunksize = BlockSize;
+            try
+            {
+                var fil = new FileInfo(Functions.ReplaceSlashes(FileName));
+                if (fil.Exists)
+                {
+                    FileStream = new FileStream(fil.FullName, FileMode.Open, FileAccess.Read, FileShare.Read, 2 << 64);
+                    BytesToRead = FileStream.Length;
+                    BytesRead = 0;
+                    FileStream.Position = 0;
+                    isOpen = true;
+                }
+                else
+                    return false;
 
-			if (BytesToRead - BytesRead < BlockSize)
-				chunksize = (ushort)(BytesToRead - BytesRead);
+                return isOpen;
+            }
+            catch (Exception ex)
+            {
+                CloseFile();
 
-			var buffer = new byte[chunksize];
+                Console.WriteLine(ex);
+                return isOpen;
+            }
+        }
 
-			FileStream.Seek(BytesRead, SeekOrigin.Current);
-			readedBytes = FileStream.Read(buffer, 0, buffer.Length);
+        public void ResetState(ushort block)
+        {
+            if (PacketBacklog.ContainsKey(block))
+            {
+                BytesRead = PacketBacklog[block].BytesRead;
+                BytesToRead = PacketBacklog[block].BytesToRead;
+                CurrentBlock = PacketBacklog[block].Block;
+            }
+        }
 
-			return buffer;
-		}
+        public byte[] ReadChunk()
+        {
+            var chunksize = BlockSize;
 
-		public void CloseFile()
-		{
-			if (FileStream == null)
-				return;
+            if ((BytesToRead - BytesRead) <= chunksize)
+                chunksize = (ushort)(BytesToRead - BytesRead);
 
-			FileStream.Close();
-			FileStream.Dispose();
-		}
+            var buffer = new byte[chunksize];
 
-		public override void Dispose()
-		{
-			FileStream?.Close();
-			FileStream?.Dispose();
-		}
-	}
+            if (FileStream != null)
+            {
+                FileStream.Seek(BytesRead, SeekOrigin.Begin);
+                var readedBytes = FileStream.Read(buffer, 0, buffer.Length);
+                BytesRead += readedBytes;
+            }
+
+            return buffer;
+        }
+
+        public void CloseFile()
+        {
+            FileStream?.Close();
+        }
+
+        public override void Dispose()
+        {
+            CloseFile();
+            FileStream?.Dispose();
+            PacketBacklog.Clear();
+        }
+    }
 }

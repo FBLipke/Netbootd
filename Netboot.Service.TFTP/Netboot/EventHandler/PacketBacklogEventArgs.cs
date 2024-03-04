@@ -11,33 +11,21 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Netboot.Common.Definitions;
+using Netboot.Network.Client;
 
-namespace Netboot.Common.Netboot.Cryptography
+namespace Netboot.Service.TFTP
 {
-	public class NTLMState
-	{
-		public byte[] NTHash { get; private set; }
 
-		public byte[] LMHash { get; private set; }
+    public class PacketBacklogEventArgs
+    {
+        public TFTPPacketBacklogEntry TFTPPacketBacklogEntry { get; private set; }
 
-		public byte[] Challenge { get; private set; }
+        public string Client { get; private set; }
 
-		public byte[] LM_Response { get; private set; }
-
-		public byte[] NT_Response { get; private set; }
-
-		public ntlmssp_flags NegotiatedFlags { get; set; }
-
-		public NTLMState()
-		{
-		}
-	}
-
-	public class NTLMSSP
-	{
-		public NTLMSSP()
-		{
-		}
-	}
+        public PacketBacklogEventArgs(string client, TFTPPacketBacklogEntry packetBacklogEntry)
+        {
+            TFTPPacketBacklogEntry = packetBacklogEntry;
+            Client = client;
+        }
+    }
 }

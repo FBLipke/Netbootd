@@ -70,26 +70,7 @@ namespace Netboot.Common
 
 		public static string ReplaceSlashes(string input)
 		{
-			var slash = "/";
-
-			switch (Environment.OSVersion.Platform)
-			{
-				case PlatformID.Win32NT:
-				case PlatformID.Win32S:
-				case PlatformID.Win32Windows:
-				case PlatformID.WinCE:
-				case PlatformID.Xbox:
-					slash = "\\";
-					break;
-				default:
-				case PlatformID.Other:
-				case PlatformID.MacOSX:
-				case PlatformID.Unix:
-					slash = "/";
-					break;
-			}
-
-			return input.Replace("/", slash);
+			return input.Replace("/", NetbootBase.Platform.DirectorySeperatorChar);
 		}
 
 		public static void InvokeMethod(object obj, string name, object?[]? args)

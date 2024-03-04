@@ -36,16 +36,19 @@ namespace Netboot.Services
 
 		public void Dispose()
 		{
-		}
+            foreach (var client in Clients.Values.ToList())
+                client.Dispose();
+
+            Clients.Clear();
+            Ports.Clear();
+        }
 
 		public void Handle_DataReceived(object sender, DataReceivedEventArgs e)
 		{
-			throw new NotImplementedException();
 		}
 
 		public void Handle_DataSent(object sender, DataSentEventArgs e)
 		{
-			throw new NotImplementedException();
 		}
 
 		public void Heartbeat()

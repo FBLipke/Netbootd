@@ -56,7 +56,13 @@ namespace Netboot.Network.Definitions
 		ApiTest = ushort.MaxValue
 	}
 
-	public enum PXEVendorID : byte
+    public enum ServerMode
+    {
+        AllowAll,
+        KnownOnly
+    }
+
+    public enum PXEVendorID : byte
 	{
 		None,
 		PXEClient,
@@ -233,7 +239,7 @@ namespace Netboot.Network.Definitions
 		End = byte.MaxValue
 	}
 
-	public enum NicSpecType
+	public enum NicSpecType : byte
 	{
 		UNDI = 1,
 		Pci,
@@ -289,7 +295,7 @@ namespace Netboot.Network.Definitions
 	/// <summary>
 	/// Options used by the Windows Deployment Server NBP
 	/// </summary>
-	public enum WDSNBPOptions
+	public enum WDSNBPOptions : byte
 	{
 		Unknown = 0,
 		Architecture = 1,
@@ -314,7 +320,7 @@ namespace Netboot.Network.Definitions
 	/// <summary>
 	/// Options used by the PXEClientPrompt and PXEPromptDone
 	/// </summary>
-	public enum PXEPromptOptionValues
+	public enum PXEPromptOptionValues : byte
 	{
 		Unknown,
 		OptIn,
@@ -325,17 +331,17 @@ namespace Netboot.Network.Definitions
 	/// <summary>
 	/// Options used by the NBPVersion
 	/// </summary>
-	public enum NBPVersionValues
+	public enum NBPVersionValues : ushort
 	{
-		Seven = 0x0700,
-		Eight = 0x0800,
+		Seven = 7,
+		Eight = 8,
 		Unknown = ushort.MinValue
 	}
 
 	/// <summary>
 	/// Options used by the WDSNBPOptions.NextAction
 	/// </summary>
-	public enum NextActionOptionValues : int
+	public enum NextActionOptionValues : byte
 	{
 		Drop = 0,
 		Approval = 1,

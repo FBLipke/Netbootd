@@ -54,8 +54,6 @@ namespace Netboot.Utility
 				default:
 					break;
 			}
-
-
 		}
 	}
 }

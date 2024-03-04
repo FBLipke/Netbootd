@@ -14,6 +14,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 using Netboot.Common;
 using Netboot.Network.Client;
 using Netboot.Network.EventHandler;
+using Netboot.Network.Interfaces;
 using Netboot.Service.TFTP.Netboot.Network;
 using Netboot.Service.TFTP.Netboot.Network.Packet;
 using Netboot.Services.Interfaces;
@@ -27,7 +28,22 @@ namespace Netboot.Service.TFTP
 		public TFTPService(string serviceType)
 		{
 			ServiceType = serviceType;
-		}
+
+			AddEntryToPacketBacklog += (sender, e) => {
+				var client = e.Client;
+
+                if (!Clients.ContainsKey(client))
+					return;
+
+				var block = e.TFTPPacketBacklogEntry.Block;
+
+                if (!Clients[client].PacketBacklog.ContainsKey(block))
+                    Clients[client].PacketBacklog.Add(block, e.TFTPPacketBacklogEntry);
+            };
+        }
+
+		delegate void AddEntryToPacketBacklogEventHandler(object sender, PacketBacklogEventArgs e);
+		event AddEntryToPacketBacklogEventHandler AddEntryToPacketBacklog;
 
 		public string ServiceType { get; }
 
@@ -42,32 +58,41 @@ namespace Netboot.Service.TFTP
 
 		public void Dispose()
 		{
-			foreach (var client in Clients.Values)
+			foreach (var client in Clients.Values.ToList())
 				client.Dispose();
 
 			Ports.Clear();
 		}
 
+		private void RemoveClient(string id)
+		{
+			if (Clients.ContainsKey(id))
+			{
+				Clients[id].Dispose();
+				Clients.Remove(id);
+			}
+		}
 
 		void AddClient(string clientId, string serviceType, IPEndPoint remoteEndpoint, Guid serverId, Guid socketId)
 		{
 			if (!Clients.TryGetValue(clientId, out TFTPClient? value))
 				Clients.Add(clientId, new(clientId, serviceType, remoteEndpoint, serverId, socketId));
 			else
+			{
 				value.RemoteEntpoint = remoteEndpoint;
+			}
 		}
 
 		public void Handle_DataReceived(object sender, DataReceivedEventArgs e)
 		{
-			var clientid = e.RemoteEndpoint.Address.ToString();
-			AddClient(clientid, e.ServiceType, e.RemoteEndpoint, e.ServerId, e.SocketId);
-
 			var requestPacket = new TFTPPacket(e.ServiceType, e.Packet);
+            var clientid = e.RemoteEndpoint.Address.ToString();
 
-			switch (requestPacket.TFTPOPCode)
+            switch (requestPacket.TFTPOPCode)
 			{
 				case TFTPOPCodes.RRQ:
-					Console.WriteLine("[I] Got TFTP Request from: {0}", e.RemoteEndpoint);
+					RemoveClient(clientid);
+					AddClient(clientid, e.ServiceType, e.RemoteEndpoint, e.ServerId, e.SocketId);
 					Handle_Read_Request(e.ServerId, e.SocketId, clientid, requestPacket);
 					break;
 				case TFTPOPCodes.ACK:
@@ -83,16 +108,16 @@ namespace Netboot.Service.TFTP
 
 		public void Handle_Read_Request(Guid server, Guid socket, string client, TFTPPacket packet)
 		{
-			if (packet.Options.ContainsKey("tsize"))
-				Clients[client].BytesToRead = long.Parse(packet.Options["tsize"]);
-
 			if (!packet.Options.ContainsKey("file"))
 			{
 				Clients.Remove(client);
 				return;
 			}
 
-			Clients[client].FileName = Functions.ReplaceSlashes(Path.Combine(RootPath, packet.Options["file"]));
+			Clients[client].CloseFile();
+
+            Clients[client].PacketBacklog.Clear();
+            Clients[client].FileName = Functions.ReplaceSlashes(Path.Combine(RootPath, packet.Options["file"]));
 
 			var fileExists = Clients[client].OpenFile();
 
@@ -111,9 +136,12 @@ namespace Netboot.Service.TFTP
 					Clients[client].BlockSize = ushort.Parse(packet.Options["blksize"]);
 
 				if (packet.Options.ContainsKey("windowsize"))
-					Clients[client].WindowSize = ushort.Parse(packet.Options["windowsize"]);
+					Clients[client].WindowSize = byte.Parse(packet.Options["windowsize"]);
 
-				Clients[client].CurrentBlock = 0;
+                if (packet.Options.ContainsKey("msftwindow"))
+                    Clients[client].MSFTWindow = ushort.Parse(packet.Options["msftwindow"]);
+
+                Clients[client].CurrentBlock = 0;
 
 				if (packet.Options.ContainsKey("tsize"))
 					response.Options.Add("tsize", string.Format("{0}", Clients[client].BytesToRead));
@@ -124,7 +152,10 @@ namespace Netboot.Service.TFTP
 				if (packet.Options.ContainsKey("windowsize"))
 					response.Options.Add("windowsize", string.Format("{0}", Clients[client].WindowSize));
 
-				response.CommitOptions();
+                if (packet.Options.ContainsKey("msftwindow"))
+                    response.Options.Add("msftwindow", string.Format("{0}", 27182));
+
+                response.CommitOptions();
 			}
 
 			ServerSendPacket?.Invoke(this, new(ServiceType, server, socket, response, Clients[client]));
@@ -141,12 +172,11 @@ namespace Netboot.Service.TFTP
 
 		public void Heartbeat()
 		{
-			GC.Collect();
 		}
 
 		public bool Initialize(XmlNode xmlConfigNode)
 		{
-			RootPath = Path.Combine(NetbootBase.WorkingDirectory, "TFTPRoot");
+			RootPath = NetbootBase.Platform.TFTPRoot;
 
 			var ports = xmlConfigNode.Attributes.GetNamedItem("port").Value.Split(',').ToList();
 			if (ports.Count > 0)
@@ -161,22 +191,20 @@ namespace Netboot.Service.TFTP
 
 		public void Handle_ACK_Request(Guid server, Guid socket, string client, TFTPPacket packet)
 		{
-			if (packet.Block != Clients[client].CurrentBlock)
-			{
-				Clients[client].CloseFile();
-
-				if (Clients.ContainsKey(client))
-					Clients.Remove(client);
+			if (!Clients.ContainsKey(client))
 				return;
-			}
+
+			if (packet.Block != Clients[client].CurrentBlock)
+				Clients[client].ResetState(packet.Block);
+
+			if (packet.Options.ContainsKey("NextWindow"))
+                Clients[client].WindowSize = packet.NextWindow;
 
 			Clients[client].OpenFile();
 
 			for (var i = 0; i < Clients[client].WindowSize; i++)
 			{
-				var data = Clients[client].ReadChunk(out var readedBytes);
-
-				Clients[client].BytesRead += readedBytes;
+				var data = Clients[client].ReadChunk();
 
 				using (var response = new TFTPPacket(ServiceType, TFTPOPCodes.DAT))
 				{
@@ -186,20 +214,18 @@ namespace Netboot.Service.TFTP
 					response.Data = data;
 					response.CommitOptions();
 
-					ServerSendPacket?.Invoke(this, new(ServiceType, server, socket, response, Clients[client]));
+					AddEntryToPacketBacklog?.Invoke(this, new(client,
+						new(Clients[client].BytesRead, Clients[client].BytesToRead, response.Block)));
+
+                    ServerSendPacket?.Invoke(this, new(ServiceType, server, socket, response, Clients[client]));
 				}
 
-				if (data.Length < Clients[client].BlockSize)
-					break;
+                if (Clients[client].BytesToRead == Clients[client].BytesRead)
+                    break;
+            }
 
-				if (Clients[client].BytesRead == Clients[client].BytesToRead)
-					break;
-			}
-
-			Clients[client].CloseFile();
-
-			if (Clients[client].BytesRead == Clients[client].BytesToRead)
-				Clients.Remove(client);
+            if (Clients[client].BytesToRead == Clients[client].BytesRead)
+				RemoveClient(client);
 		}
 
 		public void Start()

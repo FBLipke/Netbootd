@@ -11,7 +11,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-namespace Netboot.Common.Netboot.Common.Definitions
+namespace Netboot.Common.Definitions
 {
 	/// <summary>
 	/// Indicates the type of data in a subblock 
@@ -35,7 +35,7 @@ namespace Netboot.Common.Netboot.Common.Definitions
 	{
 		Negotiate = 1,
 		Challenge = 2,
-		Authenticate = 3,
+		Authenticate = 3
 	}
 
 	[Flags]
@@ -158,5 +158,15 @@ namespace Netboot.Common.Netboot.Common.Definitions
 		/// the server MUST return KEY56 to the client in the CHALLENGE_MESSAGE.
 		/// </summary>
 		KEY56 = 0x80000000
+	}
+
+	public enum OSPlatformId
+	{
+		Windows = 0,
+		Linux = 1,
+		MacOS = 2,
+		Ios	= 3,
+		Android = 4,
+		FreeBSD	= 5
 	}
 }

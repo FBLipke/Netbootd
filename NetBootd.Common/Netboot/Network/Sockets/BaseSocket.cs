@@ -19,153 +19,151 @@ using System.Net.Sockets;
 
 namespace Netboot.Network.Sockets
 {
-	public class BaseSocket : IDisposable, ISocket
-	{
-		public delegate void DataReceivedEventHandler(object sender, DataReceivedEventArgs e);
-		public delegate void DataSendEventHandler(object sender, DataSentEventArgs e);
-		public event DataReceivedEventHandler? DataReceived;
-		public event DataSendEventHandler? DataSent;
+    public class BaseSocket : IDisposable, ISocket
+    {
+        public delegate void DataReceivedEventHandler(object sender, DataReceivedEventArgs e);
+        public delegate void DataSendEventHandler(object sender, DataSentEventArgs e);
+        public event DataReceivedEventHandler? DataReceived;
+        public event DataSendEventHandler? DataSent;
 
-		SocketState? socketState;
-		EndPoint localendpoint;
-		EndPoint remoteendpoint;
-		Guid SocketId;
-		Guid ServerId;
+        SocketState? socketState;
+        EndPoint localendpoint;
+        EndPoint remoteendpoint;
+        Guid SocketId;
+        Guid ServerId;
 
-		bool IsDisposed;
+        bool IsDisposed;
 
-		public string ServiceType;
+        public string ServiceType;
 
-		public bool Listening { get; private set; }
-		public int BufferLength { get; private set; }
+        public bool Listening { get; private set; }
+        public int BufferLength { get; private set; }
 
-		public bool Multicast { get; private set; }
+        public bool Multicast { get; private set; }
 
-		public BaseSocket(Guid serverId, Guid socketId, string serviceType, IPEndPoint localep, bool multicast = false, int buffersize = ushort.MaxValue)
-		{
-			localendpoint = localep;
-			remoteendpoint = new IPEndPoint(IPAddress.Any, 0);
-			BufferLength = buffersize;
-			SocketId = socketId;
-			ServerId = serverId;
-			ServiceType = serviceType;
-			Multicast = multicast;
+        public BaseSocket(Guid serverId, Guid socketId, string serviceType, IPEndPoint localep, bool multicast = false, int buffersize = ushort.MaxValue)
+        {
+            localendpoint = localep;
+            remoteendpoint = new IPEndPoint(IPAddress.Any, 0);
+            BufferLength = buffersize;
+            SocketId = socketId;
+            ServerId = serverId;
+            ServiceType = serviceType;
+            Multicast = multicast;
 
-			socketState = new SocketState
-			{
-				socket = new Socket(localendpoint.AddressFamily, SocketType.Dgram, ProtocolType.Udp),
-				buffer = new byte[BufferLength]
-			};
-		}
+            socketState = new SocketState
+            {
+                socket = new(localendpoint.AddressFamily, SocketType.Dgram, ProtocolType.Udp),
+                buffer = new byte[BufferLength]
+            };
+        }
 
-		public IPAddress GetIPAddress()
-			=> ((IPEndPoint)localendpoint).Address;
+        public IPAddress GetIPAddress()
+            => ((IPEndPoint)localendpoint).Address;
 
-		public void Start()
-		{
-			if (socketState == null)
-				return;
+        public void Start()
+        {
+            if (socketState == null)
+                return;
 
-			try
-			{
-				socketState.socket?.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
-				socketState.socket?.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.Broadcast, true);
-/*
-				if (Multicast)
-				{
-					socketState.socket?.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership,
-						new MulticastOption(IPAddress.Parse("224.0.1.2")));
-				}
-*/
-				socketState.socket?.Bind(localendpoint);
+            try
+            {
+                socketState.socket?.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
+                socketState.socket?.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.Broadcast, true);
+                /*
+                                if (Multicast)
+                                {
+                                    socketState.socket?.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership,
+                                        new MulticastOption(IPAddress.Parse("224.0.1.2")));
+                                }
+                */
+                socketState.socket?.Bind(localendpoint);
 
-				socketState.socket?.BeginReceiveFrom(socketState.buffer, 0, socketState.buffer.Length,
-					SocketFlags.None, ref localendpoint, new(EndReceive), socketState);
+                socketState.socket?.BeginReceiveFrom(socketState.buffer, 0, socketState.buffer.Length,
+                    SocketFlags.None, ref localendpoint, new(EndReceive), socketState);
 
-				Listening = true;
-			}
-			catch (SocketException ex)
-			{
-				Console.WriteLine(ex);
-				Listening = false;
-			}
-		}
+                Listening = true;
+            }
+            catch (SocketException ex)
+            {
+                Console.WriteLine(ex);
+                Listening = false;
+            }
+        }
 
-		public void Close()
-		{
-			Console.WriteLine($"[I] Closed Socket {SocketId}!");
-			socketState.Close();
-			Listening = false;
-		}
+        public void Close()
+        {
+            Console.WriteLine($"[I] Closed Socket {SocketId}!");
+            socketState.Close();
+            Listening = false;
+        }
 
-		private void EndReceive(IAsyncResult asyncResult)
-		{
-			try
-			{
-				socketState = (SocketState)asyncResult.AsyncState;
-				var client = socketState.socket;
-				if (client == null)
-					return;
+        private void EndReceive(IAsyncResult asyncResult)
+        {
+            try
+            {
+                socketState = (SocketState)asyncResult.AsyncState;
+                var client = socketState.socket;
+                if (client == null)
+                    return;
 
-				if (socketState == null)
-					return;
+                if (socketState == null)
+                    return;
 
-				var bytesRead = client.EndReceiveFrom(asyncResult, ref remoteendpoint);
-				if (bytesRead == 0 || bytesRead == -1)
-					return;
+                var bytesRead = client.EndReceiveFrom(asyncResult, ref remoteendpoint);
+                if (bytesRead == 0 || bytesRead == -1)
+                    return;
 
-				var data = new byte[bytesRead];
-				Array.Copy(socketState.buffer, data, data.Length);
+                #region "Read data"
+                var data = new byte[bytesRead];
+                Array.Copy(socketState.buffer, data, data.Length);
+                #endregion
 
-				DataReceived?.Invoke(this, new(ServiceType, ServerId, SocketId, data,
-					(IPEndPoint)remoteendpoint));
+                DataReceived?.Invoke(this, new(ServiceType, ServerId, SocketId, data,
+                    (IPEndPoint)remoteendpoint));
 
-				socketState.socket.BeginReceiveFrom(socketState.buffer, 0, socketState.buffer.Length,
-					SocketFlags.None, ref localendpoint, new(EndReceive), socketState);
-			}
-			catch (ObjectDisposedException ex)
-			{
-				Console.WriteLine(ex);
-				Listening = false;
-			}
-			catch (SocketException ex)
-			{
-				Console.WriteLine(ex);
-				Listening = false;
-			}
-		}
+                socketState.socket.BeginReceiveFrom(socketState.buffer, 0, socketState.buffer.Length,
+                    SocketFlags.None, ref localendpoint, new(EndReceive), socketState);
+            }
+            catch (ObjectDisposedException ex)
+            {
+                Console.WriteLine(ex);
+                Listening = false;
+            }
+            catch (SocketException ex)
+            {
+                Console.WriteLine(ex);
+                Listening = false;
+            }
+        }
 
-		public void SendTo(IPacket packet, IClient client)
-		{
-			var buffer = packet.Buffer.GetBuffer();
+        public void SendTo(IPacket packet, IClient client)
+        {
+            var buffer = packet.Buffer.GetBuffer();
 
-			try
-			{
-				var bytesSent = socketState.socket.SendTo(buffer, 0, (int)packet.Buffer.Length,
-					SocketFlags.None, client.RemoteEntpoint);
-			}
-			catch (SocketException ex)
-			{
-				Console.WriteLine(ex);
-			}
-		}
+            if (client.RemoteEntpoint.Address.Equals(IPAddress.Any))
+                client.RemoteEntpoint.Address = IPAddress.Broadcast;
 
-		public void Dispose()
-		{
-			Dispose(true);
-			GC.SuppressFinalize(this);
-		}
+            var bytesSent = socketState.socket.SendTo(buffer, 0, (int)packet.Buffer.Length,
+                SocketFlags.None, client.RemoteEntpoint);
+        }
 
-		protected virtual void Dispose(bool disposing)
-		{
-			if (!IsDisposed)
-			{
-				if (disposing)
-					socketState?.Dispose();
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
 
-				socketState = null;
-				IsDisposed = true;
-			}
-		}
-	}
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!IsDisposed)
+            {
+                if (disposing)
+                    socketState?.Dispose();
+
+                socketState = null;
+                IsDisposed = true;
+            }
+        }
+    }
 }

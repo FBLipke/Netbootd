@@ -80,13 +80,10 @@ namespace Netboot.Network.Packet
 			return sizeof(byte);
 		}
 
-		public byte[] Read_Bytes(long size, bool swapEndianess = false)
+		public byte[] Read_Bytes(long size)
 		{
 			var bytes = new byte[size];
 			Buffer.Read(bytes, 0, bytes.Length);
-
-			if (swapEndianess)
-				Array.Reverse(bytes);
 
 			return bytes;
 		}
@@ -109,7 +106,7 @@ namespace Netboot.Network.Packet
 			Write_Bytes(bytes);
 		}
 
-		public uint Read_UINT32(bool swapEndianess = false) => BitConverter.ToUInt32(Read_Bytes(sizeof(uint)));
+		public uint Read_UINT32() => BitConverter.ToUInt32(Read_Bytes(sizeof(uint)));
 
 		public void Write_UINT32(uint value) => Write_Bytes(BitConverter.GetBytes(value));
 	}

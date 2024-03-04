@@ -11,8 +11,10 @@
 
 	<ItemGroup>
 	  <Compile Include="Netboot\Network\Client\TFTPClient.cs" />
-	  <Compile Include="Netboot\Network\Definitions.cs" />
+	  <Compile Include="Netboot\Network\Definitions\TFTPPacketBacklogEntry.cs" />
+	  <Compile Include="Netboot\Network\Definitions\Definitions.cs" />
 	  <Compile Include="Netboot\Network\Packet\TFTPPacket.cs" />
+	  <Compile Include="Netboot\EventHandler\PacketBacklogEventArgs.cs" />
 	  <Compile Include="Netboot\Services\TFTPService.cs" />
 	</ItemGroup>
 

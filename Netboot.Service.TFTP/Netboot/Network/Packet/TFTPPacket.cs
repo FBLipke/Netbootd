@@ -134,7 +134,27 @@ namespace Netboot.Service.TFTP.Netboot.Network.Packet
 			}
 		}
 
-		public TFTPOPCodes TFTPOPCode
+        public byte NextWindow
+        {
+            get
+            {
+                SetPosition(4);
+                var result = Read_Bytes(1).FirstOrDefault();
+				RestorePosition();
+				return result;
+            }
+            set
+            {
+				SetPosition(4);
+                var bytes = new byte[sizeof(byte)];
+                bytes[0] = value;
+
+                Write_Bytes(bytes);
+				RestorePosition();
+            }
+        }
+
+        public TFTPOPCodes TFTPOPCode
 		{
 			get
 			{
@@ -174,7 +194,8 @@ namespace Netboot.Service.TFTP.Netboot.Network.Packet
 
 						bytes = Encoding.ASCII.GetBytes(option.Value);
 						offset += Write_Bytes(bytes) + 1;
-					}
+                        Buffer.Position = offset;
+                    }
 
 					Buffer.Position = offset;
 					break;
@@ -198,10 +219,14 @@ namespace Netboot.Service.TFTP.Netboot.Network.Packet
 					{
 						if (i == 0)
 						{
-							if (!Options.ContainsKey("file"))
-								Options.Add("file", parts[i]);
+							var file = parts[i];
+							if (file.StartsWith('\\') || file.StartsWith('/'))
+								file = file.Substring(1);
+
+                            if (!Options.ContainsKey("file"))
+								Options.Add("file", file);
 							else
-								Options["file"] = parts[i];
+								Options["file"] = file;
 						}
 
 						if (i == 1)
@@ -244,11 +269,10 @@ namespace Netboot.Service.TFTP.Netboot.Network.Packet
 								Options[parts[i]] = parts[i + 1];
 						}
 					}
-
-					Console.WriteLine("[D] Got TFTP Options:");
-
-					foreach (var option in Options)
-						Console.WriteLine("[D] {0}: {1}", option.Key, option.Value);
+					break;
+				case TFTPOPCodes.ACK:
+					if (Buffer.Length > 4)
+						Options.Add("NextWindow", "");
 					break;
 				default:
 					break;

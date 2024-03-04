@@ -11,6 +11,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using System.Buffers.Binary;
 using System.Net;
 using System.Text;
 
@@ -133,5 +134,28 @@ namespace Netboot.Network.Definitions
 			Data = data.GetAddressBytes();
 			Length = Convert.ToByte(Data.Length);
 		}
-	}
+
+        public ushort AsUInt16()
+        {
+            return BinaryPrimitives.ReadUInt16BigEndian(Data);
+        }
+
+        public byte AsByte()
+        {
+			return Data.FirstOrDefault();
+        }
+
+        public uint AsUInt32()
+        {
+			return BinaryPrimitives.ReadUInt32LittleEndian(Data);
+        }
+
+        public string AsString(Encoding encoding) => encoding.GetString(Data);
+
+        public string AsString() => AsString(Encoding.ASCII);
+
+        internal IPAddress AsIPAddress() => new IPAddress(Data);
+
+        internal bool AsBool() => Data.First() == 1;
+    }
 }

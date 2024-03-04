@@ -20,8 +20,8 @@
     <Compile Include="Netboot\Network\Definitions\DHCPOption.cs" />
     <Compile Include="Netboot\Network\Packet\DHCPPacket.cs" />
     <Compile Include="Netboot\Services\DHCPService.cs" />
-    <Compile Include="Netboot\Services\EventHandler\DHCPServiceBehaviorEventargs.cs" />
-    <Compile Include="Netboot\Services\UpdateBootfileEventargs.cs" />
+    <Compile Include="Netboot\EventHandler\DHCPServiceBehaviorEventargs.cs" />
+    <Compile Include="Netboot\EventHandler\UpdateBootfileEventargs.cs" />
   </ItemGroup>
 
   <ItemGroup>

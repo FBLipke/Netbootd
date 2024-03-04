@@ -82,9 +82,7 @@ namespace Netboot.Network.Server
 		public IPAddress Get_IPAddress(Guid socket)
 			=> Sockets[socket].GetIPAddress();
 
-		public void Send(Guid socketId, IPacket packet, IClient client)
-		{
-			Sockets[socketId]?.SendTo(packet, client);
-		}
-	}
+        public void Send(Guid socketId, IPacket packet, IClient client)
+			=> Sockets[socketId]?.SendTo(packet, client);
+    }
 }

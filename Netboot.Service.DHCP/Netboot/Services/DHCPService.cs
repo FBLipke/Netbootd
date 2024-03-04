@@ -18,8 +18,10 @@ using Netboot.Network.Packet;
 using Netboot.Services.Interfaces;
 using System.Buffers.Binary;
 using System.Net;
+using System.Net.Sockets;
 using System.Text;
 using System.Xml;
+using YamlDotNet.Serialization;
 using static Netboot.Services.Interfaces.IService;
 
 namespace Netboot.Services.DHCP
@@ -80,6 +82,8 @@ namespace Netboot.Services.DHCP
         private ushort MulticastTimeout { get; set; } = 10;
 
         private ushort MulticastDelay { get; set; } = 10;
+		
+		private ServerMode ServerMode { get; set; } = ServerMode.AllowAll;
 
         public Dictionary<BootServerTypes, Dictionary<DHCPOptions, byte[]>> ServiceDHCPOptions { get; private set; } = [];
 
@@ -112,10 +116,118 @@ namespace Netboot.Services.DHCP
 			var client = new DHCPClient(clientId, serviceType, remoteEndpoint, serverId, socketId);
 
 			if (!Clients.TryAdd(clientId, client))
+			{
 				Clients[clientId] = client;
+
+				if (Clients[clientId].RemoteEntpoint.Address.Equals(IPAddress.Any))
+					Clients[clientId].RemoteEntpoint.Address = IPAddress.Broadcast;
+			}
 		}
 
-		public void Handle_DataReceived(object sender, DataReceivedEventArgs e)
+        public void Handle_WDS_Request(string client, DHCPPacket request)
+        {
+            var wdsData = request.GetEncOptions(250);
+            foreach (var wdsOption in wdsData)
+            {
+                switch ((WDSNBPOptions)wdsOption.Option)
+                {
+                    case WDSNBPOptions.Unknown:
+                        break;
+                    case WDSNBPOptions.Architecture:
+                        Clients[client].Architecture = (Architecture)wdsOption.AsUInt16();
+                        break;
+                    case WDSNBPOptions.NextAction:
+                        Clients[client].WDS.NextAction = (NextActionOptionValues)wdsOption.AsByte();
+                        break;
+                    case WDSNBPOptions.PollInterval:
+                        Clients[client].WDS.PollInterval = wdsOption.AsUInt16();
+                        break;
+                    case WDSNBPOptions.PollRetryCount:
+                        Clients[client].WDS.RetryCount = wdsOption.AsUInt16();
+                        break;
+                    case WDSNBPOptions.RequestID:
+                        Clients[client].WDS.RequestId = wdsOption.AsUInt32();
+                        break;
+                    case WDSNBPOptions.Message:
+                        break;
+                    case WDSNBPOptions.VersionQuery:
+                        Clients[client].WDS.VersionQery = true;
+                        break;
+                    case WDSNBPOptions.ServerVersion:
+                        Clients[client].WDS.ServerVersion = (NBPVersionValues)wdsOption.AsUInt32();
+                        break;
+                    case WDSNBPOptions.ReferralServer:
+                        Clients[client].WDS.ReferralServer = wdsOption.AsIPAddress();
+                        break;
+                    case WDSNBPOptions.PXEClientPrompt:
+                        Clients[client].WDS.ClientPrompt = (PXEPromptOptionValues)wdsOption.AsByte();
+                        break;
+                    case WDSNBPOptions.PxePromptDone:
+                        Clients[client].WDS.PromptDone = (PXEPromptOptionValues)wdsOption.AsByte();
+                        break;
+                    case WDSNBPOptions.NBPVersion:
+                        Clients[client].WDS.NBPVersion = (NBPVersionValues)wdsOption.AsUInt16();
+                        break;
+                    case WDSNBPOptions.ServerFeatures:
+                        Clients[client].WDS.ServerFeatures = wdsOption.AsUInt32();
+                        break;
+                    case WDSNBPOptions.ActionDone:
+                        Clients[client].WDS.ActionDone = wdsOption.AsBool();
+
+                        if (ServerMode == ServerMode.AllowAll)
+                            Clients[client].WDS.ActionDone = true;
+						else
+                            Clients[client].WDS.ActionDone = false;
+                        break;
+                    case WDSNBPOptions.End:
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+
+        public DHCPOption Handle_WDS_Options(string client, DHCPPacket request)
+        {
+			var options = new List<DHCPOption>
+            {
+                new((byte)WDSNBPOptions.NextAction, (byte)Clients[client].WDS.NextAction),
+				new ((byte)WDSNBPOptions.PXEClientPrompt, (byte)Clients[client].WDS.PromptDone),
+				new ((byte)WDSNBPOptions.ActionDone, Convert.ToByte(Clients[client].WDS.ActionDone)),
+                new ((byte)WDSNBPOptions.PollRetryCount, Clients[client].WDS.RetryCount),
+            };
+
+			var requestIDBytes = new byte[sizeof(uint)];
+			BinaryPrimitives.WriteUInt32BigEndian(requestIDBytes, (uint)Clients.Count);
+			options.Add(new ((byte)WDSNBPOptions.RequestID, requestIDBytes));
+
+			var polldelayBytes = new byte[sizeof(short)];
+            BinaryPrimitives.WriteUInt16BigEndian(polldelayBytes, Clients[client].WDS.PollInterval);
+            options.Add(new((byte)WDSNBPOptions.PollInterval, polldelayBytes));
+
+            options.Add(new ((byte)WDSNBPOptions.PXEClientPrompt, (byte)Clients[client].WDS.ClientPrompt));
+            options.Add(new ((byte)WDSNBPOptions.AllowServerSelection, Convert.ToByte(Clients[client].WDS.ServerSelection)));
+
+            switch (Clients[client].WDS.NextAction)
+            {
+                case NextActionOptionValues.Drop:
+                    break;
+                case NextActionOptionValues.Approval:
+                    options.Add(new ((byte)WDSNBPOptions.Message, Clients[client].WDS.AdminMessage, Encoding.ASCII));
+                    break;
+                case NextActionOptionValues.Referral:
+                    options.Add(new ((byte)WDSNBPOptions.ReferralServer, Clients[client].WDS.ReferralServer));
+                    break;
+                case NextActionOptionValues.Abort:
+                    break;
+                default:
+                    break;
+            }
+
+            return new (250, options);
+        }
+
+        public void Handle_DataReceived(object sender, DataReceivedEventArgs e)
 		{
 			var requestPacket = new DHCPPacket(e.ServiceType, e.Packet);
 			Thread.Sleep(RespondDelay);
@@ -127,21 +239,27 @@ namespace Netboot.Services.DHCP
 				case PXEVendorID.AAPLBSDPC:
 					var clientid = string.Join(":", requestPacket.HardwareAddress.Select(x => x.ToString("X2")));
 					AddClient(clientid, e.ServiceType, e.RemoteEndpoint, e.ServerId, e.SocketId);
-					Console.WriteLine("[I] Got Request from: {0}", Clients[clientid].RemoteEntpoint);
+					
+					Console.WriteLine("[I] Got {1}Request from: {0}", Clients[clientid].RemoteEntpoint, !requestPacket.GatewayIP.Equals(IPAddress.Any)
+						? "relayed ": "");
 
 					switch (requestPacket.BootpOPCode)
 					{
 						case BOOTPOPCode.BootRequest:
-							switch ((DHCPMessageType)requestPacket.GetOption((byte)DHCPOptions.DHCPMessageType).Data[0])
+
+							if (!requestPacket.GatewayIP.Equals(IPAddress.Any))
+								Clients[clientid].RemoteEntpoint.Address = requestPacket.GatewayIP;
+
+                            switch ((DHCPMessageType)requestPacket.GetOption((byte)DHCPOptions.DHCPMessageType).Data[0])
 							{
 								case DHCPMessageType.Discover:
 									Clients[clientid].RemoteEntpoint.Address = IPAddress.Broadcast;
 									Handle_DHCP_Discover(e.ServerId, e.SocketId, clientid, requestPacket);
-									break;
+                                    if (Clients.ContainsKey(clientid))
+                                        Clients.Remove(clientid);
+                                    break;
 								case DHCPMessageType.Request:
 									Handle_DHCP_Request(e.ServerId, e.SocketId, clientid, requestPacket);
-									if (Clients.ContainsKey(clientid))
-										Clients.Remove(clientid);
 									break;
 								case DHCPMessageType.Inform:
 									break;
@@ -290,6 +408,7 @@ namespace Netboot.Services.DHCP
 			Clients[client].Response = packet.CreateResponse(serverIP);
 			UpdateBootfile?.Invoke(server, new(GetBootfile(client), 0, client));
 
+			#region "Remote Boot Configuration Protocol (RBCP)"
 			Handle_RBCP_Request(client, packet);
 
 			Clients[client].Response.AddOption(new((byte)DHCPOptions.VendorSpecificInformation,
@@ -300,8 +419,14 @@ namespace Netboot.Services.DHCP
 
 				new((byte)PXEVendorEncOptions.DiscoveryControl, DiscoveryControl),
 			}));
+            #endregion
 
-			Clients[client].Response.CommitOptions();
+            #region "Windows Deployment Server"
+			if (BootServerType == BootServerTypes.WindowsDeploymentServer)
+				Clients[client].Response.AddOption(Handle_WDS_Options(client, packet));
+            #endregion
+
+            Clients[client].Response.CommitOptions();
 			ServerSendPacket.Invoke(this, new(ServiceType, server, socket, Clients[client].Response, Clients[client]));
 		}
 
@@ -321,19 +446,52 @@ namespace Netboot.Services.DHCP
 			Clients[client].Response = packet.CreateResponse(serverIP);
 			Handle_RBCP_Request(client, packet);
 
-			UpdateBootfile?.Invoke(server, new(GetBootfile(client), Clients[client].RBCP.Layer, client));
+			var bootfile = GetBootfile(client);
 
-			#region "Add Behavior specific DHCP Options"
-			var options = ServiceDHCPOptions[BootServerType];
-			
-			foreach (var option in options)
-                Clients[client].Response.AddOption(new((byte)option.Key, option.Value));
-			#endregion
+            #region "Windows Deployment Server"
+            if (BootServerType == BootServerTypes.WindowsDeploymentServer && packet.HasOption(250))
+			{
+				Handle_WDS_Request(client, packet);
+                bootfile = GetBootfile(client, Clients[client].WDS.ActionDone
+					? "Boot\\#arch#\\pxeboot.n12" : "Boot\\#arch#\\wdsnbp.com");
 
-			Clients[client].Response.CommitOptions();
-			
-			ServerSendPacket.Invoke(this, new(ServiceType, server, socket,
-				Clients[client].Response, Clients[client]));
+				Clients[client].Response.AddOption(new DHCPOption(252, "Boot\\#arch#\\default.bcd"
+                .Replace("#arch#", GetArchitecture(Clients[client].Architecture)), Encoding.ASCII));
+            }
+
+			if (BootServerType == BootServerTypes.WindowsDeploymentServer && packet.HasOption(250) &&!Clients[client].WDS.ActionDone)
+				return;
+
+            if (BootServerType == BootServerTypes.WindowsDeploymentServer)
+                Clients[client].Response.AddOption(Handle_WDS_Options(client, packet));
+
+            if (ServerMode == ServerMode.KnownOnly)
+            {
+                Clients[client].Response.AddOption(new((byte)DHCPOptions.Message, $" Pending Request ID:" +
+                    $" {Clients.Count}: {Clients[client].WDS.AdminMessage}", Encoding.ASCII));
+            }
+            #endregion
+
+            UpdateBootfile?.Invoke(server, new(bootfile, Clients[client].RBCP.Layer, client));
+
+            #region "Add Behavior specific DHCP Options"
+            if (ServiceDHCPOptions.TryGetValue(BootServerType, out var options))
+                foreach (var option in options)
+                    Clients[client].Response.AddOption(new((byte)option.Key,
+						option.Value));
+            #endregion
+
+            Clients[client].Response.CommitOptions();
+
+			try
+			{
+                ServerSendPacket?.Invoke(this, new(ServiceType, server, socket,
+                    Clients[client].Response, Clients[client]));
+            }
+            catch (SocketException ex)
+			{
+				Console.WriteLine($"{Clients[client].RemoteEntpoint}: {ex.Message}");
+			}
 
 			if (Clients.ContainsKey(client))
 				Clients.Remove(client);
@@ -349,16 +507,24 @@ namespace Netboot.Services.DHCP
 				Architecture.DECAlpha => "alpha",
 				Architecture.Arcx86 => "x86",
 				Architecture.EFIByteCode => "efi",
-				_ => "other",
+                Architecture.EFI_IA32 => "x64",
+                _ => "other"
 			};
 		}
 
-		private string GetBootfile(string client) => bootfiles[BootServerType]
-			.Replace("#layer#", string.Format("{0}", Clients[client].RBCP.Layer))
-				.Replace("#arch#", GetArchitecture(Architecture.X86PC));
+        private string GetBootfile(string client, string filename = "")
+        {
+            var file = string.IsNullOrEmpty(filename) ? bootfiles[BootServerType] : filename;
+            return file.Replace("#layer#", string.Format("{0}", Clients[client].RBCP.Layer))
+				.Replace("#arch#", GetArchitecture(Clients[client].Architecture));
+        }
 
 		public void Heartbeat()
 		{
+			foreach (var client in Clients)
+			{
+				Console.WriteLine($"{client.Key}");
+			}
 		}
 	}
 }

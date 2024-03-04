@@ -12,80 +12,26 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 using Netboot.Common;
-using Netboot.Common.Netboot.Cryptography;
 using Netboot.Network.Interfaces;
 using Netboot.Network.Server;
 using Netboot.Services;
 using Netboot.Services.Interfaces;
 using System.Reflection;
 using System.Xml;
-using YamlDotNet.Serialization;
-using YamlDotNet.Serialization.NamingConventions;
 
 namespace Netboot
 {
-	public class NetbootBase : IDisposable
+    public class NetbootBase : IDisposable
 	{
 		public static Dictionary<Guid, IServer> Servers = [];
 		public static Dictionary<string, IService> Services = [];
+        private string[] cmdArgs = [];
 
-		string[] cmdArgs = [];
-
-		public static string WorkingDirectory = Directory.GetCurrentDirectory();
-		public static string ConfigFile = string.Empty;
-		public static string BootServerRoot = Path.Combine(WorkingDirectory, "BootServer");
+		public static NetbootPlatform Platform = new NetbootPlatform();
 
 		public NetbootBase(string[] args)
 		{
 			cmdArgs = args;
-		}
-
-		void ParseArguments(string[] args)
-		{
-			foreach (var arg in args)
-			{
-				if (!arg.StartsWith("--"))
-					continue;
-
-				var kvPair = arg.Substring(2).Split(':', 1);
-
-				switch (kvPair[0].ToLower())
-				{
-					case "root":
-						if (string.IsNullOrEmpty(kvPair[1]))
-							continue;
-
-						var value = kvPair[1];
-						if (value == "~")
-							WorkingDirectory = Directory.GetCurrentDirectory();
-						else
-						{
-							if (Directory.Exists(kvPair[1]))
-								WorkingDirectory = kvPair[1];
-						}
-						break;
-					case "config":
-						if (string.IsNullOrEmpty(kvPair[1]))
-							continue;
-
-						var configValue = kvPair[1];
-						if (configValue == "~")
-							ConfigFile = Path.Combine(Path.Combine(Directory.GetCurrentDirectory(), "Config", "Netboot.xml"));
-						else
-						{
-							if (!File.Exists(kvPair[1]))
-							{
-								Console.WriteLine($"Configfile: {configValue} not found! -> using default...");
-								break;
-							}
-
-							ConfigFile = kvPair[1];
-						}
-						break;
-					default:
-						break;
-				}
-			}
 		}
 
 		public static void LoadServices()
@@ -93,21 +39,23 @@ namespace Netboot
 			Add_Service(new BaseService("NONE"));
 
             #region "Load Service Modules"
-            var serviceModules = new DirectoryInfo(WorkingDirectory)
+            var serviceModules = new DirectoryInfo(Platform.NetbootDirectory)
 				.GetFiles("Netboot.Service.*.dll", SearchOption.TopDirectoryOnly);
 
 			foreach (var module in serviceModules)
 			{
 				var ass = Assembly.LoadFrom(module.FullName);
 				foreach (var (t, serviceType) in from t in ass.GetTypes()
-					where (t.IsSubclassOf(typeof(IService)) || t.GetInterfaces().Contains(typeof(IService))) && t.IsAbstract == false
-						let serviceType = module.Name.Split('.')[2].Trim().ToUpper()
-							select (t, serviceType))
+					where (t.IsSubclassOf(typeof(IService)) || t.GetInterfaces()
+						.Contains(typeof(IService))) && t.IsAbstract == false
+							let serviceType = module.Name.Split('.')[2].Trim().ToUpper()
+								select (t, serviceType))
 				{
 					try
 					{
 						var b = t.InvokeMember(string.Empty, BindingFlags.CreateInstance,
 							null, null, new[] { serviceType }) as IService;
+						
 						Add_Service(b);
 
 					}
@@ -143,7 +91,9 @@ namespace Netboot
 			Console.WriteLine("Netboot 0.1a ({0})", Functions.IsLittleEndian()
 				? "LE (LittleEndian)" : "BE (BigEndian)");
 
-			ConfigFile = Path.Combine(WorkingDirectory, "Config", "Netboot.xml");
+			Platform.Initialize();
+
+			var ConfigFile = Path.Combine(Platform.ConfigDirectory, "Netboot.xml");
 
 			if (!File.Exists(ConfigFile))
 				throw new FileNotFoundException(ConfigFile);
@@ -201,11 +151,10 @@ namespace Netboot
 			{
 				try
 				{
+					var serviceType = e.Packet[0] > 2 && e.ServiceType == "DHCP" ? "BINL" : e.ServiceType;
+
 					// Microsoft BINL (RIS) uses also port 4011. So differentiate between BINL and BOOTP (/ DHCP)
-					if (e.Packet[0] > 2 && e.ServiceType == "DHCP")
-						Functions.InvokeMethod(Services["BINL"], "Handle_DataReceived", new[] { sender, e });
-					else
-						Functions.InvokeMethod(Services[e.ServiceType], "Handle_DataReceived", new[] { sender, e });
+					Functions.InvokeMethod(Services[serviceType], "Handle_DataReceived", [sender, e]);
 				}
 				catch (KeyNotFoundException)
 				{

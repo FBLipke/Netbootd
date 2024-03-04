@@ -11,7 +11,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Netboot.Common.Netboot.Common.Definitions;
+using Netboot.Common.Definitions;
 using Netboot.Network.Definitions;
 using System.Buffers.Binary;
 

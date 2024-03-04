@@ -11,6 +11,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Netboot.Network.Definitions;
 using Netboot.Network.Packet;
 using System.Net;
 
@@ -24,6 +25,8 @@ namespace Netboot.Network.Client
 			RBCP = new RBCPClient();
 			WDS = new WDSClient();
 		}
+
+		public Architecture Architecture { get; set; } = Architecture.X86PC;
 
 		public RBCPClient RBCP { get; private set; }
 

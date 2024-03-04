@@ -18,8 +18,6 @@ namespace Netboot.Network.Client
 {
 	public class WDSClient
 	{
-		public bool AllowServerSelection { get; set; }
-
 		public ushort PollInterval { get; set; }
 
 		public ushort RetryCount { get; set; }
@@ -30,21 +28,20 @@ namespace Netboot.Network.Client
 
 		public uint ServerFeatures { get; set; }
 
-		public bool ActionDone { get; set; }
+		public bool ActionDone { get; set; } = false;
 
 		public NextActionOptionValues NextAction { get; set; }
 		
 		public string BCDPath { get; set; }
-		
-		public string AdminMessage { get; set; }
-		
-		public Architecture Architecure { get; set; }
-		
-		public bool ServerSelection { get; set; }
+
+		public string AdminMessage { get; set; } = "Waiting for Approval...";
+
+
+        public bool ServerSelection { get; set; } = true;
 
 		public bool VersionQery { get; set; } = false;
 
-		public uint RequestId { get; set; } = 0;
+		public uint RequestId { get; set; } = 1;
 		
 		public string VersionQuery { get; set; }
 		
@@ -52,11 +49,11 @@ namespace Netboot.Network.Client
 		
 		public IPAddress ReferralServer { get; set; }
 		
-		public PXEPromptOptionValues ClientPrompt { get; set; } = PXEPromptOptionValues.OptIn;
+		public PXEPromptOptionValues ClientPrompt { get; set; } = PXEPromptOptionValues.OptOut;
 		
-		public PXEPromptOptionValues PromptDone { get; set; } = PXEPromptOptionValues.NoPrompt;
+		public PXEPromptOptionValues PromptDone { get; set; } = PXEPromptOptionValues.OptOut;
 		
-		public NBPVersionValues NBPVersiopn { get; set; }
+		public NBPVersionValues NBPVersion { get; set; }
 
 		public WDSClient()
 		{
@@ -65,7 +62,6 @@ namespace Netboot.Network.Client
 			ActionDone = false;
 			AdminMessage = "Waiting for Approval...";
 			NextAction = NextActionOptionValues.Approval;
-			Architecure = Architecture.X86PC;
 		}
 	}
 }

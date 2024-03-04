@@ -29,6 +29,11 @@ namespace Netboot.Network.Packet
 			ParsePacket();
 		}
 
+		/// <summary>
+		/// Indicates that the packet was relayed
+		/// </summary>
+		public bool IsRelayed { get => GatewayIP != IPAddress.Any; }
+
 		public DHCPPacket(string serviceType) : base(serviceType)
 		{
 		}
@@ -49,7 +54,7 @@ namespace Netboot.Network.Packet
 
 			var optionData = GetOption(opt)?.Data;
 			if (optionData == null)
-				return new List<DHCPOption>();
+				return [];
 
 			for (var i = 0; i < optionData.Length;)
 			{
@@ -62,13 +67,13 @@ namespace Netboot.Network.Packet
 
 					Array.Copy(optionData, (i + 2), data, 0, len);
 
-					dict.Add(new DHCPOption(o, data));
+					dict.Add(new(o, data));
 
 					i += 2 + len;
 				}
 				else
 				{
-					dict.Add(new DHCPOption(o));
+					dict.Add(new (o));
 					break;
 				}
 			}
@@ -82,7 +87,7 @@ namespace Netboot.Network.Packet
 			{
 				var vendorId = PXEVendorID.None;
 
-				if (Options.ContainsKey((byte)DHCPOptions.Vendorclassidentifier))
+				if (HasOption((byte)DHCPOptions.Vendorclassidentifier))
 				{
 					var option = GetOption((byte)DHCPOptions.Vendorclassidentifier);
 
@@ -396,23 +401,24 @@ namespace Netboot.Network.Packet
 			{
 				default:
 				case BOOTPOPCode.BootRequest:
-					packet = new(ServiceType, expectedLength);
-					packet.ServerName = Environment.MachineName;
-					packet.HardwareType = HardwareType;
-					packet.HardwareLength = HardwareLength;
-					packet.Hop = Hop;
-					packet.TransactionId = TransactionId;
-					packet.Seconds = Seconds;
-					packet.Flags = Flags;
-					packet.ClientIP = ClientIP;
-					packet.YourIP = YourIP;
-					packet.ServerIP = serverIP;
-					packet.GatewayIP = GatewayIP;
-					packet.BOOTPVendor = BOOTPVendor;
-					packet.BootpOPCode = BOOTPOPCode.BootReply;
-					packet.HardwareAddress = HardwareAddress;
-
-					packet.AddOption(new((byte)DHCPOptions.ServerIdentifier, packet.ServerIP));
+                    packet = new(ServiceType, expectedLength)
+                    {
+                        ServerName = Environment.MachineName,
+                        HardwareType = HardwareType,
+                        HardwareLength = HardwareLength,
+                        Hop = Hop,
+                        TransactionId = TransactionId,
+                        Seconds = Seconds,
+                        Flags = Flags,
+                        ClientIP = ClientIP,
+                        YourIP = YourIP,
+                        ServerIP = serverIP,
+                        GatewayIP = GatewayIP,
+                        BOOTPVendor = BOOTPVendor,
+                        BootpOPCode = BOOTPOPCode.BootReply,
+                        HardwareAddress = HardwareAddress
+                    };
+                    packet.AddOption(new((byte)DHCPOptions.ServerIdentifier, packet.ServerIP));
 
 					switch (GetVendorIdent)
 					{
@@ -473,19 +479,14 @@ namespace Netboot.Network.Packet
 		{
 			Options.OrderBy(key => key.Key);
 
+			// add End Option (if needed)
 			if (!Options.ContainsKey(byte.MaxValue))
 				AddOption(new(byte.MaxValue));
 
-			var length = 0;
-
-			foreach (var option in Options.Values)
-				length += option.Option != byte.MaxValue ? 2 + option.Length : 1;
-
 			var curPosition = Buffer.Position;
-
 			var offset = 240;
-			Buffer.Position = offset;
 
+			Buffer.Position = offset;
 			foreach (var option in Options.Values)
 			{
 				#region "DHCP Option Number"

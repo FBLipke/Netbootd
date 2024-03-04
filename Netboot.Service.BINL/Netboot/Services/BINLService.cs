@@ -12,11 +12,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 using Netboot.Common;
-using Netboot.Common.Netboot.Common.Definitions;
+using Netboot.Common.Definitions;
 using Netboot.Network.Client;
 using Netboot.Network.Definitions;
 using Netboot.Network.EventHandler;
-using Netboot.Network.Interfaces;
 using Netboot.Network.Packet;
 using Netboot.Services.Interfaces;
 using System.Net;
@@ -26,7 +25,7 @@ using System.Xml;
 
 namespace Netboot.Service.BINL
 {
-	public class BINLService : IService
+    public class BINLService : IService
 	{
 		public BINLService(string serviceType)
 		{
@@ -39,7 +38,7 @@ namespace Netboot.Service.BINL
 
 		public string ServiceType { get; }
 
-		public Dictionary<string, IClient> Clients { get; set; } = [];
+		public Dictionary<string, BINLClient> Clients { get; set; } = [];
 
 		public event IService.AddServerEventHandler? AddServer;
 		public event IService.ServerSendPacketEventHandler? ServerSendPacket;
@@ -152,12 +151,10 @@ namespace Netboot.Service.BINL
 
 		void AddClient(string clientId, string serviceType, IPEndPoint remoteEndpoint, Guid serverId, Guid socketId)
 		{
-			if (!Clients.ContainsKey(clientId))
-				Clients.Add(clientId, new BINLClient(clientId, serviceType, remoteEndpoint, serverId, socketId));
+			if (!Clients.TryGetValue(clientId, out BINLClient value))
+				Clients.Add(clientId, new(clientId, serviceType, remoteEndpoint, serverId, socketId));
 			else
-			{
-				Clients[clientId].RemoteEntpoint = remoteEndpoint;
-			}
+                value.RemoteEntpoint = remoteEndpoint;
 		}
 
 		public void Handle_DataReceived(object sender, DataReceivedEventArgs e)
