@@ -21,7 +21,6 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Xml;
-using YamlDotNet.Serialization;
 using static Netboot.Services.Interfaces.IService;
 
 namespace Netboot.Services.DHCP
@@ -122,7 +121,18 @@ namespace Netboot.Services.DHCP
 				if (Clients[clientId].RemoteEntpoint.Address.Equals(IPAddress.Any))
 					Clients[clientId].RemoteEntpoint.Address = IPAddress.Broadcast;
 			}
-		}
+
+            Clients[clientId].UpdateTimestamp();
+        }
+
+        private void RemoveClient(string id)
+        {
+            if (Clients.ContainsKey(id))
+            {
+                Clients[id].Dispose();
+                Clients.Remove(id);
+            }
+        }
 
         public void Handle_WDS_Request(string client, DHCPPacket request)
         {
@@ -231,13 +241,14 @@ namespace Netboot.Services.DHCP
 		{
 			var requestPacket = new DHCPPacket(e.ServiceType, e.Packet);
 			Thread.Sleep(RespondDelay);
-
+			
+			var clientid = string.Join(":", requestPacket.HardwareAddress.Select(x => x.ToString("X2")));
 			switch (requestPacket.GetVendorIdent)
 			{
 				case PXEVendorID.PXEClient:
 				case PXEVendorID.PXEServer:
 				case PXEVendorID.AAPLBSDPC:
-					var clientid = string.Join(":", requestPacket.HardwareAddress.Select(x => x.ToString("X2")));
+					
 					AddClient(clientid, e.ServiceType, e.RemoteEndpoint, e.ServerId, e.SocketId);
 					
 					Console.WriteLine("[I] Got {1}Request from: {0}", Clients[clientid].RemoteEntpoint,
@@ -255,29 +266,28 @@ namespace Netboot.Services.DHCP
 								case DHCPMessageType.Discover:
 									Clients[clientid].RemoteEntpoint.Address = IPAddress.Broadcast;
 									Handle_DHCP_Discover(e.ServerId, e.SocketId, clientid, requestPacket);
-                                    if (Clients.ContainsKey(clientid))
-                                        Clients.Remove(clientid);
+                                    RemoveClient(clientid);
                                     break;
+								case DHCPMessageType.Inform:
 								case DHCPMessageType.Request:
 									Handle_DHCP_Request(e.ServerId, e.SocketId, clientid, requestPacket);
 									break;
-								case DHCPMessageType.Inform:
-									break;
 								case DHCPMessageType.Release:
 								default:
-									if (Clients.ContainsKey(clientid))
-										Clients.Remove(clientid);
-									break;
+                                    RemoveClient(clientid);
+                                    break;
 							}
 							break;
 						case BOOTPOPCode.BootReply:
 							break;
 						default:
-							break;
+                            RemoveClient(clientid);
+                            break;
 					}
 					break;
 				default:
-					return;
+                    RemoveClient(clientid);
+                    return;
 			}
 		}
 
@@ -332,8 +342,7 @@ namespace Netboot.Services.DHCP
 				var behavior = (BootServerTypes)ushort.Parse(dhcp.Attributes.GetNamedItem("behavior").Value);
 				if(!ServiceDHCPOptions.ContainsKey(behavior))
 					ServiceDHCPOptions.Add(behavior, new Dictionary<DHCPOptions, byte[]>());
-                
-				
+
 				var optionList = dhcp.SelectNodes("Option");
 				foreach(XmlNode option in optionList)
 				{
@@ -491,9 +500,8 @@ namespace Netboot.Services.DHCP
 				Console.WriteLine($"{Clients[client].RemoteEntpoint}: {ex.Message}");
 			}
 
-			if (Clients.ContainsKey(client))
-				Clients.Remove(client);
-		}
+            RemoveClient(client);
+        }
 
 		private string GetArchitecture(Architecture architecture)
 		{
@@ -519,9 +527,14 @@ namespace Netboot.Services.DHCP
 
 		public void Heartbeat()
 		{
-			foreach (var client in Clients)
+            var controlDate = DateTime.Now;
+
+			foreach (var client in Clients.ToList())
 			{
-				Console.WriteLine($"{client.Key}");
+				TimeSpan ts = controlDate - client.Value.LastUpdate;
+				
+				if (ts.TotalSeconds >= 30)
+					RemoveClient(client.Key);
 			}
 		}
 	}

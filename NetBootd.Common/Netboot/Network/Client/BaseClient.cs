@@ -23,6 +23,10 @@ namespace Netboot.Network.Client
 		public string ServiceType { get; set; }
 		public string ClientId { get; set; }
 
+		public DateTime CreationTime { get; set; }
+
+		public DateTime LastUpdate { get; set; }
+
 		public IPEndPoint RemoteEntpoint { get; set; }
 
 		public BaseClient(string clientId, string serviceType,
@@ -33,6 +37,13 @@ namespace Netboot.Network.Client
 			ServerId = serverid;
 			ClientId = clientId;
 			RemoteEntpoint = remoteEndpoint;
+			CreationTime = DateTime.Now;
+			LastUpdate = DateTime.Now;
+		}
+
+		public void UpdateTimestamp()
+		{
+			LastUpdate = DateTime.Now;
 		}
 
 		public void Close()
