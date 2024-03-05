@@ -44,21 +44,18 @@ namespace Netboot
             else
                 return false;
 
+            NetbootDirectory = Path.Combine(Directory.GetCurrentDirectory());
+            TFTPRoot = Path.Combine(NetbootDirectory, "TFTPRoot");
+            ConfigDirectory = Path.Combine(NetbootDirectory, "Config");
             switch (OSPlatform)
             {
                 case OSPlatformId.Windows:
-                    NetbootDirectory = Path.Combine(Directory.GetCurrentDirectory());
-                    TFTPRoot = Path.Combine(NetbootDirectory, "TFTPRoot");
-                    ConfigDirectory = Path.Combine(NetbootDirectory, "Config");
                     DirectorySeperatorChar = "\\";
                     break;
                 case OSPlatformId.FreeBSD:
                 case OSPlatformId.Android:
                 case OSPlatformId.Linux:
                     DirectorySeperatorChar = "/";
-                    ConfigDirectory = "/etc/NetBootd";
-                    NetbootDirectory = "/usr/local/NetBootd/";
-                    TFTPRoot = Path.Combine(NetbootDirectory, "TFTPRoot");
                     break;
                 case OSPlatformId.MacOS:
                 case OSPlatformId.Ios:
@@ -69,8 +66,4 @@ namespace Netboot
             return true;
         }
     }
-
-
-
-
 }
