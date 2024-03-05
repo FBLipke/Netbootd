@@ -5,7 +5,7 @@ VisualStudioVersion = 17.8.34525.116
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Netboot", "Netbootd\Netboot.csproj", "{E56D996C-0C73-4615-BC4B-8E9D2E02EC1D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Netboot.Common", "NetBootd.Common\Netboot.Common.csproj", "{F174DB54-33A4-47FB-8D55-F956D2F0C52F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Netboot.Common", "NetBootd.Common\NetBoot.Common.csproj", "{F174DB54-33A4-47FB-8D55-F956D2F0C52F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Netboot.Service.DHCP", "Netboot.Service.DHCP\Netboot.Service.DHCP.csproj", "{BEC027F4-E518-453E-8AFF-F9245E48C829}"
 EndProject

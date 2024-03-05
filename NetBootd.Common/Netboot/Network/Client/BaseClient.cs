@@ -19,8 +19,11 @@ namespace Netboot.Network.Client
 	public class BaseClient : IClient, IDisposable
 	{
 		public Guid SocketId { get; set; }
+		
 		public Guid ServerId { get; set; }
+
 		public string ServiceType { get; set; }
+		
 		public string ClientId { get; set; }
 
 		public DateTime CreationTime { get; set; }

@@ -18,9 +18,20 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="TFTPRoot\Boot\x64\boot.wim" />
+    <None Remove="TFTPRoot\Boot\x64\bootmgr.exe" />
+    <None Remove="TFTPRoot\Boot\x64\default.bcd.LOG" />
+    <None Remove="TFTPRoot\Boot\x64\default.bcd.LOG1" />
+    <None Remove="TFTPRoot\Boot\x64\default.bcd.LOG2" />
+    <None Remove="TFTPRoot\Boot\x64\pxeboot.n12" />
+    <None Remove="TFTPRoot\Boot\x64\wdsnbp.com" />
+    <None Remove="TFTPRoot\Boot\x86\boot.sdi" />
     <None Remove="TFTPRoot\Boot\x86\default.bcd.LOG" />
     <None Remove="TFTPRoot\Boot\x86\default.bcd.LOG1" />
     <None Remove="TFTPRoot\Boot\x86\default.bcd.LOG2" />
+    <None Remove="TFTPRoot\Boot\x86\dosundi.1" />
+    <None Remove="TFTPRoot\Boot\x86\pxelinux.0" />
+    <None Remove="TFTPRoot\Boot\x86\wdsnbp.com" />
   </ItemGroup>
 
   <ItemGroup>
@@ -30,7 +41,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\NetBootd.Common\Netboot.Common.csproj" />
+    <ProjectReference Include="..\NetBootd.Common\NetBoot.Common.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -52,12 +63,6 @@
     <None Update="TFTPRoot\Boot\x86\pxeboot.n12">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="TFTPRoot\Boot\x86\pxelinux.0">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="TFTPRoot\Boot\x86\wdsnbp.com">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
     <None Update="TFTPRoot\linux\ldlinux.c32">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -77,25 +82,7 @@
     <None Include="Dumps\dupp.pcap" />
     <None Include="Dumps\NEG_NTLMSSP.bin" />
     <None Include="TFTPRoot\Boot\Readme.txt" />
-    <None Include="TFTPRoot\Boot\x64\boot.wim">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="TFTPRoot\Boot\x64\bootmgr.exe">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
     <None Include="TFTPRoot\Boot\x64\default.bcd">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="TFTPRoot\Boot\x64\pxeboot.n12">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="TFTPRoot\Boot\x64\wdsnbp.com">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="TFTPRoot\Boot\x86\boot.sdi">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="TFTPRoot\Boot\x86\dosundi.1">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="TFTPRoot\OSChooser\english\00004e22.osc" />
