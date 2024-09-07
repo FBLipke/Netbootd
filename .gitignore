@@ -370,3 +370,4 @@ FodyWeavers.xsd
 /Netbootd/TFTPRoot/Boot/x86/wdsnbp.com
 /Netbootd/TFTPRoot/Boot/x86/pxelinux.0
 /Netbootd/TFTPRoot/Boot/x86/dosundi.1
+/Netbootd/TFTPRoot/Boot/x86/boot.sdi
