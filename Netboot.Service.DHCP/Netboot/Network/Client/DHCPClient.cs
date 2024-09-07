@@ -24,6 +24,7 @@ namespace Netboot.Network.Client
 		{
 			RBCP = new RBCPClient();
 			WDS = new WDSClient();
+			Response = new DHCPPacket();
 		}
 
 		public Architecture Architecture { get; set; } = Architecture.X86PC;

@@ -42,8 +42,9 @@ namespace Netboot.Service.BINL
 
 		public event IService.AddServerEventHandler? AddServer;
 		public event IService.ServerSendPacketEventHandler? ServerSendPacket;
+        public event IService.PrintMessageEventHandler? PrintMessage;
 
-		public void Dispose()
+        public void Dispose()
 		{
 			foreach (var client in Clients.Values)
 				client.Dispose();
@@ -96,7 +97,7 @@ namespace Netboot.Service.BINL
 					string.IsNullOrEmpty(screen) ? "welcome.osc" : Path.Combine("english",
 					string.Format($"{screen.ToLowerInvariant()}.osc"))));
 
-				Console.WriteLine($"[I] OSChooser Screen Request: {screen.ToLowerInvariant()}");
+				PrintMessage?.Invoke(this, new PrintMessageEventArgs($"[I] OSChooser Screen Request: {screen.ToLowerInvariant()}"));
 
 				fileContent = fileContent.Replace("\r\n", "\n");
 
@@ -131,22 +132,21 @@ namespace Netboot.Service.BINL
 			switch (ntlmrequest.MessageType)
 			{
 				case ntlmssp_message_type.Negotiate:
-					Console.WriteLine("[I] NTLM Negotiate! (Flags: {0})", ntlmrequest.Flags);
+					PrintMessage?.Invoke(this, new PrintMessageEventArgs(string.Format("[I] NTLM Negotiate! (Flags: {0})", ntlmrequest.Flags)));
 					response.Flags = ntlmrequest.Flags;
 					response.Challenge = Functions.NTLMChallenge();
 					response.Context = new byte[8];
 					break;
 				case ntlmssp_message_type.Challenge:
-					Console.WriteLine("[I] NTLM Challenge!");
+					PrintMessage?.Invoke(this, new PrintMessageEventArgs(string.Format("[I] NTLM Challenge!")));
 					break;
 				case ntlmssp_message_type.Authenticate:
-					Console.WriteLine("[I] NTLM Authenticate!");
+                    PrintMessage?.Invoke(this, new PrintMessageEventArgs(string.Format("[I] NTLM Authenticate!")));
 					break;
 				default:
-					Console.WriteLine("[I] imvalid Type!");
+                    PrintMessage?.Invoke(this, new PrintMessageEventArgs(string.Format("[I] invalid Type!")));
 					return;
 			}
-
 		}
 
 		void AddClient(string clientId, string serviceType, IPEndPoint remoteEndpoint, Guid serverId, Guid socketId)

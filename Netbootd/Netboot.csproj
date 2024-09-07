@@ -19,19 +19,12 @@
 
   <ItemGroup>
     <None Remove="TFTPRoot\Boot\x64\boot.wim" />
-    <None Remove="TFTPRoot\Boot\x64\bootmgr.exe" />
     <None Remove="TFTPRoot\Boot\x64\default.bcd.LOG" />
     <None Remove="TFTPRoot\Boot\x64\default.bcd.LOG1" />
     <None Remove="TFTPRoot\Boot\x64\default.bcd.LOG2" />
-    <None Remove="TFTPRoot\Boot\x64\pxeboot.n12" />
-    <None Remove="TFTPRoot\Boot\x64\wdsnbp.com" />
-    <None Remove="TFTPRoot\Boot\x86\boot.sdi" />
     <None Remove="TFTPRoot\Boot\x86\default.bcd.LOG" />
     <None Remove="TFTPRoot\Boot\x86\default.bcd.LOG1" />
     <None Remove="TFTPRoot\Boot\x86\default.bcd.LOG2" />
-    <None Remove="TFTPRoot\Boot\x86\dosundi.1" />
-    <None Remove="TFTPRoot\Boot\x86\pxelinux.0" />
-    <None Remove="TFTPRoot\Boot\x86\wdsnbp.com" />
   </ItemGroup>
 
   <ItemGroup>
@@ -81,10 +74,21 @@
     <None Include="Dumps\CHL_NTLMSSP.bin" />
     <None Include="Dumps\dupp.pcap" />
     <None Include="Dumps\NEG_NTLMSSP.bin" />
+    <None Include="Dumps\win2k\000000000000000000008A98147E1BFE.sif" />
+    <None Include="Dumps\win2k\LAYOUT.INF" />
+    <None Include="Dumps\win2k\ristndrd.sif" />
+    <None Include="Dumps\win2k\TXTSETUP.SIF" />
     <None Include="TFTPRoot\Boot\Readme.txt" />
+    <None Include="TFTPRoot\Boot\x64\bootmgr.exe" />
     <None Include="TFTPRoot\Boot\x64\default.bcd">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Include="TFTPRoot\Boot\x64\pxeboot.n12" />
+    <None Include="TFTPRoot\Boot\x64\wdsnbp.com" />
+    <None Include="TFTPRoot\Boot\x86\boot.sdi" />
+    <None Include="TFTPRoot\Boot\x86\dosundi.1" />
+    <None Include="TFTPRoot\Boot\x86\pxelinux.0" />
+    <None Include="TFTPRoot\Boot\x86\wdsnbp.com" />
     <None Include="TFTPRoot\OSChooser\english\00004e22.osc" />
     <None Include="TFTPRoot\OSChooser\english\00004e23.osc" />
     <None Include="TFTPRoot\OSChooser\english\00004e24.osc" />
@@ -141,12 +145,6 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="TFTPRoot\OSChooser\welcome.osc">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="TFTPRoot\Setup\German\Images\win2000.srv\i386\templates\ristndrd.sif">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="TFTPRoot\tmp\000000000000000000008A98147E1BFE.sif">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>

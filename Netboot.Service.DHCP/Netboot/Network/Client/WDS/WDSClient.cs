@@ -57,6 +57,7 @@ namespace Netboot.Network.Client
 			ActionDone = false;
 			AdminMessage = "Waiting for Approval...";
 			NextAction = NextActionOptionValues.Approval;
+			ReferralServer = IPAddress.None;
 		}
 	}
 }

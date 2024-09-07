@@ -18,9 +18,11 @@ namespace Netboot.Services.Interfaces
 {
 	public interface IService : IDisposable
 	{
-		delegate void AddServerEventHandler(object sender, AddServerEventArgs e);
+        delegate void PrintMessageEventHandler(object sender, PrintMessageEventArgs e);
+        delegate void AddServerEventHandler(object sender, AddServerEventArgs e);
 		delegate void ServerSendPacketEventHandler(object sender, ServerSendPacketEventArgs e);
-		event AddServerEventHandler? AddServer;
+        event PrintMessageEventHandler? PrintMessage;
+        event AddServerEventHandler? AddServer;
 		event ServerSendPacketEventHandler? ServerSendPacket;
 
 		List<ushort> Ports { get; set; }

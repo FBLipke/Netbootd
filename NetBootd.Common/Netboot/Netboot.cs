@@ -81,6 +81,10 @@ namespace Netboot
 				Servers[e.ServerId].Send(e.SocketId, e.Packet, e.Client);
 			};
 
+			service.PrintMessage += (sender, e) => {
+				Console.WriteLine(e.Message);
+			};
+
 			Services.Add(service.ServiceType, service);
 
 			Console.WriteLine($"[I] Added Service for '{service.ServiceType}'");
@@ -91,7 +95,8 @@ namespace Netboot
 			Console.WriteLine("Netboot 0.1a ({0})", Functions.IsLittleEndian()
 				? "LE (LittleEndian)" : "BE (BigEndian)");
 
-			Platform.Initialize();
+			if (!Platform.Initialize())
+				return false;
 
 			var ConfigFile = Path.Combine(Platform.ConfigDirectory, "Netboot.xml");
 

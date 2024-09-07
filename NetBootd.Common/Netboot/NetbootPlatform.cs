@@ -47,6 +47,10 @@ namespace Netboot
             NetbootDirectory = Path.Combine(Directory.GetCurrentDirectory());
             TFTPRoot = Path.Combine(NetbootDirectory, "TFTPRoot");
             ConfigDirectory = Path.Combine(NetbootDirectory, "Config");
+
+            Directory.CreateDirectory(Path.Combine(TFTPRoot,"Setup"));
+            Directory.CreateDirectory(Path.Combine(TFTPRoot, "tmp"));
+
             switch (OSPlatform)
             {
                 case OSPlatformId.Windows:

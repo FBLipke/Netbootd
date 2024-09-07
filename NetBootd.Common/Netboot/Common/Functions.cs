@@ -28,7 +28,12 @@ namespace Netboot.Common
 			return nano;
 		}
 
-		public static byte[] NTLMChallenge()
+        public static void PrintMessage(string message)
+        {
+            Console.WriteLine(message);
+        }
+
+        public static byte[] NTLMChallenge()
 		{
 			#region "Generate the Seed"
 			var SysTime = BitConverter.GetBytes(NTQuerySystemTime());

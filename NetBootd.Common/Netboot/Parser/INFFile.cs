@@ -61,6 +61,8 @@ namespace Netboot.Common
 							Sections[sectionName].Add(key, value);
 					}
 				}
+
+				reader.Close();
 			}
 		}
 
@@ -95,7 +97,35 @@ namespace Netboot.Common
 				Sections[section][key] = value;
 		}
 
-		public List<string> GetSectionKeys(string section)
+        public void SetValues(Dictionary<string, Dictionary<string, string>> data)
+        {
+			Sections = data;
+			Commit();
+        }
+
+
+		public void Commit()
+		{
+			using (var sw = new StreamWriter(FilePath))
+			{
+				sw.AutoFlush = true;
+				sw.NewLine = "\r\n";
+
+                foreach (var section in Sections)
+                {
+                    sw.WriteLine($"[{section.Key}]");
+
+                    foreach (var value in section.Value)
+                        sw.WriteLine($"{value.Key} = {value.Value}");
+
+                    sw.WriteLine("");
+                }
+
+				sw.Close();
+            }
+        }
+
+        public List<string> GetSectionKeys(string section)
 			=> Sections[section].Keys.ToList();
 	}
 }

@@ -26,13 +26,17 @@ namespace Netboot.Utility
 		public void RunCommand(string[] args)
 		{
 			if (args.Length == 0)
-				return;
-
-			Console.WriteLine("!dist: Distribution share management!");
-
+			{
+				Console.WriteLine("Aviable Commands:");
+                
+                return;
+			}
+			
 			switch (args.First())
 			{
 				case "!dist":
+                    Console.WriteLine("!dist: Distribution share management!");
+                    Console.WriteLine();
 					Console.WriteLine("Syntax: !dist add (OStype) (CD ROOT)");
 					Console.WriteLine("OSType: \"nt5\" (Windows 2K/XP/2003)");
 					switch (args[1])

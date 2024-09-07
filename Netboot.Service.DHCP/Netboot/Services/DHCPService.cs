@@ -100,8 +100,9 @@ namespace Netboot.Services.DHCP
 
 		public event AddServerEventHandler? AddServer;
 		public event ServerSendPacketEventHandler? ServerSendPacket;
+        public event PrintMessageEventHandler? PrintMessage;
 
-		public void Dispose()
+        public void Dispose()
 		{
 			foreach (var client in Clients.Values.ToList())
 				client.Dispose();
@@ -296,6 +297,9 @@ namespace Netboot.Services.DHCP
 
         public bool Initialize(XmlNode xmlConfigNode)
 		{
+			if (xmlConfigNode == null)
+				return false;
+
 			var ports = xmlConfigNode.Attributes.GetNamedItem("port").Value.Split(',').ToList();
 			if (ports.Count > 0)
 				Ports.AddRange(from port in ports
@@ -310,16 +314,19 @@ namespace Netboot.Services.DHCP
             #region "Read Multicast settings"
             var mcastSettings = xmlConfigNode.SelectNodes("Multicast");
 
-			foreach (XmlNode mcastSetting in mcastSettings)
+			if (mcastSettings.Count != 0)
 			{
-                McastDiscoveryAddress = IPAddress.Parse(mcastSetting.Attributes.GetNamedItem("addr").Value);
-                McastClientPort = ushort.Parse(mcastSetting.Attributes.GetNamedItem("cport").Value);
-                McastServerPort = ushort.Parse(mcastSetting.Attributes.GetNamedItem("sport").Value);
+				foreach (XmlNode mcastSetting in mcastSettings)
+				{
+					McastDiscoveryAddress = IPAddress.Parse(mcastSetting.Attributes.GetNamedItem("addr").Value);
+					McastClientPort = ushort.Parse(mcastSetting.Attributes.GetNamedItem("cport").Value);
+					McastServerPort = ushort.Parse(mcastSetting.Attributes.GetNamedItem("sport").Value);
 
-                MulticastDelay = ushort.Parse(mcastSetting.Attributes.GetNamedItem("startdelay").Value);
-                MulticastTimeout = ushort.Parse(mcastSetting.Attributes.GetNamedItem("timeout").Value);
-                DiscoveryControl = byte.Parse(mcastSetting.Attributes.GetNamedItem("discovery").Value);
-            }
+					MulticastDelay = ushort.Parse(mcastSetting.Attributes.GetNamedItem("startdelay").Value);
+					MulticastTimeout = ushort.Parse(mcastSetting.Attributes.GetNamedItem("timeout").Value);
+					DiscoveryControl = byte.Parse(mcastSetting.Attributes.GetNamedItem("discovery").Value);
+				}
+			}
 
 			#endregion
 

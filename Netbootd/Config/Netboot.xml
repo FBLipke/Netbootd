@@ -2,7 +2,7 @@
 <Netboot>
 	<Configuration>
 		<Services>
-			<Service type="dhcp" port="67,4011" behavior="65534" timeout="30" delay="10">
+			<Service type="dhcp" port="67,4011" behavior="65534" timeout="30" delay="10" SMBShare="RemInst">
 				<Multicast addr="224.0.1.2" cport="40001" sport="69" startdelay="10" timeout="10" discovery="3" />
 				<Bootfiles>
 					<Bootfile behavior="0">Boot/#arch#/bstrap.#layer#</Bootfile>
@@ -21,7 +21,7 @@
 					<Option id ="210" type="string">/linux</Option>
 				</DHCP>
 			</Service>
-			<Service type="binl" port="44776,1638" />
+			<Service type="binl" port="44776,1638" SMBShare="RemInst" />
 			<Service type="tftp" port="69" />
 		</Services>
 	</Configuration>

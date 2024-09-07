@@ -23,6 +23,10 @@ namespace Netboot.Network.Packet
 	{
 		public Dictionary<byte, DHCPOption> Options { get; } = [];
 
+		public DHCPPacket() {
+			ParsePacket();
+		}
+
 		public DHCPPacket(string serviceType, byte[] data)
 			: base(serviceType, data)
 		{
@@ -351,7 +355,14 @@ namespace Netboot.Network.Packet
 
 		void ParsePacket()
 		{
+			if (Buffer == null)
+				return;
+
 			var curPos = Buffer.Position;
+
+			if (Options == null)
+				return;
+			
 			Options.Clear();
 			var cookieoffset = 240;
 

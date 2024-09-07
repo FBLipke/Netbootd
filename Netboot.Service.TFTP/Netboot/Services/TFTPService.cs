@@ -55,8 +55,9 @@ namespace Netboot.Service.TFTP
 
 		public event IService.AddServerEventHandler? AddServer;
 		public event IService.ServerSendPacketEventHandler? ServerSendPacket;
+        public event IService.PrintMessageEventHandler? PrintMessage;
 
-		public void Dispose()
+        public void Dispose()
 		{
 			foreach (var client in Clients.Values.ToList())
 				client.Dispose();

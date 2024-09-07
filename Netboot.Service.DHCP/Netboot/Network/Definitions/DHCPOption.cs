@@ -27,7 +27,7 @@ namespace Netboot.Network.Definitions
 		{
 			Option = option;
 			Length = 0;
-			Data = null;
+			Data = new byte[0];
 		}
 
 		public DHCPOption(byte option, byte[] data)

@@ -24,6 +24,8 @@ namespace Netboot.Network.Packet
 
 		public string ServiceType { get; set; } = string.Empty;
 
+		public BasePacket() { }
+
 		public BasePacket(string serviceType, byte[] data)
 		{
 			Buffer = new(data);
