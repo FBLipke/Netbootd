@@ -111,9 +111,9 @@ namespace Netboot.Services.DHCP
 			Ports.Clear();
 		}
 
-		void AddClient(string clientId, string serviceType, IPEndPoint remoteEndpoint, Guid serverId, Guid socketId)
+		void AddClient(string clientId, string serviceType, IPEndPoint remoteEndpoint, Guid serverId, Guid socketId,PXEVendorID vendorID)
 		{
-			var client = new DHCPClient(clientId, serviceType, remoteEndpoint, serverId, socketId);
+			var client = new DHCPClient(clientId, serviceType, remoteEndpoint, serverId, socketId, vendorID);
 
 			if (!Clients.TryAdd(clientId, client))
 			{
@@ -249,8 +249,8 @@ namespace Netboot.Services.DHCP
 				case PXEVendorID.PXEClient:
 				case PXEVendorID.PXEServer:
 				case PXEVendorID.AAPLBSDPC:
-					
-					AddClient(clientid, e.ServiceType, e.RemoteEndpoint, e.ServerId, e.SocketId);
+				case PXEVendorID.HTTPClient:
+					AddClient(clientid, e.ServiceType, e.RemoteEndpoint, e.ServerId, e.SocketId, requestPacket.GetVendorIdent);
 					
 					Console.WriteLine("[I] Got {1}Request from: {0}", Clients[clientid].RemoteEntpoint,
 						!requestPacket.GatewayIP.Equals(IPAddress.Any) ? "relayed ": "");
@@ -421,7 +421,6 @@ namespace Netboot.Services.DHCP
 			var serverIP = NetbootBase.Servers[server].Get_IPAddress(socket);
 			Clients[client].Response = packet.CreateResponse(serverIP);
 			UpdateBootfile?.Invoke(server, new(GetBootfile(client), 0, client));
-
 			#region "Remote Boot Configuration Protocol (RBCP)"
 			Handle_RBCP_Request(client, packet);
 

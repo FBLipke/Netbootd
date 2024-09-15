@@ -79,9 +79,7 @@ namespace Netboot.Service.TFTP
 			if (!Clients.TryGetValue(clientId, out TFTPClient? value))
 				Clients.Add(clientId, new(clientId, serviceType, remoteEndpoint, serverId, socketId));
 			else
-			{
 				value.RemoteEntpoint = remoteEndpoint;
-			}
 		}
 
 		public void Handle_DataReceived(object sender, DataReceivedEventArgs e)

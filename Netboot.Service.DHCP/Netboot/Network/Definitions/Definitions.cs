@@ -69,7 +69,7 @@ namespace Netboot.Network.Definitions
 		PXEServer,
 		AAPLBSDPC,
 		HTTPClient,
-		Msft,
+		Msft
 	}
 
 	public enum PXEVendorEncOptions : byte

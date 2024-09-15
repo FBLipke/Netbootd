@@ -12,7 +12,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 using Netboot.Common;
+using Netboot.Utility.Definitions;
 using System;
+using System.Net.Http.Headers;
+using System.Text;
 
 namespace Netboot.Utility
 {
@@ -32,6 +35,20 @@ namespace Netboot.Utility
         public void Initialize(string[] args)
         {
             RootPath = Path.Combine(Directory.GetCurrentDirectory(), "TFTPRoot", "Setup", "German", "WIN2k");
+        }
+
+        public string GetCompressedName(string filename)
+        {
+            var tmp = filename;
+
+            if (!tmp.EndsWith("_"))
+            {
+                var x = tmp.ToCharArray();
+                x[x.Length - 1] = '_';
+                tmp = new string(x);
+            }
+
+            return tmp;
         }
 
         public void Start(string srcType, string sourcePath)
@@ -76,16 +93,21 @@ namespace Netboot.Utility
                     }
 
                     var __path = Path.Combine(SourcePath, "i386", "txtsetup.sif").ToUpperInvariant();
-
-                    if (File.Exists(__path))
-                        SourcePath = __path;
+                    SourcePath = __path;
 
                     var ini = new INIFile(Path.Combine(SourcePath));
-                    ini.Open();
+                    if (!ini.Open())
+                    {
+                        Console.WriteLine("[E] Failed to read open file: {0}", SourcePath);
+                        return;
+                    }
 
-                    var nlscode = ini.GetValue("nls", "DefaultLayout", string.Empty);
-
-                    var __strings = new Dictionary<string, string>();
+                    // Try to get the nnative Language....
+                    var __nlscode = ini.GetValue("nls", "DefaultLayout", string.Empty);
+                    var __strings = new Dictionary<string, string>
+                    {
+                        { string.Empty, string.Empty }
+                    };
 
                     foreach (var key in ini.GetSectionKeys("Strings"))
                     {
@@ -102,6 +124,8 @@ namespace Netboot.Utility
 
                     var diskID = new Dictionary<string, Dictionary<string, string>>();
                     var editionType = "Professional";
+
+                    var srcDiscs = new Dictionary<string, Dictionary<string, string>>();
 
                     foreach (var section in SectionsToRead)
                     {
@@ -148,10 +172,10 @@ namespace Netboot.Utility
                     }
 
                     var TargetDir = Path.Combine(Directory.GetCurrentDirectory(), 
-                        "TFTPRoot", "Setup", nlscode.ToUpperInvariant(), string.Concat(osid,".",editionType));
+                        "TFTPRoot", "Setup", __nlscode.ToUpperInvariant(), string.Concat(osid, ".", editionType));
 
                     if (!Directory.Exists(TargetDir))
-                        Directory.CreateDirectory(Path.Combine(TargetDir,"templates"));
+                        Directory.CreateDirectory(Path.Combine(TargetDir, "templates"));
 
                     #region "Create ristndrd.sif"
                     var tmplFile = Path.Combine(TargetDir, "templates", "ristndrd.sif");
@@ -171,6 +195,16 @@ namespace Netboot.Utility
                     answerFile.Add("SetupData", []);
                     answerFile["SetupData"].Add("OsLoadOptions", "\"/noguiboot /fastdetect\"");
                     answerFile["SetupData"].Add("SetupSourceDevice", "\"\\Device\\LanmanRedirector\\%SERVERNAME%\\[#SMBShare#]]\\%INSTALLPATH%\"");
+
+                    var forceOEMHal = false;
+                    var forceOEMSCSI = false;
+
+                    /**
+                     * The following Options are undocumented (experimental)... 
+                     **/
+
+                    answerFile["SetupData"].Add("ForceOemHal", forceOEMHal ? "1" : "0");
+                    answerFile["SetupData"].Add("ForceOemScsi", forceOEMSCSI ? "1" : "0");
 
                     answerFile.Add("Unattended", []);
                     answerFile["Unattended"].Add("OemPreinstall", "yes");
@@ -254,6 +288,66 @@ namespace Netboot.Utility
                     var newIni = new INIFile(tmplFile);
                     newIni.SetValues(answerFile);
                     #endregion
+                    
+
+                    var copyFilesSections = new List<string>();
+                    copyFilesSections.Add("SourceDisksFiles");
+
+                    var fileList = new Dictionary<string, NTSrcFileInfo>();
+
+                    /** What we get...
+                     *  [KEY]        = [VALUE]
+                     *  acsmib.dll   = 1,,,,,,,2,0,0
+                     *  actsaver.scr = 1,,,,,,,2,0,0,%ChannelScreenSaver%     
+                     *  actxprxy.dll = 2,,,,,,,2,0,0     
+                     *  adcadmin.chm = 1,,,,,,,21,0,0
+                     **/
+                    foreach (var section in copyFilesSections)
+                    {
+                        foreach (var key in ini.GetSectionKeys(section).ToList())
+                        {
+                            NTSrcFileInfo fileInfo;
+
+                            var s = ini.GetValue(section, key).Split(',');
+                            
+                            var val = string.Empty;
+
+                            if (s.Length > 10 && s[10].Contains("%"))
+                                s[10] = s[10].Replace("%", string.Empty);
+
+                            if (s.Length == 13)
+                            {
+                                val = __strings.ContainsKey(s[10]) ? __strings[s[10]] : string.Empty;
+                                fileInfo = new(s[0], s[1], s[2], s[3], s[4], s[5], s[6], s[7], s[8], s[9], val, s[11], s[12]);
+                            }
+                            else if (s.Length == 12)
+                            {
+                                val = __strings.ContainsKey(s[10]) ? __strings[s[10]] : string.Empty;
+                                fileInfo = new(s[0], s[1], s[2], s[3], s[4], s[5], s[6], s[7], s[8], s[9], val, s[11], string.Empty);
+                            }
+                            else if (s.Length == 11)
+                            {
+                                val = __strings.ContainsKey(s[10]) ? __strings[s[10]] : string.Empty;
+                                fileInfo = new(s[0], s[1], s[2], s[3], s[4], s[5], s[6], s[7], s[8], s[9], val, string.Empty, string.Empty);
+                            }
+                            else if (s.Length == 10)
+                            {
+                                fileInfo = new(s[0], s[1], s[2], s[3], s[4], s[5], s[6], s[7], s[8], s[9], string.Empty, string.Empty, string.Empty);
+                            }
+                            else
+                            {
+                                fileInfo = new(s[0], s[1], s[2], s[3], s[4], s[5], s[6], s[7], s[8], string.Empty, string.Empty, string.Empty, string.Empty);
+                            }
+
+                            var u = diskID[s[0]].FirstOrDefault().Value;
+                            var x= Path.Combine(sourcePath.Replace("\\", string.Empty), Path.Combine(u, key));
+
+                            fileInfo.Dump();
+                            fileList.Add(x, fileInfo);
+
+                        }
+                    }
+
                     break;
                 case "ris":
 

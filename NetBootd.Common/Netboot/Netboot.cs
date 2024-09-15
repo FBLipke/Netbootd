@@ -110,7 +110,7 @@ namespace Netboot
 			xmlFile.Load(ConfigFile);
 
 			var services = xmlFile.SelectNodes("Netboot/Configuration/Services/Service");
-			foreach (var service in Services.Values)
+			foreach (var service in Services.Values.ToList())
 			{
 				foreach (XmlNode xmlnode in services)
 				{
@@ -149,7 +149,7 @@ namespace Netboot
 			server.DataSent += (sender, e) =>
 			{
 				Functions.InvokeMethod(Services[e.ServiceType], "Handle_DataSent",
-					new[] { new[] { sender, e } });
+					[new[] { sender, e }]);
 			};
 
 			server.DataReceived += (sender, e) =>

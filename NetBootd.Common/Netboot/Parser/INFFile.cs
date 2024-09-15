@@ -11,29 +11,34 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using System.ComponentModel.DataAnnotations;
+
 namespace Netboot.Common
 {
 	public class INIFile
 	{
-		Dictionary<string, Dictionary<string, string>> Sections
-			= new Dictionary<string, Dictionary<string, string>>();
+		Dictionary<string, Dictionary<string, string>> Sections = [];
 
 		string FilePath = string.Empty;
+		bool isOpen = false;
 
 		public INIFile(string filePath)
-		{
-			FilePath = filePath;
-		}
+			=> FilePath = filePath;
 
-		public void Open()
+		public bool Open(bool ReplaceDuplicates = true)
 		{
+			if (!File.Exists(FilePath))
+				return false;
+
 			using (var reader = new StreamReader(FilePath))
 			{
+				isOpen = true;
 				var sectionName = string.Empty;
 
 				while (!reader.EndOfStream)
 				{
 					var line = reader.ReadLine().Trim();
+
 					if (string.IsNullOrEmpty(line))
 						continue;
 
@@ -49,21 +54,44 @@ namespace Netboot.Common
 					}
 					else
 					{
-						if (!line.Contains('='))
-							continue;
+						var value = string.Empty;
+						var key = string.Empty;
 
-						var lineParts = line.Split('=');
+						if (line.Contains('='))
+						{
+							var lineParts = line.Split('=');
+							key = lineParts[0].Trim();
+							value = lineParts[1].Trim();
+						}
+						else
+						{
+							/*
+							 *  Windows NT Setup (dosnet.inf) example:
+							 *  
+							 *	[ServicesToStopInstallation]
+							 *	d,winnt32u.dll,UnsupportedArchitectureCheck,,1
+							 *	d,winntupg\boscomp.dll,BosHardBlockCheck,,0
+							 *	d,winntupg\ntdsupg,DsUpgradeCompatibilityCheck,,0,1
+							 *
+							 * Solution Read and return as Key ...
+							 */
 
-						var key = lineParts[0].Trim();
-						var value = lineParts[1].Trim();
+							key = line;
+							value = string.Empty;
+						}
 
 						if (!Sections[sectionName].ContainsKey(key))
 							Sections[sectionName].Add(key, value);
+						else
+							if (ReplaceDuplicates)
+								Sections[sectionName][key] = value;
 					}
 				}
 
 				reader.Close();
 			}
+
+			return true;
 		}
 
 		public void Dump()
@@ -97,12 +125,11 @@ namespace Netboot.Common
 				Sections[section][key] = value;
 		}
 
-        public void SetValues(Dictionary<string, Dictionary<string, string>> data)
-        {
+		public void SetValues(Dictionary<string, Dictionary<string, string>> data)
+		{
 			Sections = data;
 			Commit();
-        }
-
+		}
 
 		public void Commit()
 		{
@@ -111,21 +138,22 @@ namespace Netboot.Common
 				sw.AutoFlush = true;
 				sw.NewLine = "\r\n";
 
-                foreach (var section in Sections)
-                {
-                    sw.WriteLine($"[{section.Key}]");
+				foreach (var section in Sections)
+				{
+					sw.WriteLine($"[{section.Key}]");
 
-                    foreach (var value in section.Value)
-                        sw.WriteLine($"{value.Key} = {value.Value}");
+					foreach (var value in section.Value)
+						sw.WriteLine($"{value.Key} = {value.Value}");
 
-                    sw.WriteLine("");
-                }
+					sw.WriteLine("");
+				}
 
 				sw.Close();
-            }
-        }
+			}
+		}
 
-        public List<string> GetSectionKeys(string section)
+
+		public List<string> GetSectionKeys(string section)
 			=> Sections[section].Keys.ToList();
 	}
 }

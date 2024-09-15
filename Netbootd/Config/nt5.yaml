@@ -12,3 +12,8 @@ sourceDiskFiles:
     alpha: alpha
   extract:
     osc.cab: /OSChooser/english/
+  config:
+    SetupData:
+      ForceOemHal: 0
+      FOrceOemSCSI: 0
+

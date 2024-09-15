@@ -19,7 +19,7 @@ namespace Netboot.Network.Client
 {
 	public partial class DHCPClient : BaseClient
 	{
-		public DHCPClient(string clientId, string serviceType, IPEndPoint remoteEndpoint, Guid serverid, Guid socketId)
+		public DHCPClient(string clientId, string serviceType, IPEndPoint remoteEndpoint, Guid serverid, Guid socketId, PXEVendorID vendorID)
 			: base(clientId, serviceType, remoteEndpoint, serverid, socketId)
 		{
 			RBCP = new RBCPClient();

@@ -52,8 +52,10 @@ namespace Netboot.Utility
 									if (args.Length == 3)
 										return;
 
-									var nt5dist = new NT5DistShare();
-									nt5dist.Start(args[2], args[3]);
+									using (var nt5dist = new NT5DistShare())
+									{
+										nt5dist.Start(args[2], args[3]);
+									}
 									break;
 								default:
 									break;

@@ -12,7 +12,7 @@
   <ItemGroup>
     <Compile Include="Netboot\Network\Client\DHCPClient.cs" />
     <Compile Include="Netboot\Network\Client\RBCP\RBCPClient.cs" />
-    <Compile Include="Netboot\Network\Client\RBCP\BootMenueEntry.cs" />
+    <Compile Include="Netboot\Network\Definitions\BootMenueEntry.cs" />
     <Compile Include="Netboot\Network\Definitions\Functions.cs" />
     <Compile Include="Netboot\Network\Client\WDS\WDSClient.cs" />
     <Compile Include="Netboot\Network\Definitions\BootServer.cs" />

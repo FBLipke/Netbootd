@@ -18,9 +18,9 @@ namespace Netboot.Network.Client
 {
 	public class WDSClient
 	{
-		public ushort PollInterval { get; set; }
+		public ushort PollInterval { get; set; } = 3;
 
-		public ushort RetryCount { get; set; }
+		public ushort RetryCount { get; set; } = 5;
 
 		public PXEPromptOptionValues PXEPromptDone { get; set; } = PXEPromptOptionValues.OptIn;
 
@@ -30,7 +30,7 @@ namespace Netboot.Network.Client
 
 		public bool ActionDone { get; set; } = false;
 
-		public NextActionOptionValues NextAction { get; set; }
+		public NextActionOptionValues NextAction { get; set; } = NextActionOptionValues.Approval;
 		
 		public string AdminMessage { get; set; } = "Waiting for Approval...";
 
@@ -38,11 +38,11 @@ namespace Netboot.Network.Client
 
 		public uint RequestId { get; set; } = 1;
 		
-		public bool VersionQuery { get; set; }
-		
-		public NBPVersionValues ServerVersion { get; set; }
-		
-		public IPAddress ReferralServer { get; set; }
+		public bool VersionQuery { get; set; } = false;
+
+		public NBPVersionValues ServerVersion { get; set; } = NBPVersionValues.Unknown;
+
+		public IPAddress ReferralServer { get; set; } = IPAddress.None;
 		
 		public PXEPromptOptionValues ClientPrompt { get; set; } = PXEPromptOptionValues.OptOut;
 		
@@ -50,14 +50,6 @@ namespace Netboot.Network.Client
 		
 		public NBPVersionValues NBPVersion { get; set; }
 
-		public WDSClient()
-		{
-			PollInterval = Convert.ToUInt16(5);
-			RetryCount = ushort.MaxValue;
-			ActionDone = false;
-			AdminMessage = "Waiting for Approval...";
-			NextAction = NextActionOptionValues.Approval;
-			ReferralServer = IPAddress.None;
-		}
+		public WDSClient() {}
 	}
 }
