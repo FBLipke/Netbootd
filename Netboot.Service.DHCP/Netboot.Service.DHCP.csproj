@@ -10,14 +10,18 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="Netboot\Network\Client\BSDP\BSDPClient.cs" />
     <Compile Include="Netboot\Network\Client\DHCPClient.cs" />
     <Compile Include="Netboot\Network\Client\RBCP\RBCPClient.cs" />
-    <Compile Include="Netboot\Network\Definitions\BootMenueEntry.cs" />
+    <Compile Include="Netboot\Network\Definitions\BSDP\Definitions.cs" />
+    <Compile Include="Netboot\Network\Definitions\RBCP\BootMenueEntry.cs" />
     <Compile Include="Netboot\Network\Definitions\Functions.cs" />
     <Compile Include="Netboot\Network\Client\WDS\WDSClient.cs" />
-    <Compile Include="Netboot\Network\Definitions\BootServer.cs" />
+    <Compile Include="Netboot\Network\Definitions\RBCP\BootServer.cs" />
     <Compile Include="Netboot\Network\Definitions\Definitions.cs" />
-    <Compile Include="Netboot\Network\Definitions\DHCPOption.cs" />
+    <Compile Include="Netboot\Network\Definitions\DHCP\DHCPOption.cs" />
+    <Compile Include="Netboot\Network\Definitions\RBCP\Definitions.cs" />
+    <Compile Include="Netboot\Network\Definitions\WDS\Definitions.cs" />
     <Compile Include="Netboot\Network\Packet\DHCPPacket.cs" />
     <Compile Include="Netboot\Services\DHCPService.cs" />
     <Compile Include="Netboot\EventHandler\DHCPServiceBehaviorEventargs.cs" />

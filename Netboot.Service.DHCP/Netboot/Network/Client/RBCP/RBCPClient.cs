@@ -13,19 +13,16 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace Netboot.Network.Client
 {
-	public partial class DHCPClient
+	public class RBCPClient
 	{
-		public class RBCPClient
+		public ushort Layer { get; set; }
+
+		public ushort Item { get; set; }
+
+		public RBCPClient()
 		{
-			public ushort Layer { get; set; }
-
-			public ushort Item { get; set; }
-
-			public RBCPClient()
-			{
-				Layer = 0;
-				Item = 0;
-			}
+			Layer = 0;
+			Item = 0;
 		}
 	}
 }

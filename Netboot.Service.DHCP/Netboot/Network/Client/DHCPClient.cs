@@ -19,21 +19,27 @@ namespace Netboot.Network.Client
 {
 	public partial class DHCPClient : BaseClient
 	{
-		public DHCPClient(string clientId, string serviceType, IPEndPoint remoteEndpoint, Guid serverid, Guid socketId, PXEVendorID vendorID)
+		public DHCPClient(string clientId, string serviceType, IPEndPoint remoteEndpoint, Guid serverid, Guid socketId, DHCPVendorID vendorID)
 			: base(clientId, serviceType, remoteEndpoint, serverid, socketId)
 		{
 			RBCP = new RBCPClient();
 			WDS = new WDSClient();
+			BSDP = new BSDPClient();
+			PXEVendorID = vendorID;
 			Response = new DHCPPacket();
 		}
 
-		public Architecture Architecture { get; set; } = Architecture.X86PC;
+		public Architecture Architecture { get; set; }
 
 		public RBCPClient RBCP { get; private set; }
 
 		public WDSClient WDS { get; private set; }
 
+		public BSDPClient BSDP { get; private set; }
+
 		public DHCPPacket Response { get; set; }
+
+		public DHCPVendorID PXEVendorID { get; private set; }
 
 		public override void Dispose()
 		{

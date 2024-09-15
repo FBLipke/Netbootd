@@ -13,7 +13,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System.Net.Sockets;
 
-namespace Netboot.Network.Sockets.Definition
+namespace Netboot.Network.Sockets
 {
     internal class SocketState : IDisposable
     {

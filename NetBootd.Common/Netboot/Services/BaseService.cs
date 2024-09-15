@@ -13,6 +13,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using Netboot.Network.EventHandler;
 using Netboot.Network.Interfaces;
+using Netboot.Network.Sockets;
 using Netboot.Services.Interfaces;
 using System.Xml;
 
@@ -20,9 +21,10 @@ namespace Netboot.Services
 {
 	public class BaseService : IService
 	{
-		public BaseService(string serviceType)
+		public BaseService(string serviceType, SocketProtocol protocol)
 		{
 			ServiceType = serviceType;
+			Protocol = protocol;
 		}
 
 		public Dictionary<string, IClient> Clients { get; set; } = [];
@@ -30,6 +32,7 @@ namespace Netboot.Services
 		public List<ushort> Ports { get; set; } = [];
 
 		public string ServiceType { get; }
+		public SocketProtocol Protocol { get; set; }
 
 		public event IService.AddServerEventHandler? AddServer;
 		public event IService.ServerSendPacketEventHandler? ServerSendPacket;
@@ -58,7 +61,7 @@ namespace Netboot.Services
 
 		public bool Initialize(XmlNode xmlConfigNode)
 		{
-			AddServer.Invoke(this, new(ServiceType, Ports));
+			AddServer.Invoke(this, new(ServiceType, Protocol, Ports));
 			return true;
 		}
 

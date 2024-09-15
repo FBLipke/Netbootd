@@ -34,26 +34,7 @@ namespace Netboot.Network.Definitions
 		/// <summary>
 		///	The BOOTP Packet has no Vendor specific options set.
 		/// </summary>
-		DHCP = 1666417251,
-	}
-
-	public enum BootServerTypes : ushort
-	{
-		PXEBootstrapServer = 0,
-		MicrosoftWindowsNT = 1,
-		IntelLCM = 2,
-		DOSUNDI = 3,
-		NECESMPRO = 4,
-		IBMWSoD = 5,
-		IBMLCCM = 6,
-		CAUnicenterTNG = 7,
-		HPOpenView = 8,
-		Reserved = 9,
-		Vendor = 32768,
-		Linux = ushort.MaxValue - 3,
-		BISConfig = ushort.MaxValue - 2,
-		WindowsDeploymentServer = ushort.MaxValue - 1,
-		ApiTest = ushort.MaxValue
+		DHCP = 1666417251
 	}
 
     public enum ServerMode
@@ -62,7 +43,7 @@ namespace Netboot.Network.Definitions
         KnownOnly
     }
 
-    public enum PXEVendorID : byte
+    public enum DHCPVendorID : byte
 	{
 		None,
 		PXEClient,
@@ -293,60 +274,4 @@ namespace Netboot.Network.Definitions
 		ArmRPIBoot
 	}
 
-	/// <summary>
-	/// Options used by the Windows Deployment Server NBP
-	/// </summary>
-	public enum WDSNBPOptions : byte
-	{
-		Unknown = 0,
-		Architecture = 1,
-		NextAction = 2,
-		PollInterval = 3,
-		PollRetryCount = 4,
-		RequestID = 5,
-		Message = 6,
-		VersionQuery = 7,
-		ServerVersion = 8,
-		ReferralServer = 9,
-		PXEClientPrompt = 11,
-		PxePromptDone = 12,
-		NBPVersion = 13,
-		ActionDone = 14,
-		AllowServerSelection = 15,
-		ServerFeatures = 16,
-
-		End = byte.MaxValue
-	}
-
-	/// <summary>
-	/// Options used by the PXEClientPrompt and PXEPromptDone
-	/// </summary>
-	public enum PXEPromptOptionValues : byte
-	{
-		Unknown,
-		OptIn,
-		NoPrompt,
-		OptOut
-	}
-
-	/// <summary>
-	/// Options used by the NBPVersion
-	/// </summary>
-	public enum NBPVersionValues : ushort
-	{
-		Seven = 7,
-		Eight = 8,
-		Unknown = ushort.MinValue
-	}
-
-	/// <summary>
-	/// Options used by the WDSNBPOptions.NextAction
-	/// </summary>
-	public enum NextActionOptionValues : byte
-	{
-		Drop = 0,
-		Approval = 1,
-		Referral = 3,
-		Abort = 5
-	}
 }

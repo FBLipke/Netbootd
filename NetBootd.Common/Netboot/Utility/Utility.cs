@@ -57,6 +57,12 @@ namespace Netboot.Utility
 										nt5dist.Start(args[2], args[3]);
 									}
 									break;
+								case "osx":
+									using (var osxdist = new OSXDistShare())
+									{
+										osxdist.Start(args[2], args[3]);
+									}
+									break;
 								default:
 									break;
 							}

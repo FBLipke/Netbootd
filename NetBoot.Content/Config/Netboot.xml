@@ -8,6 +8,8 @@
 					<Bootfile behavior="0">Boot/#arch#/bstrap.#layer#</Bootfile>
 					<Bootfile behavior="1">OSChooser\i386\startrom.n12</Bootfile>
 					<Bootfile behavior="3">Boot/#arch#/dosundi.#layer#</Bootfile>
+					<Bootfile behavior="65531">Boot/#arch#/booter</Bootfile>
+					<!-- TODO: Where is that file... O.o ???????????????????????????????????????????????????-->
 					<Bootfile behavior="65532">Boot/#arch#/pxelinux.#layer#</Bootfile>
 					<Bootfile behavior="65533">Boot/#arch#/bisconfig.#layer#</Bootfile>
 					<Bootfile behavior="65534">Boot\#arch#\wdsnbp.com</Bootfile>
@@ -17,12 +19,16 @@
 					<Option id ="251" type="string">OSChooser\i386\NTLDR</Option>
 					<Option id ="254" type="string">OSChooser\i386\boot.ini</Option>
 				</DHCP>
+				<DHCP behavior="65531">
+					<Option id ="17" type="string">http://#SERVERNAME#/</Option>
+				</DHCP>
 				<DHCP behavior="65532">
 					<Option id ="210" type="string">/linux</Option>
 				</DHCP>
 			</Service>
 			<Service type="binl" port="44776,1638" SMBShare="RemInst" />
-			<Service type="tftp" port="69" />
+			<Service type="tftp" port="69" max_blksize="16384">
+			</Service>
 		</Services>
 	</Configuration>
 </Netboot>

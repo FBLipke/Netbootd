@@ -27,7 +27,7 @@ namespace Netboot.Network.Definitions
 		{
 			Option = option;
 			Length = 0;
-			Data = new byte[0];
+			Data = [];
 		}
 
 		public DHCPOption(byte option, byte[] data)
@@ -135,27 +135,25 @@ namespace Netboot.Network.Definitions
 			Length = Convert.ToByte(Data.Length);
 		}
 
-        public ushort AsUInt16()
-        {
-            return BinaryPrimitives.ReadUInt16BigEndian(Data);
-        }
+		public ushort AsUInt16()
+			=> BinaryPrimitives.ReadUInt16BigEndian(Data);
 
-        public byte AsByte()
-        {
-			return Data.FirstOrDefault();
-        }
+		public byte AsByte()
+			=> Data.FirstOrDefault();
 
-        public uint AsUInt32()
-        {
-			return BinaryPrimitives.ReadUInt32LittleEndian(Data);
-        }
+		public uint AsUInt32()
+			=> BinaryPrimitives.ReadUInt32LittleEndian(Data);
 
-        public string AsString(Encoding encoding) => encoding.GetString(Data);
+		public string AsString(Encoding encoding)
+			=> encoding.GetString(Data);
 
-        public string AsString() => AsString(Encoding.ASCII);
+		public string AsString()
+			=> AsString(Encoding.ASCII);
 
-        internal IPAddress AsIPAddress() => new IPAddress(Data);
+		internal IPAddress AsIPAddress()
+			=> new IPAddress(Data);
 
-        internal bool AsBool() => Data.First() == 1;
-    }
+		internal bool AsBool()
+			=> Data.First() == 1;
+	}
 }

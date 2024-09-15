@@ -12,7 +12,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 using Netboot.Common;
-using Netboot.Service.TFTP.Netboot.Network.Packet;
+using Netboot.Service.TFTP;
 using System.Net;
 
 namespace Netboot.Network.Client

@@ -11,35 +11,25 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-namespace Netboot.Service.TFTP
+namespace Netboot.Network.Definitions
 {
-	public enum TFTPOPCodes
+	public enum BootServerTypes : ushort
 	{
-		RRQ = 1,
-		WRQ = 2,
-		DAT = 3,
-		ACK = 4,
-		ERR = 5,
-		OCK = 6
-	}
-
-	public enum TFTPMode
-	{
-		Octet,
-		Mail,
-		NetASCII
-	}
-
-	public enum TFTPErrorCode
-	{
-		Unknown,
-		FileNotFound,
-		AccessViolation,
-		DiskFull,
-		IllegalOperation,
-		UnknownTID,
-		FileExists,
-		NoSuchUser,
-		InvalidOption
+		PXEBootstrapServer = 0,
+		MicrosoftWindowsNT = 1,
+		IntelLCM = 2,
+		DOSUNDI = 3,
+		NECESMPRO = 4,
+		IBMWSoD = 5,
+		IBMLCCM = 6,
+		CAUnicenterTNG = 7,
+		HPOpenView = 8,
+		Reserved = 9,
+		Vendor = 32768,
+		Apple = ushort.MaxValue - 4,
+		Linux = ushort.MaxValue - 3,
+		BISConfig = ushort.MaxValue - 2,
+		WindowsDeploymentServer = ushort.MaxValue - 1,
+		ApiTest = ushort.MaxValue
 	}
 }

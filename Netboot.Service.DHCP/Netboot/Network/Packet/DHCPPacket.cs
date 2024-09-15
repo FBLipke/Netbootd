@@ -21,6 +21,11 @@ namespace Netboot.Network.Packet
 {
 	public class DHCPPacket : BasePacket
 	{
+		/// <summary>
+		/// The offset (DHCP_OPTIONS_START_OFFSET) after the magic cookie, that we can use to parse the dhcp options...
+		/// </summary>
+		public const byte DHCP_OPTIONS_START_OFFSET = 240;
+
 		public Dictionary<byte, DHCPOption> Options { get; } = [];
 
 		public DHCPPacket() {
@@ -28,23 +33,16 @@ namespace Netboot.Network.Packet
 		}
 
 		public DHCPPacket(string serviceType, byte[] data)
-			: base(serviceType, data)
-		{
-			ParsePacket();
-		}
+			: base(serviceType, data) => ParsePacket();
 
 		/// <summary>
 		/// Indicates that the packet was relayed
 		/// </summary>
 		public bool IsRelayed { get => GatewayIP != IPAddress.Any; }
 
-		public DHCPPacket(string serviceType) : base(serviceType)
-		{
-		}
+		public DHCPPacket(string serviceType) : base(serviceType) { }
 
-		public DHCPPacket(string serviceType, int length) : base(serviceType, length)
-		{
-		}
+		public DHCPPacket(string serviceType, int length) : base(serviceType, length) {	}
 
 		public BOOTPOPCode BootpOPCode
 		{
@@ -64,32 +62,30 @@ namespace Netboot.Network.Packet
 			{
 				var o = optionData[i];
 
-				if (o != byte.MaxValue)
+				if (o == byte.MaxValue)
+				{
+					dict.Add(new(o));
+					break;
+				}
+				else
 				{
 					var len = optionData[i + 1];
 					var data = new byte[len];
 
 					Array.Copy(optionData, (i + 2), data, 0, len);
-
 					dict.Add(new(o, data));
-
 					i += 2 + len;
-				}
-				else
-				{
-					dict.Add(new (o));
-					break;
 				}
 			}
 
 			return dict;
 		}
 
-		public PXEVendorID GetVendorIdent
+		public DHCPVendorID GetVendorIdent
 		{
 			get
 			{
-				var vendorId = PXEVendorID.None;
+				var vendorId = DHCPVendorID.None;
 
 				if (HasOption((byte)DHCPOptions.Vendorclassidentifier))
 				{
@@ -99,17 +95,23 @@ namespace Netboot.Network.Packet
 						return vendorId;
 
 					var identStr = option.Data.GetString().Trim();
-					var delim = new char[] { ':' };
 
-					if (identStr.Contains(':'))
-						delim = [':'];
-					else if (identStr.Contains(' '))
-						delim = [' '];
+					if (identStr.Contains("PXEClient"))
+						vendorId = DHCPVendorID.PXEClient;
+					else if (identStr.Contains("PXEServer"))
+						vendorId = DHCPVendorID.PXEServer;
+					else if (identStr.Contains("AAPLBSDPC"))
+						vendorId = DHCPVendorID.AAPLBSDPC;
+					else if (identStr.Contains("HTTPClient"))
+						vendorId = DHCPVendorID.HTTPClient;
+					else
+					{
+						var delim = new char[] { identStr.Contains(':') ? ':' : '/' };
+						var ident = identStr.Split(delim).FirstOrDefault();
 
-					var ident = identStr.Split(delim).FirstOrDefault();
-
-					if (!string.IsNullOrEmpty(ident))
-						Enum.TryParse(ident, out vendorId);
+						if (!string.IsNullOrEmpty(ident))
+							Enum.TryParse(ident, out vendorId);
+					}
 				}
 
 				return vendorId;
@@ -364,10 +366,11 @@ namespace Netboot.Network.Packet
 				return;
 			
 			Options.Clear();
-			var cookieoffset = 240;
+			var cookieEndoffset = DHCP_OPTIONS_START_OFFSET;
 
-			for (var i = cookieoffset; i < Buffer.Length;)
+			for (var i = cookieEndoffset; i < Buffer.Length;)
 			{
+				#region "Parse DHCP Option"
 				Buffer.Position = i;
 
 				// Option
@@ -386,7 +389,7 @@ namespace Netboot.Network.Packet
 
 					AddOption(new(opt, data));
 
-					i += 2 + len;
+					i += (byte)(2 + len);
 				}
 				else
 				{
@@ -394,6 +397,7 @@ namespace Netboot.Network.Packet
 					AddOption(new(opt));
 					break;
 				}
+				#endregion
 			}
 
 			Options.OrderBy(key => key.Key);
@@ -433,17 +437,15 @@ namespace Netboot.Network.Packet
 
 					switch (GetVendorIdent)
 					{
-						case PXEVendorID.PXEClient:
+						case DHCPVendorID.PXEClient:
 							packet.AddOption(new((byte)DHCPOptions.Vendorclassidentifier, "PXEClient", Encoding.ASCII));
 							break;
-						case PXEVendorID.PXEServer:
+						case DHCPVendorID.PXEServer:
 							packet.AddOption(new((byte)DHCPOptions.Vendorclassidentifier, "PXEServer", Encoding.ASCII));
 							break;
-						case PXEVendorID.AAPLBSDPC:
+						case DHCPVendorID.AAPLBSDPC:
 							packet.AddOption(new((byte)DHCPOptions.Vendorclassidentifier, "APPLBSDPC", Encoding.ASCII));
 							break;
-						case PXEVendorID.None:
-						case PXEVendorID.Msft:
 						default:
 							break;
 					}

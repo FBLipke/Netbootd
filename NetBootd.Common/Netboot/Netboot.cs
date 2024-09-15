@@ -14,6 +14,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 using Netboot.Common;
 using Netboot.Network.Interfaces;
 using Netboot.Network.Server;
+using Netboot.Network.Sockets;
 using Netboot.Services;
 using Netboot.Services.Interfaces;
 using System.Reflection;
@@ -36,7 +37,7 @@ namespace Netboot
 
 		public static void LoadServices()
 		{
-			Add_Service(new BaseService("NONE"));
+			Add_Service(new BaseService("NONE", SocketProtocol.NONE));
 
             #region "Load Service Modules"
             var serviceModules = new DirectoryInfo(Platform.NetbootDirectory)
@@ -73,7 +74,7 @@ namespace Netboot
 		{
 			service.AddServer += (sender, e) =>
 			{
-				Add_Server(e.ServiceType, e.Ports);
+				Add_Server(e.ServiceType, e.Protocol, e.Ports);
 			};
 
 			service.ServerSendPacket += (sender, e) =>
@@ -142,10 +143,10 @@ namespace Netboot
 				service.Heartbeat();
 		}
 
-		public static void Add_Server(string serviceType, IEnumerable<ushort> ports)
+		public static void Add_Server(string serviceType, SocketProtocol protocol, IEnumerable<ushort> ports)
 		{
 			var serverId = Guid.NewGuid();
-			var server = new BaseServer(serverId, serviceType, ports);
+			var server = new BaseServer(serverId, serviceType, protocol, ports);
 			server.DataSent += (sender, e) =>
 			{
 				Functions.InvokeMethod(Services[e.ServiceType], "Handle_DataSent",

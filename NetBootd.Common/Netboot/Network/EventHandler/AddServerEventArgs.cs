@@ -11,15 +11,21 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Netboot.Network.Sockets;
+
 namespace Netboot.Network.EventHandler
 {
 	public class AddServerEventArgs
 	{
 		public string ServiceType { get; private set; }
+
+		public SocketProtocol Protocol { get; private set; }
+
 		public List<ushort> Ports { get; private set; }
 
-		public AddServerEventArgs(string type, List<ushort> ports)
+		public AddServerEventArgs(string type, SocketProtocol protocol, List<ushort> ports)
 		{
+			Protocol = protocol;
 			ServiceType = type;
 			Ports = ports;
 		}

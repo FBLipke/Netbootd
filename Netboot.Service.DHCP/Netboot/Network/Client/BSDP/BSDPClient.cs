@@ -11,35 +11,9 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-namespace Netboot.Service.TFTP
+namespace Netboot.Network.Client
 {
-	public enum TFTPOPCodes
+	public class BSDPClient
 	{
-		RRQ = 1,
-		WRQ = 2,
-		DAT = 3,
-		ACK = 4,
-		ERR = 5,
-		OCK = 6
-	}
-
-	public enum TFTPMode
-	{
-		Octet,
-		Mail,
-		NetASCII
-	}
-
-	public enum TFTPErrorCode
-	{
-		Unknown,
-		FileNotFound,
-		AccessViolation,
-		DiskFull,
-		IllegalOperation,
-		UnknownTID,
-		FileExists,
-		NoSuchUser,
-		InvalidOption
 	}
 }

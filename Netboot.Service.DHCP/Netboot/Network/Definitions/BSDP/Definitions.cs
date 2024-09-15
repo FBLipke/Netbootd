@@ -11,35 +11,31 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-namespace Netboot.Service.TFTP
+namespace Netboot.Network.Definitions
 {
-	public enum TFTPOPCodes
+	public enum BSDPMsgType : byte
 	{
-		RRQ = 1,
-		WRQ = 2,
-		DAT = 3,
-		ACK = 4,
-		ERR = 5,
-		OCK = 6
+		List = 1,
+		Select = 2,
+		Failed = 3
 	}
 
-	public enum TFTPMode
+	public enum BSDPVendorEncOptions
 	{
-		Octet,
-		Mail,
-		NetASCII
-	}
-
-	public enum TFTPErrorCode
-	{
-		Unknown,
-		FileNotFound,
-		AccessViolation,
-		DiskFull,
-		IllegalOperation,
-		UnknownTID,
-		FileExists,
-		NoSuchUser,
-		InvalidOption
+		MessageType = 1,
+		Version = 2,
+		ServerIdentifier = 3,
+		ServerPriority = 4,
+		ReplyPOrt = 5,
+		/// <summary>
+		/// Not Used
+		/// </summary>
+		BootImageListPath = 6,
+		DefaultBootImage = 7,
+		SelectedBootImage = 8,
+		BootImageList = 9,
+		Netboot10Firmware = 10,
+		AttributesFilterList = 11,
+		MaxMessageSize = 12,
 	}
 }

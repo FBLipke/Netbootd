@@ -28,12 +28,10 @@ namespace Netboot.Common
 			return nano;
 		}
 
-        public static void PrintMessage(string message)
-        {
-            Console.WriteLine(message);
-        }
+		public static void PrintMessage(string message)
+			=> Console.WriteLine(message);
 
-        public static byte[] NTLMChallenge()
+		public static byte[] NTLMChallenge()
 		{
 			#region "Generate the Seed"
 			var SysTime = BitConverter.GetBytes(NTQuerySystemTime());
@@ -74,15 +72,14 @@ namespace Netboot.Common
 		}
 
 		public static string ReplaceSlashes(string input)
-		{
-			return input.Replace("/", NetbootBase.Platform.DirectorySeperatorChar);
-		}
+			=> input.Replace("/", NetbootBase.Platform.DirectorySeperatorChar);
 
 		public static void InvokeMethod(object obj, string name, object?[]? args)
 		{
 			try
 			{
-				var methods = obj.GetType().GetMethods().Where(m => m.Name == name && m.IsPublic).FirstOrDefault();
+				var methods = obj.GetType().GetMethods()
+					.Where(m => m.Name == name && m.IsPublic).FirstOrDefault();
 				methods.Invoke(obj, args);
 			}
 			catch (NullReferenceException ex)
@@ -92,13 +89,11 @@ namespace Netboot.Common
 		}
 
 		public static IEnumerable<IPAddress> GetIPAddresses()
-		{
-			return from networkInterface in NetworkInterface.GetAllNetworkInterfaces()
-				   from unicastAddress in networkInterface.GetIPProperties().UnicastAddresses
-				   where !IPAddress.IsLoopback(unicastAddress.Address) &&
-				   unicastAddress.Address.GetAddressBytes()[0] != 0xa9
-				   select unicastAddress.Address;
-		}
+			=> from networkInterface in NetworkInterface.GetAllNetworkInterfaces()
+				from unicastAddress in networkInterface.GetIPProperties().UnicastAddresses
+				where !IPAddress.IsLoopback(unicastAddress.Address) &&
+					unicastAddress.Address.GetAddressBytes()[0] != 0xa9
+						select unicastAddress.Address;
 
 		public static bool IsLittleEndian() => BitConverter.IsLittleEndian;
 	}

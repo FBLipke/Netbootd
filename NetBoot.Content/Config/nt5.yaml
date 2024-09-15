@@ -15,5 +15,5 @@ sourceDiskFiles:
   config:
     SetupData:
       ForceOemHal: 0
-      FOrceOemSCSI: 0
-
+      ForceOemSCSI: 0
+      

@@ -35,11 +35,11 @@ namespace Netboot.Network.Packet
 				case ntlmssp_message_type.Challenge:
 					Buffer.Position = 12;
 					var secBuffer = Read_Bytes(8);
-					SecurityBuffers.Add("TargetName", new SecurityBuffer(secBuffer));
+					SecurityBuffers.Add("TargetName", new(secBuffer));
 
 					Buffer.Position = 40;
 					secBuffer = Read_Bytes(8);
-					SecurityBuffers.Add("TargetInfo", new SecurityBuffer(secBuffer));
+					SecurityBuffers.Add("TargetInfo", new(secBuffer));
 					break;
 				case ntlmssp_message_type.Authenticate:
 					break;

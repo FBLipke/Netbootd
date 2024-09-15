@@ -11,22 +11,15 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Netboot.Network.Client;
 using Netboot.Network.Client.RBCP;
-using Netboot.Network.Interfaces;
-using Netboot.Network.Packet;
 using System.Buffers.Binary;
 using System.Net;
 using System.Text;
-using YamlDotNet.Serialization;
 
 namespace Netboot.Network.Definitions
 {
 	public static partial class Functions
 	{
-       
-
-
         public static DHCPOption GenerateBootServersList(Dictionary<string, BootServer> serverlist)
 		{
 			var ipBlock = 0;
@@ -123,6 +116,16 @@ namespace Netboot.Network.Definitions
 			}
 
 			return new((byte)PXEVendorEncOptions.BootMenue, menuebuffer);
+		}
+
+		public static List<string> GetNetBootImages(string rootPath)
+		{
+			var Dirs = Directory.GetDirectories(Path.Combine(rootPath,"TFTPRoot"),"*.nbi", SearchOption.AllDirectories).ToList();
+			foreach (var d in Dirs) {
+				Console.WriteLine(d);
+			}
+
+			return Dirs;
 		}
 
 		public static List<IPAddress> DNSLookup(string hostname)

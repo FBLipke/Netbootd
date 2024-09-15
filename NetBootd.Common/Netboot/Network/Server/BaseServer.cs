@@ -27,13 +27,17 @@ namespace Netboot.Network.Server
 		public event DataSentEventHandler? DataSent;
 
 		Dictionary<Guid, ISocket> Sockets = [];
+
 		public Guid ServerId;
+		public SocketProtocol Protocol;
+
 		public string ServiceType { get; }
 
-		public BaseServer(Guid serverid, string serviceType, IEnumerable<ushort> ports)
+		public BaseServer(Guid serverid, string serviceType, SocketProtocol protocol, IEnumerable<ushort> ports)
 		{
 			ServerId = serverid;
 			ServiceType = serviceType;
+			Protocol = protocol;
 
 			var addresses = Functions.GetIPAddresses();
 			foreach (var (address, port) in from address in addresses
@@ -46,7 +50,7 @@ namespace Netboot.Network.Server
 		public void Add(IPEndPoint endPoint)
 		{
 			var socketID = Guid.NewGuid();
-			var socket = new BaseSocket(ServerId, socketID, ServiceType, endPoint,true);
+			var socket = new BaseSocket(ServerId, socketID, ServiceType, Protocol, endPoint, true);
 
 			socket.DataSent += (sender, e) =>
 			{

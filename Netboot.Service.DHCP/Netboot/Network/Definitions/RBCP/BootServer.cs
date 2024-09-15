@@ -32,7 +32,7 @@ namespace Netboot.Network.Definitions
 				.Where(a => a.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork).ToList();
 		}
 
-		public BootServer(IPAddress addr, BootServerTypes bootServerType = BootServerTypes.PXEBootstrapServer)
+		public BootServer(IPAddress addr, BootServerTypes bootServerType = BootServerTypes.MicrosoftWindowsNT)
 		{
 			Hostname = addr.ToString();
 			Type = bootServerType;

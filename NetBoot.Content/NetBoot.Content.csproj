@@ -1,0 +1,121 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <BaseOutputPath>..\</BaseOutputPath>
+    <ProduceReferenceAssembly>True</ProduceReferenceAssembly>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="TFTPRoot\Boot\Readme.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="TFTPRoot\Netboot\NetbootSP0\10.6 Another Example.nbi\i386\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Config\Netboot.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Config\nt5.yaml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="TFTPRoot\Boot\x64\bootmgr.exe">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="TFTPRoot\Boot\x64\default.bcd">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="TFTPRoot\Boot\x64\pxeboot.n12">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="TFTPRoot\Boot\x64\wdsnbp.com">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="TFTPRoot\Boot\x86\apitest.0">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="TFTPRoot\Boot\x86\bisconfig.0">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="TFTPRoot\Boot\x86\boot.sdi">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="TFTPRoot\Boot\x86\default.bcd">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="TFTPRoot\Boot\x86\dosundi.0">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="TFTPRoot\Boot\x86\dosundi.1">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="TFTPRoot\Boot\x86\pxeboot.n12">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="TFTPRoot\Boot\x86\pxelinux.0">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="TFTPRoot\Boot\x86\wdsnbp.com">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="TFTPRoot\Netboot\NetbootSP0\10.6 Another Example.nbi\NBImageInfo.plist" />
+    <None Include="TFTPRoot\Netboot\NetbootSP0\10.6 Another Example.nbi\Netinstall.dmg" />
+    <None Include="TFTPRoot\OSChooser\english\00004e22.osc" />
+    <None Include="TFTPRoot\OSChooser\english\00004e23.osc" />
+    <None Include="TFTPRoot\OSChooser\english\00004e24.osc" />
+    <None Include="TFTPRoot\OSChooser\english\00004e25.osc" />
+    <None Include="TFTPRoot\OSChooser\english\00004e26.osc" />
+    <None Include="TFTPRoot\OSChooser\english\00004e28.osc" />
+    <None Include="TFTPRoot\OSChooser\english\00004e29.osc" />
+    <None Include="TFTPRoot\OSChooser\english\00004e2a.osc" />
+    <None Include="TFTPRoot\OSChooser\english\00004e2f.osc" />
+    <None Include="TFTPRoot\OSChooser\english\00004e30.osc" />
+    <None Include="TFTPRoot\OSChooser\english\00004e43.osc" />
+    <None Include="TFTPRoot\OSChooser\english\00004e45.osc" />
+    <None Include="TFTPRoot\OSChooser\english\00004e47.osc" />
+    <None Include="TFTPRoot\OSChooser\english\00004e48.osc" />
+    <None Include="TFTPRoot\OSChooser\english\00004e4b.osc" />
+    <None Include="TFTPRoot\OSChooser\english\00004e4c.osc" />
+    <None Include="TFTPRoot\OSChooser\english\00004e4e.osc" />
+    <None Include="TFTPRoot\OSChooser\english\00004e4f.osc" />
+    <None Include="TFTPRoot\OSChooser\english\00004e50.osc" />
+    <None Include="TFTPRoot\OSChooser\english\00004e51.osc" />
+    <None Include="TFTPRoot\OSChooser\english\00004e52.osc" />
+    <None Include="TFTPRoot\OSChooser\english\00004e53.osc" />
+    <None Include="TFTPRoot\OSChooser\english\choice.osc" />
+    <None Include="TFTPRoot\OSChooser\english\choichlp.osc" />
+    <None Include="TFTPRoot\OSChooser\english\custhelp.osc" />
+    <None Include="TFTPRoot\OSChooser\english\custom.osc" />
+    <None Include="TFTPRoot\OSChooser\english\dupauto.osc" />
+    <None Include="TFTPRoot\OSChooser\english\dupcust.osc" />
+    <None Include="TFTPRoot\OSChooser\english\install.osc" />
+    <None Include="TFTPRoot\OSChooser\english\login.osc" />
+    <None Include="TFTPRoot\OSChooser\english\loginhlp.osc" />
+    <None Include="TFTPRoot\OSChooser\english\nochoice.osc" />
+    <None Include="TFTPRoot\OSChooser\english\nooses.osc" />
+    <None Include="TFTPRoot\OSChooser\english\osauto.osc" />
+    <None Include="TFTPRoot\OSChooser\english\oschoice.osc" />
+    <None Include="TFTPRoot\OSChooser\english\oscust.osc" />
+    <None Include="TFTPRoot\OSChooser\english\rstrterr.osc" />
+    <None Include="TFTPRoot\OSChooser\english\tools.osc" />
+    <None Include="TFTPRoot\OSChooser\english\toolshlp.osc" />
+    <None Include="TFTPRoot\OSChooser\english\warning.osc" />
+    <None Include="TFTPRoot\OSChooser\i386\NTLDR" />
+    <None Include="TFTPRoot\OSChooser\i386\startrom.com" />
+    <None Include="TFTPRoot\OSChooser\i386\startrom.n12" />
+    <None Include="TFTPRoot\OSChooser\welcome.osc" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="TFTPRoot\Boot\x64\boot.wim">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

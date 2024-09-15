@@ -17,6 +17,7 @@ using Netboot.Network.Client;
 using Netboot.Network.Definitions;
 using Netboot.Network.EventHandler;
 using Netboot.Network.Packet;
+using Netboot.Network.Sockets;
 using Netboot.Services.Interfaces;
 using System.Net;
 using System.Net.NetworkInformation;
@@ -33,6 +34,8 @@ namespace Netboot.Service.BINL
 		}
 
 		public List<ushort> Ports { get; set; } = [];
+
+		public SocketProtocol Protocol { get; set; } = SocketProtocol.UDP;
 
 		public string RootPath { get; set; }
 
@@ -97,7 +100,7 @@ namespace Netboot.Service.BINL
 					string.IsNullOrEmpty(screen) ? "welcome.osc" : Path.Combine("english",
 					string.Format($"{screen.ToLowerInvariant()}.osc"))));
 
-				PrintMessage?.Invoke(this, new PrintMessageEventArgs($"[I] OSChooser Screen Request: {screen.ToLowerInvariant()}"));
+				PrintMessage?.Invoke(this, new($"[I] OSChooser Screen Request: {screen.ToLowerInvariant()}"));
 
 				fileContent = fileContent.Replace("\r\n", "\n");
 
@@ -132,26 +135,26 @@ namespace Netboot.Service.BINL
 			switch (ntlmrequest.MessageType)
 			{
 				case ntlmssp_message_type.Negotiate:
-					PrintMessage?.Invoke(this, new PrintMessageEventArgs(string.Format("[I] NTLM Negotiate! (Flags: {0})", ntlmrequest.Flags)));
+					PrintMessage?.Invoke(this, new(string.Format("[I] NTLM Negotiate! (Flags: {0})", ntlmrequest.Flags)));
 					response.Flags = ntlmrequest.Flags;
 					response.Challenge = Functions.NTLMChallenge();
 					response.Context = new byte[8];
 					break;
 				case ntlmssp_message_type.Challenge:
-					PrintMessage?.Invoke(this, new PrintMessageEventArgs(string.Format("[I] NTLM Challenge!")));
+					PrintMessage?.Invoke(this, new(string.Format("[I] NTLM Challenge!")));
 					break;
 				case ntlmssp_message_type.Authenticate:
-                    PrintMessage?.Invoke(this, new PrintMessageEventArgs(string.Format("[I] NTLM Authenticate!")));
+                    PrintMessage?.Invoke(this, new(string.Format("[I] NTLM Authenticate!")));
 					break;
 				default:
-                    PrintMessage?.Invoke(this, new PrintMessageEventArgs(string.Format("[I] invalid Type!")));
+                    PrintMessage?.Invoke(this, new(string.Format("[I] invalid Type!")));
 					return;
 			}
 		}
 
 		void AddClient(string clientId, string serviceType, IPEndPoint remoteEndpoint, Guid serverId, Guid socketId)
 		{
-			if (!Clients.TryGetValue(clientId, out BINLClient value))
+			if (!Clients.TryGetValue(clientId, out var value))
 				Clients.Add(clientId, new(clientId, serviceType, remoteEndpoint, serverId, socketId));
 			else
                 value.RemoteEntpoint = remoteEndpoint;

@@ -5,7 +5,7 @@ VisualStudioVersion = 17.8.34525.116
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Netboot", "Netbootd\Netboot.csproj", "{E56D996C-0C73-4615-BC4B-8E9D2E02EC1D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Netboot.Common", "NetBootd.Common\NetBoot.Common.csproj", "{F174DB54-33A4-47FB-8D55-F956D2F0C52F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetBoot.Common", "NetBootd.Common\NetBoot.Common.csproj", "{F174DB54-33A4-47FB-8D55-F956D2F0C52F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Netboot.Service.DHCP", "Netboot.Service.DHCP\Netboot.Service.DHCP.csproj", "{BEC027F4-E518-453E-8AFF-F9245E48C829}"
 EndProject
@@ -13,7 +13,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Netboot.Service.BINL", "Net
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Netboot.Service.TFTP", "Netboot.Service.TFTP\Netboot.Service.TFTP.csproj", "{64BB4D65-CB1E-41B2-8516-0288AAD771B2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Netboot.Utility", "Netboot.Utility\Netboot.Utility.csproj", "{5AE92957-2604-4D4B-8F58-680200E60474}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Netboot.Utility", "Netboot.Utility\Netboot.Utility.csproj", "{5AE92957-2604-4D4B-8F58-680200E60474}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetBoot.Content", "NetBoot.Content\NetBoot.Content.csproj", "{45F74324-5595-442A-8B43-C92F6B01471A}"
+	ProjectSection(ProjectDependencies) = postProject
+		{5AE92957-2604-4D4B-8F58-680200E60474} = {5AE92957-2604-4D4B-8F58-680200E60474}
+		{E56D996C-0C73-4615-BC4B-8E9D2E02EC1D} = {E56D996C-0C73-4615-BC4B-8E9D2E02EC1D}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -45,6 +51,10 @@ Global
 		{5AE92957-2604-4D4B-8F58-680200E60474}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5AE92957-2604-4D4B-8F58-680200E60474}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5AE92957-2604-4D4B-8F58-680200E60474}.Release|Any CPU.Build.0 = Release|Any CPU
+		{45F74324-5595-442A-8B43-C92F6B01471A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{45F74324-5595-442A-8B43-C92F6B01471A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{45F74324-5595-442A-8B43-C92F6B01471A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{45F74324-5595-442A-8B43-C92F6B01471A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

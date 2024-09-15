@@ -47,8 +47,8 @@ namespace Netboot.Network.Client
 		public PXEPromptOptionValues ClientPrompt { get; set; } = PXEPromptOptionValues.OptOut;
 		
 		public PXEPromptOptionValues PromptDone { get; set; } = PXEPromptOptionValues.OptOut;
-		
-		public NBPVersionValues NBPVersion { get; set; }
+
+		public NBPVersionValues NBPVersion { get; set; } = NBPVersionValues.Seven;
 
 		public WDSClient() {}
 	}

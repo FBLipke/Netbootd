@@ -15,6 +15,7 @@ using Netboot.Common;
 using Netboot.Network.Client;
 using Netboot.Network.EventHandler;
 using Netboot.Network.Interfaces;
+using Netboot.Network.Sockets;
 using Netboot.Service.TFTP.Netboot.Network;
 using Netboot.Service.TFTP.Netboot.Network.Packet;
 using Netboot.Services.Interfaces;
@@ -49,6 +50,8 @@ namespace Netboot.Service.TFTP
 
 		public string RootPath { get; set; }
 
+		public SocketProtocol Protocol { get; set; } = SocketProtocol.UDP;
+
 		public Dictionary<string, TFTPClient> Clients { get; set; } = [];
 
 		public List<ushort> Ports { get; set; } = [];
@@ -67,11 +70,11 @@ namespace Netboot.Service.TFTP
 
 		private void RemoveClient(string id)
 		{
-			if (Clients.ContainsKey(id))
-			{
-				Clients[id].Dispose();
-				Clients.Remove(id);
-			}
+			if (!Clients.ContainsKey(id))
+				return;
+
+			Clients[id].Dispose();
+			Clients.Remove(id);
 		}
 
 		void AddClient(string clientId, string serviceType, IPEndPoint remoteEndpoint, Guid serverId, Guid socketId)
@@ -184,7 +187,7 @@ namespace Netboot.Service.TFTP
 					select ushort.Parse(port.Trim()));
 			}
 
-			AddServer?.Invoke(this, new(ServiceType, Ports));
+			AddServer?.Invoke(this, new(ServiceType, Protocol, Ports));
 			return true;
 		}
 

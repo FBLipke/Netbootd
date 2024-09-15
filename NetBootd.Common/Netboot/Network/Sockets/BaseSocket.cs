@@ -11,7 +11,6 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Netboot.Network.Sockets.Definition;
 using Netboot.Network.EventHandler;
 using Netboot.Network.Interfaces;
 using System.Net;
@@ -19,151 +18,192 @@ using System.Net.Sockets;
 
 namespace Netboot.Network.Sockets
 {
-    public class BaseSocket : IDisposable, ISocket
-    {
-        public delegate void DataReceivedEventHandler(object sender, DataReceivedEventArgs e);
-        public delegate void DataSendEventHandler(object sender, DataSentEventArgs e);
-        public event DataReceivedEventHandler? DataReceived;
-        public event DataSendEventHandler? DataSent;
+	public class BaseSocket : IDisposable, ISocket
+	{
+		public delegate void DataReceivedEventHandler(object sender, DataReceivedEventArgs e);
+		public delegate void DataSendEventHandler(object sender, DataSentEventArgs e);
+		public event DataReceivedEventHandler? DataReceived;
+		public event DataSendEventHandler? DataSent;
 
-        SocketState? socketState;
-        EndPoint localendpoint;
-        EndPoint remoteendpoint;
-        Guid SocketId;
-        Guid ServerId;
+		SocketState? socketState;
+		EndPoint localendpoint;
+		EndPoint remoteendpoint;
+		Guid SocketId;
+		Guid ServerId;
 
-        bool IsDisposed;
+		bool IsDisposed;
 
-        public string ServiceType;
+		public string ServiceType;
 
-        public bool Listening { get; private set; }
-        public int BufferLength { get; private set; }
+		public bool Listening { get; private set; }
 
-        public bool Multicast { get; private set; }
+		public SocketProtocol Protocol { get; private set; }
 
-        public BaseSocket(Guid serverId, Guid socketId, string serviceType, IPEndPoint localep, bool multicast = false, int buffersize = ushort.MaxValue)
-        {
-            localendpoint = localep;
-            remoteendpoint = new IPEndPoint(IPAddress.Any, 0);
-            BufferLength = buffersize;
-            SocketId = socketId;
-            ServerId = serverId;
-            ServiceType = serviceType;
-            Multicast = multicast;
+		public int BufferLength { get; private set; }
 
-            socketState = new SocketState
-            {
-                socket = new(localendpoint.AddressFamily, SocketType.Dgram, ProtocolType.Udp),
-                buffer = new byte[BufferLength]
-            };
-        }
+		public bool Multicast { get; private set; }
 
-        public IPAddress GetIPAddress()
-            => ((IPEndPoint)localendpoint).Address;
+		public BaseSocket(Guid serverId, Guid socketId, string serviceType, SocketProtocol protocol, IPEndPoint localep, bool multicast = false, int buffersize = ushort.MaxValue)
+		{
+			localendpoint = localep;
+			remoteendpoint = new IPEndPoint(IPAddress.Any, 0);
+			BufferLength = buffersize;
+			SocketId = socketId;
+			ServerId = serverId;
+			ServiceType = serviceType;
+			Multicast = multicast;
+			Protocol = protocol;
 
-        public void Start()
-        {
-            if (socketState == null)
-                return;
+			socketState = new SocketState
+			{
+				socket = new(localendpoint.AddressFamily, SocketType.Dgram, ProtocolType.Udp),
+				buffer = new byte[BufferLength]
+			};
+		}
 
-            try
-            {
-                socketState.socket?.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
-                socketState.socket?.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.Broadcast, true);
-                /*
-                                if (Multicast)
-                                {
-                                    socketState.socket?.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership,
-                                        new MulticastOption(IPAddress.Parse("224.0.1.2")));
-                                }
-                */
-                socketState.socket?.Bind(localendpoint);
+		public IPAddress GetIPAddress()
+			=> ((IPEndPoint)localendpoint).Address;
 
-                socketState.socket?.BeginReceiveFrom(socketState.buffer, 0, socketState.buffer.Length,
-                    SocketFlags.None, ref localendpoint, new(EndReceive), socketState);
+		public void Start()
+		{
+			if (socketState == null)
+				return;
 
-                Listening = true;
-            }
-            catch (SocketException ex)
-            {
-                Console.WriteLine(ex);
-                Listening = false;
-            }
-        }
+			try
+			{
+				switch (Protocol)
+				{
+					case SocketProtocol.NONE:
+						break;
+					case SocketProtocol.TCP:
+						break;
+					case SocketProtocol.RAW:
+					case SocketProtocol.UDP:
+						socketState.socket?.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
+						socketState.socket?.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.Broadcast, true);
+						/*
+										if (Multicast)
+										{
+											socketState.socket?.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership,
+												new MulticastOption(IPAddress.Parse("224.0.1.2")));
+										}
+						*/
+						socketState.socket?.Bind(localendpoint);
 
-        public void Close()
-        {
-            Console.WriteLine($"[I] Closed Socket {SocketId}!");
-            socketState.Close();
-            Listening = false;
-        }
+						socketState.socket?.BeginReceiveFrom(socketState.buffer, 0, socketState.buffer.Length,
+							SocketFlags.None, ref localendpoint, new(EndReceive), socketState);
+						break;
+					default:
+						break;
+				}
 
-        private void EndReceive(IAsyncResult asyncResult)
-        {
-            try
-            {
-                socketState = (SocketState)asyncResult.AsyncState;
-                var client = socketState.socket;
-                if (client == null)
-                    return;
+				Listening = true;
+			}
+			catch (SocketException ex)
+			{
+				Console.WriteLine(ex);
+				Listening = false;
+			}
+		}
 
-                if (socketState == null)
-                    return;
+		public void Close()
+		{
+			Console.WriteLine($"[I] Closed Socket {SocketId}!");
+			socketState.Close();
+			Listening = false;
+		}
 
-                var bytesRead = client.EndReceiveFrom(asyncResult, ref remoteendpoint);
-                if (bytesRead == 0 || bytesRead == -1)
-                    return;
+		private void EndReceive(IAsyncResult asyncResult)
+		{
+			try
+			{
+				switch (Protocol)
+				{
+					case SocketProtocol.NONE:
+						break;
+					case SocketProtocol.TCP:
+						break;
+					case SocketProtocol.UDP:
+					case SocketProtocol.RAW:
+						socketState = (SocketState)asyncResult.AsyncState;
+						var client = socketState.socket;
+						if (client == null)
+							return;
 
-                #region "Read data"
-                var data = new byte[bytesRead];
-                Array.Copy(socketState.buffer, data, data.Length);
-                #endregion
+						if (socketState == null)
+							return;
 
-                DataReceived?.Invoke(this, new(ServiceType, ServerId, SocketId, data,
-                    (IPEndPoint)remoteendpoint));
+						var bytesRead = client.EndReceiveFrom(asyncResult, ref remoteendpoint);
+						if (bytesRead == 0 || bytesRead == -1)
+							return;
 
-                socketState.socket.BeginReceiveFrom(socketState.buffer, 0, socketState.buffer.Length,
-                    SocketFlags.None, ref localendpoint, new(EndReceive), socketState);
-            }
-            catch (ObjectDisposedException ex)
-            {
-                Console.WriteLine(ex);
-                Listening = false;
-            }
-            catch (SocketException ex)
-            {
-                Console.WriteLine(ex);
-                Listening = false;
-            }
-        }
+						#region "Read data"
+						var data = new byte[bytesRead];
+						Array.Copy(socketState.buffer, data, data.Length);
+						#endregion
 
-        public void SendTo(IPacket packet, IClient client)
-        {
-            var buffer = packet.Buffer.GetBuffer();
+						DataReceived?.Invoke(this, new(ServiceType, ServerId, SocketId, data,
+							(IPEndPoint)remoteendpoint));
 
-            if (client.RemoteEntpoint.Address.Equals(IPAddress.Any))
-                client.RemoteEntpoint.Address = IPAddress.Broadcast;
+						socketState.socket.BeginReceiveFrom(socketState.buffer, 0, socketState.buffer.Length,
+							SocketFlags.None, ref localendpoint, new(EndReceive), socketState);
+						break;
+					default:
+						break;
+				}
 
-            var bytesSent = socketState.socket.SendTo(buffer, 0, (int)packet.Buffer.Length,
-                SocketFlags.None, client.RemoteEntpoint);
-        }
+			}
+			catch (ObjectDisposedException ex)
+			{
+				Console.WriteLine(ex);
+				Listening = false;
+			}
+			catch (SocketException ex)
+			{
+				Console.WriteLine(ex);
+				Listening = false;
+			}
+		}
 
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
+		public void SendTo(IPacket packet, IClient client)
+		{
+			switch (Protocol)
+			{
+				case SocketProtocol.NONE:
+					break;
+				case SocketProtocol.TCP:
+					break;
+				case SocketProtocol.RAW:
+				case SocketProtocol.UDP:
+					var buffer = packet.Buffer.GetBuffer();
 
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!IsDisposed)
-            {
-                if (disposing)
-                    socketState?.Dispose();
+					if (client.RemoteEntpoint.Address.Equals(IPAddress.Any))
+						client.RemoteEntpoint.Address = IPAddress.Broadcast;
 
-                socketState = null;
-                IsDisposed = true;
-            }
-        }
-    }
+					var bytesSent = socketState.socket.SendTo(buffer, 0, (int)packet.Buffer.Length,
+						SocketFlags.None, client.RemoteEntpoint);
+					break;
+				default:
+					break;
+			}
+		}
+
+		public void Dispose()
+		{
+			Dispose(true);
+			GC.SuppressFinalize(this);
+		}
+
+		protected virtual void Dispose(bool disposing)
+		{
+			if (!IsDisposed)
+			{
+				if (disposing)
+					socketState?.Dispose();
+
+				socketState = null;
+				IsDisposed = true;
+			}
+		}
+	}
 }
