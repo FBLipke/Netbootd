@@ -177,11 +177,11 @@ namespace Netboot.Network.Sockets
 				case SocketProtocol.UDP:
 					var buffer = packet.Buffer.GetBuffer();
 
-					if (client.RemoteEntpoint.Address.Equals(IPAddress.Any))
-						client.RemoteEntpoint.Address = IPAddress.Broadcast;
+					if (client.RemoteEndpoint.Address.Equals(IPAddress.Any))
+						client.RemoteEndpoint.Address = IPAddress.Broadcast;
 
 					var bytesSent = socketState.socket.SendTo(buffer, 0, (int)packet.Buffer.Length,
-						SocketFlags.None, client.RemoteEntpoint);
+						SocketFlags.None, client.RemoteEndpoint);
 					break;
 				default:
 					break;

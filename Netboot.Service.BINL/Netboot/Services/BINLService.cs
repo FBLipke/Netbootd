@@ -157,7 +157,7 @@ namespace Netboot.Service.BINL
 			if (!Clients.TryGetValue(clientId, out var value))
 				Clients.Add(clientId, new(clientId, serviceType, remoteEndpoint, serverId, socketId));
 			else
-                value.RemoteEntpoint = remoteEndpoint;
+                value.RemoteEndpoint = remoteEndpoint;
 		}
 
 		public void Handle_DataReceived(object sender, DataReceivedEventArgs e)

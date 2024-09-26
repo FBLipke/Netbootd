@@ -30,7 +30,7 @@ namespace Netboot.Network.Client
 
 		public DateTime LastUpdate { get; set; }
 
-		public IPEndPoint RemoteEntpoint { get; set; }
+		public IPEndPoint RemoteEndpoint { get; set; }
 
 		public BaseClient(string clientId, string serviceType,
 			IPEndPoint remoteEndpoint, Guid serverid, Guid socketId)
@@ -39,7 +39,7 @@ namespace Netboot.Network.Client
 			SocketId = socketId;
 			ServerId = serverid;
 			ClientId = clientId;
-			RemoteEntpoint = remoteEndpoint;
+			RemoteEndpoint = remoteEndpoint;
 			CreationTime = DateTime.Now;
 			LastUpdate = DateTime.Now;
 		}

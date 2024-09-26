@@ -21,7 +21,7 @@ namespace Netboot.Network.Interfaces
 		public Guid ServerId { get; set; }
 		public string ServiceType { get; set; }
 		public string ClientId { get; set; }
-		IPEndPoint RemoteEntpoint { get; set; }
+		IPEndPoint RemoteEndpoint { get; set; }
 
 		void Close();
 	}

@@ -123,8 +123,8 @@ namespace Netboot.Services.DHCP
 			{
 				Clients[clientId] = client;
 
-				if (Clients[clientId].RemoteEntpoint.Address.Equals(IPAddress.Any))
-					Clients[clientId].RemoteEntpoint.Address = IPAddress.Broadcast;
+				if (Clients[clientId].RemoteEndpoint.Address.Equals(IPAddress.Any))
+					Clients[clientId].RemoteEndpoint.Address = IPAddress.Broadcast;
 			}
 
 			Clients[clientId].UpdateTimestamp();
@@ -189,10 +189,7 @@ namespace Netboot.Services.DHCP
 					case WDSNBPOptions.ActionDone:
 						Clients[client].WDS.ActionDone = wdsOption.AsBool();
 
-						if (ServerMode == ServerMode.AllowAll)
-							Clients[client].WDS.ActionDone = true;
-						else
-							Clients[client].WDS.ActionDone = false;
+						Clients[client].WDS.ActionDone = (ServerMode == ServerMode.AllowAll);
 						break;
 					case WDSNBPOptions.End:
 						break;
@@ -256,20 +253,20 @@ namespace Netboot.Services.DHCP
 				case DHCPVendorID.HTTPClient:
 					AddClient(clientid, e.ServiceType, e.RemoteEndpoint, e.ServerId, e.SocketId, requestPacket.GetVendorIdent);
 
-					Console.WriteLine("[I] Got {1}Request from: {0}", Clients[clientid].RemoteEntpoint,
-						!requestPacket.GatewayIP.Equals(IPAddress.Any) ? "relayed " : "");
+					Console.WriteLine("[I] Got {1}Request from: {0}", Clients[clientid].RemoteEndpoint,
+						!requestPacket.GatewayIP.Equals(IPAddress.Any) ? "relayed " : string.Empty);
 
 					switch (requestPacket.BootpOPCode)
 					{
 						case BOOTPOPCode.BootRequest:
 
 							if (!requestPacket.GatewayIP.Equals(IPAddress.Any))
-								Clients[clientid].RemoteEntpoint.Address = requestPacket.GatewayIP;
+								Clients[clientid].RemoteEndpoint.Address = requestPacket.GatewayIP;
 
 							switch ((DHCPMessageType)requestPacket.GetOption((byte)DHCPOptions.DHCPMessageType).Data[0])
 							{
 								case DHCPMessageType.Discover:
-									Clients[clientid].RemoteEntpoint.Address = IPAddress.Broadcast;
+									Clients[clientid].RemoteEndpoint.Address = IPAddress.Broadcast;
 									Handle_DHCP_Discover(e.ServerId, e.SocketId, clientid, requestPacket);
 									RemoveClient(clientid);
 									break;
@@ -535,7 +532,7 @@ namespace Netboot.Services.DHCP
 			}
 			catch (SocketException ex)
 			{
-				Console.WriteLine($"{Clients[client].RemoteEntpoint}: {ex.Message}");
+				Console.WriteLine($"{Clients[client].RemoteEndpoint}: {ex.Message}");
 			}
 
 			RemoveClient(client);

@@ -82,7 +82,7 @@ namespace Netboot.Service.TFTP
 			if (!Clients.TryGetValue(clientId, out TFTPClient? value))
 				Clients.Add(clientId, new(clientId, serviceType, remoteEndpoint, serverId, socketId));
 			else
-				value.RemoteEntpoint = remoteEndpoint;
+				value.RemoteEndpoint = remoteEndpoint;
 		}
 
 		public void Handle_DataReceived(object sender, DataReceivedEventArgs e)
@@ -182,12 +182,11 @@ namespace Netboot.Service.TFTP
 
 			var ports = xmlConfigNode.Attributes.GetNamedItem("port").Value.Split(',').ToList();
 			if (ports.Count > 0)
-			{
 				Ports.AddRange(from port in ports
 					select ushort.Parse(port.Trim()));
-			}
 
 			AddServer?.Invoke(this, new(ServiceType, Protocol, Ports));
+
 			return true;
 		}
 
