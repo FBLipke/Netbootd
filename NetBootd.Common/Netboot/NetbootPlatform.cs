@@ -44,6 +44,8 @@ namespace Netboot
 			else
 				return false;
 
+			Console.WriteLine("[I] Host Platform: {0}", OSPlatform);
+
 			NetbootDirectory = Path.Combine(Directory.GetCurrentDirectory());
 			TFTPRoot = Path.Combine(NetbootDirectory, "TFTPRoot");
 			ConfigDirectory = Path.Combine(NetbootDirectory, "Config");
@@ -59,10 +61,10 @@ namespace Netboot
 				case OSPlatformId.FreeBSD:
 				case OSPlatformId.Android:
 				case OSPlatformId.Linux:
-					DirectorySeperatorChar = "/";
-					break;
 				case OSPlatformId.MacOS:
 				case OSPlatformId.Ios:
+					DirectorySeperatorChar = "/";
+					break;
 				default:
 					return false;
 			}
