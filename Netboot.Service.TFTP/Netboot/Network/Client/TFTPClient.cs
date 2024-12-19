@@ -17,105 +17,105 @@ using System.Net;
 
 namespace Netboot.Network.Client
 {
-    public class TFTPClient : BaseClient
-    {
-        public TFTPClient(string clientId, string serviceType, IPEndPoint remoteEndpoint, Guid serverid, Guid socketId)
-            : base(clientId, serviceType, remoteEndpoint, serverid, socketId)
-        {
-            BytesRead = 0;
-        }
+	public class TFTPClient : BaseClient
+	{
+		public TFTPClient(string clientId, string serviceType, IPEndPoint remoteEndpoint, Guid serverid, Guid socketId)
+			: base(clientId, serviceType, remoteEndpoint, serverid, socketId)
+		{ 
+			BytesRead = 0;
+		}
 
-        public Dictionary<ushort, TFTPPacketBacklogEntry> PacketBacklog { get; set; } = [];
+		public Dictionary<ushort, TFTPPacketBacklogEntry> PacketBacklog { get; set; } = [];
 
-        public ushort BlockSize { get; set; } = 4096;
+		public ushort BlockSize { get; set; } = 4096;
 
-        public ushort CurrentBlock { get; set; } = 0;
+		public ushort CurrentBlock { get; set; } = 0;
 
-        public ushort TotalBlocks { get; set; } = ushort.MinValue;
+		public ushort TotalBlocks { get; set; } = ushort.MinValue;
 
-        public long BytesToRead { get; set; } = long.MinValue;
+		public long BytesToRead { get; set; } = long.MinValue;
 
-        public long BytesRead { get; set; } = long.MinValue;
+		public long BytesRead { get; set; } = long.MinValue;
 
-        private bool isOpen = false;
+		private bool isOpen = false;
 
-        public byte WindowSize { get; set; } = 1;
+		public byte WindowSize { get; set; } = 1;
 
-        public ushort MSFTWindow { get; set; } = 31416;
+		public ushort MSFTWindow { get; set; } = 31416;
 
-        public string FileName { get; set; } = string.Empty;
+		public string FileName { get; set; } = string.Empty;
 
-         public FileStream FileStream { get; internal set; }
+		public FileStream FileStream { get; internal set; }
 
-        public bool OpenFile()
-        {
-            if (isOpen)
-                return true;
+		public bool OpenFile()
+		{
+			if (isOpen)
+				return true;
 
-            try
-            {
-                var fil = new FileInfo(Functions.ReplaceSlashes(FileName));
-                if (fil.Exists)
-                {
-                    FileStream = new FileStream(fil.FullName, FileMode.Open, FileAccess.Read, FileShare.Read, 2 << 64);
-                    BytesToRead = FileStream.Length;
-                    BytesRead = 0;
-                    FileStream.Position = 0;
-                    isOpen = true;
-                }
-                else
-                    return false;
+			try
+			{
+				var fil = new FileInfo(Functions.ReplaceSlashes(FileName));
+				if (fil.Exists)
+				{
+					FileStream = new FileStream(fil.FullName, FileMode.Open, FileAccess.Read, FileShare.Read, 2 << 64);
+					BytesToRead = FileStream.Length;
+					BytesRead = 0;
+					FileStream.Position = 0;
+					isOpen = true;
+				}
+				else
+					return false;
 
-                return isOpen;
-            }
-            catch (Exception ex)
-            {
-                CloseFile();
+				return isOpen;
+			}
+			catch (Exception ex)
+			{
+				CloseFile();
 
-                Console.WriteLine(ex);
-                return isOpen;
-            }
-        }
+				Console.WriteLine(ex);
+				return isOpen;
+			}
+		}
 
-        public void ResetState(ushort block)
-        {
-            if (PacketBacklog.ContainsKey(block))
-            {
-                BytesRead = PacketBacklog[block].BytesRead;
-                BytesToRead = PacketBacklog[block].BytesToRead;
-                CurrentBlock = PacketBacklog[block].Block;
-            }
-        }
+		public void ResetState(ushort block)
+		{
+			if (PacketBacklog.ContainsKey(block))
+			{
+				BytesRead = PacketBacklog[block].BytesRead;
+				BytesToRead = PacketBacklog[block].BytesToRead;
+				CurrentBlock = PacketBacklog[block].Block;
+			}
+		}
 
-        public byte[] ReadChunk()
-        {
-            var chunksize = BlockSize;
+		public byte[] ReadChunk()
+		{
+			var chunksize = BlockSize;
 
-            if ((BytesToRead - BytesRead) <= chunksize)
-                chunksize = (ushort)(BytesToRead - BytesRead);
+			if ((BytesToRead - BytesRead) <= chunksize)
+				chunksize = (ushort)(BytesToRead - BytesRead);
 
-            var buffer = new byte[chunksize];
+			var buffer = new byte[chunksize];
 
-            if (FileStream != null)
-            {
-                FileStream.Seek(BytesRead, SeekOrigin.Begin);
-                var readedBytes = FileStream.Read(buffer, 0, buffer.Length);
-                BytesRead += readedBytes;
-            }
+			if (FileStream != null)
+			{
+				FileStream.Seek(BytesRead, SeekOrigin.Begin);
+				var readedBytes = FileStream.Read(buffer, 0, buffer.Length);
+				BytesRead += readedBytes;
+			}
 
-            return buffer;
-        }
+			return buffer;
+		}
 
-        public void CloseFile()
-        {
-            FileStream?.Close();
-        }
+		public void CloseFile()
+		{
+			FileStream?.Close();
+		}
 
-        public override void Dispose()
-        {
-            CloseFile();
-            FileStream?.Dispose();
-            PacketBacklog.Clear();
-        }
-    }
+		public override void Dispose()
+		{
+			CloseFile();
+			FileStream?.Dispose();
+			PacketBacklog.Clear();
+		}
+	}
 }

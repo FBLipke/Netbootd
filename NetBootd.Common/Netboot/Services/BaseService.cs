@@ -36,16 +36,16 @@ namespace Netboot.Services
 
 		public event IService.AddServerEventHandler? AddServer;
 		public event IService.ServerSendPacketEventHandler? ServerSendPacket;
-        public event IService.PrintMessageEventHandler? PrintMessage;
+		public event IService.PrintMessageEventHandler? PrintMessage;
 
-        public void Dispose()
+		public void Dispose()
 		{
-            foreach (var client in Clients.Values.ToList())
-                client.Dispose();
+			foreach (var client in Clients.Values.ToList())
+				client.Dispose();
 
-            Clients.Clear();
-            Ports.Clear();
-        }
+			Clients.Clear();
+			Ports.Clear();
+		}
 
 		public void Handle_DataReceived(object sender, DataReceivedEventArgs e)
 		{

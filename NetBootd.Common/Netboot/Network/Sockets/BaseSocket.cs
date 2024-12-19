@@ -113,7 +113,7 @@ namespace Netboot.Network.Sockets
 			Listening = false;
 		}
 
-		private void EndReceive(IAsyncResult asyncResult)
+		void EndReceive(IAsyncResult asyncResult)
 		{
 			try
 			{

@@ -18,13 +18,16 @@ namespace Netboot.Network.Packet
 {
 	public abstract class BasePacket : IPacket
 	{
-		public MemoryStream? Buffer { get; set; }
+		public MemoryStream Buffer { get; set; }
 
 		long lastPosition { get; set; }
 
 		public string ServiceType { get; set; } = string.Empty;
 
-		public BasePacket() { }
+		public BasePacket()
+		{
+			Buffer = new();
+		}
 
 		public BasePacket(string serviceType, byte[] data)
 		{
@@ -49,10 +52,7 @@ namespace Netboot.Network.Packet
 			Buffer.Capacity = capacity;
 		}
 
-		public void Dispose()
-		{
-			GC.SuppressFinalize(this);
-		}
+		public void Dispose() => GC.SuppressFinalize(this);
 
 		public void SetPosition(long position)
 		{
@@ -60,8 +60,7 @@ namespace Netboot.Network.Packet
 			Buffer.Position = position;
 		}
 
-		public void RestorePosition()
-		{ Buffer.Position = lastPosition; }
+		public void RestorePosition() => Buffer.Position = lastPosition;
 
 		public byte Read_UINT8(long position = 0)
 		{
@@ -93,6 +92,7 @@ namespace Netboot.Network.Packet
 		public int Write_Bytes(byte[] input)
 		{
 			Buffer.Write(input, 0, input.Length);
+
 			return input.Length;
 		}
 

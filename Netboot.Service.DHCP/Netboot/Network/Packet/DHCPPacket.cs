@@ -406,7 +406,7 @@ namespace Netboot.Network.Packet
 
 		public DHCPPacket CreateResponse(IPAddress serverIP)
 		{
-			DHCPPacket packet = null;
+			DHCPPacket? packet = null;
 			var msgType = (DHCPMessageType)GetOption((byte)DHCPOptions.DHCPMessageType).Data[0];
 
 			var expectedLength = HasOption((byte)DHCPOptions.MaximumDHCPMessageSize) ? BinaryPrimitives.ReadUInt16LittleEndian
@@ -416,24 +416,24 @@ namespace Netboot.Network.Packet
 			{
 				default:
 				case BOOTPOPCode.BootRequest:
-                    packet = new(ServiceType, expectedLength)
-                    {
-                        ServerName = Environment.MachineName,
-                        HardwareType = HardwareType,
-                        HardwareLength = HardwareLength,
-                        Hop = Hop,
-                        TransactionId = TransactionId,
-                        Seconds = Seconds,
-                        Flags = Flags,
-                        ClientIP = ClientIP,
-                        YourIP = YourIP,
-                        ServerIP = serverIP,
-                        GatewayIP = GatewayIP,
-                        BOOTPVendor = BOOTPVendor,
-                        BootpOPCode = BOOTPOPCode.BootReply,
-                        HardwareAddress = HardwareAddress
-                    };
-                    packet.AddOption(new((byte)DHCPOptions.ServerIdentifier, packet.ServerIP));
+					packet = new(ServiceType, expectedLength)
+					{
+						ServerName = Environment.MachineName,
+						HardwareType = HardwareType,
+						HardwareLength = HardwareLength,
+						Hop = Hop,
+						TransactionId = TransactionId,
+						Seconds = Seconds,
+						Flags = Flags,
+						ClientIP = ClientIP,
+						YourIP = YourIP,
+						ServerIP = serverIP,
+						GatewayIP = GatewayIP,
+						BOOTPVendor = BOOTPVendor,
+						BootpOPCode = BOOTPOPCode.BootReply,
+						HardwareAddress = HardwareAddress
+					};
+					packet.AddOption(new((byte)DHCPOptions.ServerIdentifier, packet.ServerIP));
 
 					switch (GetVendorIdent)
 					{

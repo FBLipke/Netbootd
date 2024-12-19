@@ -306,9 +306,26 @@ namespace Netboot.Services.DHCP
 				Ports.AddRange(from port in ports
 							   select ushort.Parse(port.Trim()));
 
-			var bservType = (BootServerTypes)ushort.Parse(xmlConfigNode.Attributes.GetNamedItem("behavior").Value);
-			var menueTimeout = byte.Parse(xmlConfigNode.Attributes.GetNamedItem("timeout").Value);
-			var respondDelay = byte.Parse(xmlConfigNode.Attributes.GetNamedItem("delay").Value);
+			var bserv_val = xmlConfigNode.Attributes.GetNamedItem("behavior").Value;
+
+			if (string.IsNullOrEmpty(bserv_val))
+				return false;
+
+			var bservType = (BootServerTypes)ushort.Parse(bserv_val);
+
+			var menueTimeout_val = xmlConfigNode.Attributes.GetNamedItem("timeout").Value;
+
+			if (string.IsNullOrEmpty(menueTimeout_val))
+				return false;
+
+			var menueTimeout = byte.Parse(menueTimeout_val);
+
+			var respondDelay_val = xmlConfigNode.Attributes.GetNamedItem("delay").Value;
+
+			if (string.IsNullOrEmpty(respondDelay_val))
+				return false;
+
+			var respondDelay = byte.Parse(respondDelay_val);
 
 			DHCPServiceBehavior.Invoke(this, new(bservType, menueTimeout, respondDelay));
 
@@ -333,10 +350,14 @@ namespace Netboot.Services.DHCP
 
 			#region "Bootfiles from Config"
 
-			XmlNodeList bfiles = xmlConfigNode.SelectNodes("Bootfiles/Bootfile");
+			XmlNodeList? bfiles = xmlConfigNode.SelectNodes("Bootfiles/Bootfile");
 			foreach (XmlNode bootfile in bfiles)
 			{
-				var behavior = (BootServerTypes)ushort.Parse(bootfile.Attributes.GetNamedItem("behavior").Value);
+				var val = bootfile.Attributes.GetNamedItem("behavior").Value;
+				if (string.IsNullOrEmpty(val))
+					continue;
+
+				var behavior = (BootServerTypes)ushort.Parse(val);
 				var file = bootfile.InnerText;
 
 				bootfiles.Add(behavior, file);
@@ -382,7 +403,7 @@ namespace Netboot.Services.DHCP
 			}
 			#endregion
 
-			var u= Functions.GetNetBootImages(Directory.GetCurrentDirectory());
+			var u = Functions.GetNetBootImages(Directory.GetCurrentDirectory());
 			AddServer?.Invoke(this, new(ServiceType, Protocol, Ports));
 
 			return true;

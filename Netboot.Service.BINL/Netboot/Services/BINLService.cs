@@ -30,6 +30,7 @@ namespace Netboot.Service.BINL
 	{
 		public BINLService(string serviceType)
 		{
+			RootPath = string.Empty;
 			ServiceType = serviceType;
 		}
 

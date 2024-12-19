@@ -31,6 +31,11 @@ namespace Netboot.Common.Netboot.Cryptography
 
 		public NTLMState()
 		{
+			NTHash = Array.Empty<byte>();
+			LMHash = Array.Empty<byte>();
+			Challenge = Array.Empty<byte>();
+			LM_Response = Array.Empty<byte>();
+			NT_Response = Array.Empty<byte>();
 		}
 	}
 

@@ -15,8 +15,13 @@ using Netboot.Common;
 
 namespace Netboot.Utility
 {
-	public class Utility(string[] args) : IDisposable
+	public class Utility : IDisposable
 	{
+		public Utility(string[] args)
+		{
+
+		}
+
 		public void Initialize()
 		{
 			Console.WriteLine("Netboot utility 0.1a ({0})", Functions.IsLittleEndian()
@@ -28,15 +33,15 @@ namespace Netboot.Utility
 			if (args.Length == 0)
 			{
 				Console.WriteLine("Aviable Commands:");
-                
-                return;
+
+				return;
 			}
-			
+
 			switch (args.First())
 			{
 				case "!dist":
-                    Console.WriteLine("!dist: Distribution share management!");
-                    Console.WriteLine();
+					Console.WriteLine("!dist: Distribution share management!");
+					Console.WriteLine();
 					Console.WriteLine("Syntax: !dist add (OStype) (CD ROOT)");
 					Console.WriteLine("OSType: \"nt5\" (Windows 2K/XP/2003)");
 					switch (args[1])

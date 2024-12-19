@@ -22,11 +22,11 @@ using System.Xml;
 
 namespace Netboot
 {
-    public class NetbootBase : IDisposable
+	public class NetbootBase : IDisposable
 	{
 		public static Dictionary<Guid, IServer> Servers = [];
 		public static Dictionary<string, IService> Services = [];
-        private string[] cmdArgs = [];
+		private string[] cmdArgs = [];
 
 		public static NetbootPlatform Platform = new NetbootPlatform();
 
@@ -39,8 +39,8 @@ namespace Netboot
 		{
 			Add_Service(new BaseService("NONE", SocketProtocol.NONE));
 
-            #region "Load Service Modules"
-            var serviceModules = new DirectoryInfo(Platform.NetbootDirectory)
+			#region "Load Service Modules"
+			var serviceModules = new DirectoryInfo(Platform.NetbootDirectory)
 				.GetFiles("Netboot.Service.*.dll", SearchOption.TopDirectoryOnly);
 
 			foreach (var module in serviceModules)
@@ -56,7 +56,10 @@ namespace Netboot
 					{
 						var b = t.InvokeMember(string.Empty, BindingFlags.CreateInstance,
 							null, null, new[] { serviceType }) as IService;
-						
+
+						if (b == null)
+							continue;
+
 						Add_Service(b);
 
 					}
@@ -67,10 +70,10 @@ namespace Netboot
 					}
 				}
 			}
-            #endregion
-        }
+			#endregion
+		}
 
-        public static void Add_Service(IService service)
+		public static void Add_Service(IService service)
 		{
 			service.AddServer += (sender, e) =>
 			{

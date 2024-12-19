@@ -152,7 +152,6 @@ namespace Netboot.Common
 			}
 		}
 
-
 		public List<string> GetSectionKeys(string section)
 			=> Sections[section].Keys.ToList();
 	}
