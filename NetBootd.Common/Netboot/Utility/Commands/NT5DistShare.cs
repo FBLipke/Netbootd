@@ -157,9 +157,6 @@ namespace Netboot.Utility
 									editionType = "srv";
 							}
 
-							Console.WriteLine("{0}", editionType);
-
-
 							var __key = k[0];
 
 							if (__key.Contains('%'))
@@ -320,7 +317,10 @@ namespace Netboot.Utility
 							NTSrcFileInfo fileInfo;
 
 							var s = ini.GetValue(section, key).Split(',');
-							
+							var u = diskID[s[0]].FirstOrDefault().Value.Replace("\\", string.Empty);
+							var d = Path.Combine(u, key);
+							var x = Path.Combine(sourcePath.Replace("\\", string.Empty), d);
+
 							var val = string.Empty;
 
 							if (s.Length > 10 && s[10].Contains("%"))
@@ -329,39 +329,53 @@ namespace Netboot.Utility
 							if (s.Length == 13)
 							{
 								val = __strings.ContainsKey(s[10]) ? __strings[s[10]] : string.Empty;
-								fileInfo = new(s[0], s[1], s[2], s[3], s[4], s[5], s[6], s[7], s[8], s[9], val, s[11], s[12]);
+								fileInfo = new(s[0], s[1], s[2], s[3], s[4], s[5], s[6], s[7], s[8], s[9], val, s[11], s[12], d);
 							}
 							else if (s.Length == 12)
 							{
 								val = __strings.ContainsKey(s[10]) ? __strings[s[10]] : string.Empty;
-								fileInfo = new(s[0], s[1], s[2], s[3], s[4], s[5], s[6], s[7], s[8], s[9], val, s[11], string.Empty);
+								fileInfo = new(s[0], s[1], s[2], s[3], s[4], s[5], s[6], s[7], s[8], s[9], val, s[11], string.Empty, d);
 							}
 							else if (s.Length == 11)
 							{
 								val = __strings.ContainsKey(s[10]) ? __strings[s[10]] : string.Empty;
-								fileInfo = new(s[0], s[1], s[2], s[3], s[4], s[5], s[6], s[7], s[8], s[9], val, string.Empty, string.Empty);
+								fileInfo = new(s[0], s[1], s[2], s[3], s[4], s[5], s[6], s[7], s[8], s[9], val, string.Empty, string.Empty, d);
 							}
 							else if (s.Length == 10)
 							{
-								fileInfo = new(s[0], s[1], s[2], s[3], s[4], s[5], s[6], s[7], s[8], s[9], string.Empty, string.Empty, string.Empty);
+								fileInfo = new(s[0], s[1], s[2], s[3], s[4], s[5], s[6], s[7], s[8], s[9], string.Empty, string.Empty, string.Empty, d);
 							}
 							else
 							{
-								fileInfo = new(s[0], s[1], s[2], s[3], s[4], s[5], s[6], s[7], s[8], string.Empty, string.Empty, string.Empty, string.Empty);
+								fileInfo = new(s[0], s[1], s[2], s[3], s[4], s[5], s[6], s[7], s[8], string.Empty, string.Empty, string.Empty, string.Empty, d);
 							}
 
-							var u = diskID[s[0]].FirstOrDefault().Value;
-							var x= Path.Combine(sourcePath.Replace("\\", string.Empty), Path.Combine(u, key));
-
-							fileInfo.Dump();
 							fileList.Add(x.ToUpperInvariant(), fileInfo);
-
 						}
 					}
 
 					foreach (var file in fileList)
-						Console.WriteLine("{0} - {1}", file.Key, file.Value.Dump());
+					{
+						var dstPath = Path.Combine(TargetDir, file.Value.DiskSrcDir);
 
+						Directory.CreateDirectory(dstPath.Substring(0, dstPath.LastIndexOf('/')));
+
+						if (File.Exists(file.Key))
+							File.Copy(file.Key, dstPath, true);
+						else
+						{
+							var compSrcFileName = file.Key.Substring(0, file.Key.Length - 1);
+							compSrcFileName += "_";
+
+							var compdstFileName = dstPath.Substring(0, dstPath.Length - 1);
+							compdstFileName += "_";
+
+							if (File.Exists(compSrcFileName))
+								File.Copy(compSrcFileName, compdstFileName,true);
+                        }
+					}
+
+                    Console.WriteLine("Done!");
                     break;
 				case "ris":
 
