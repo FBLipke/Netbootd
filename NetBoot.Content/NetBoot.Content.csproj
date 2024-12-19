@@ -25,25 +25,13 @@
     <None Include="Config\nt5.yaml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="TFTPRoot\Boot\x64\bootmgr.exe">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
     <None Include="TFTPRoot\Boot\x64\default.bcd">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="TFTPRoot\Boot\x64\pxeboot.n12">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="TFTPRoot\Boot\x64\wdsnbp.com">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="TFTPRoot\Boot\x86\apitest.0">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="TFTPRoot\Boot\x86\bisconfig.0">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="TFTPRoot\Boot\x86\boot.sdi">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="TFTPRoot\Boot\x86\default.bcd">
@@ -55,13 +43,7 @@
     <None Include="TFTPRoot\Boot\x86\dosundi.1">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="TFTPRoot\Boot\x86\pxeboot.n12">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
     <None Include="TFTPRoot\Boot\x86\pxelinux.0">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="TFTPRoot\Boot\x86\wdsnbp.com">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="TFTPRoot\Netboot\NetbootSP0\10.6 Another Example.nbi\NBImageInfo.plist" />
