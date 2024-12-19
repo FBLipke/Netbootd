@@ -46,6 +46,7 @@ namespace Netboot
 			foreach (var module in serviceModules)
 			{
 				var ass = Assembly.LoadFrom(module.FullName);
+
 				foreach (var (t, serviceType) in from t in ass.GetTypes()
 					where (t.IsSubclassOf(typeof(IService)) || t.GetInterfaces()
 						.Contains(typeof(IService))) && t.IsAbstract == false
@@ -70,18 +71,21 @@ namespace Netboot
 					}
 				}
 			}
+
+			if (Services.Count == 0)
+			{
+				Console.WriteLine("[W] There is no service");
+			}
 			#endregion
 		}
 
 		public static void Add_Service(IService service)
 		{
-			service.AddServer += (sender, e) =>
-			{
+			service.AddServer += (sender, e) => {
 				Add_Server(e.ServiceType, e.Protocol, e.Ports);
 			};
 
-			service.ServerSendPacket += (sender, e) =>
-			{
+			service.ServerSendPacket += (sender, e) => {
 				Servers[e.ServerId].Send(e.SocketId, e.Packet, e.Client);
 			};
 
@@ -91,16 +95,19 @@ namespace Netboot
 
 			Services.Add(service.ServiceType, service);
 
-			Console.WriteLine($"[I] Added Service for '{service.ServiceType}'");
+            Console.WriteLine($"[I] Added Service for '{service.ServiceType}'");
 		}
 
 		public bool Initialize()
 		{
-			Console.WriteLine("Netboot 0.1a ({0})", Functions.IsLittleEndian()
+			Console.WriteLine("Netboot 0.4a ({0})", Functions.IsLittleEndian()
 				? "LE (LittleEndian)" : "BE (BigEndian)");
 
 			if (!Platform.Initialize())
+			{
+				Console.WriteLine("[E] Failed to initialize Platform.");
 				return false;
+			}
 
 			var ConfigFile = Path.Combine(Platform.ConfigDirectory, "Netboot.xml");
 

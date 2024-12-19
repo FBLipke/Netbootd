@@ -143,17 +143,22 @@ namespace Netboot.Utility
 							var idFile = Path.Combine(_root, k[1]);
 
 							if (!File.Exists(idFile))
+							{
 								continue;
-
+							}
+							
 							if (k[1].Contains("_"))
 							{
-								var _EditionId = k[1].Substring(k[1].IndexOf('_') + 1, ((k[1].IndexOf('.') - 1) - k[1].IndexOf('_')));
+								var _EditionId = k[1].Substring(k[1].IndexOf('_') + 1, ((k[1].IndexOf('.') - 1) - k[1].IndexOf('_'))).ToLowerInvariant(); ;
 							
 								if (_EditionId == "ip" || _EditionId == "ap" || _EditionId == "mp" || _EditionId == "xp")
 									editionType = "pro";
 								if (_EditionId == "is" || _EditionId == "as" || _EditionId == "ms" || _EditionId == "xs")
 									editionType = "srv";
 							}
+
+							Console.WriteLine("{0}", editionType);
+
 
 							var __key = k[0];
 
@@ -292,7 +297,6 @@ namespace Netboot.Utility
 					newIni.SetValues(answerFile);
 					#endregion
 					
-
 					var copyFilesSections = new List<string>();
 					copyFilesSections.Add("SourceDisksFiles");
 
@@ -305,6 +309,10 @@ namespace Netboot.Utility
 					 *  actxprxy.dll = 2,,,,,,,2,0,0     
 					 *  adcadmin.chm = 1,,,,,,,21,0,0
 					 **/
+
+					if (!copyFilesSections.Any())
+						Console.WriteLine("Cannot find anz sections!");
+
 					foreach (var section in copyFilesSections)
 					{
 						foreach (var key in ini.GetSectionKeys(section).ToList())
@@ -346,12 +354,15 @@ namespace Netboot.Utility
 							var x= Path.Combine(sourcePath.Replace("\\", string.Empty), Path.Combine(u, key));
 
 							fileInfo.Dump();
-							fileList.Add(x, fileInfo);
+							fileList.Add(x.ToUpperInvariant(), fileInfo);
 
 						}
 					}
 
-					break;
+					foreach (var file in fileList)
+						Console.WriteLine("{0} - {1}", file.Key, file.Value.Dump());
+
+                    break;
 				case "ris":
 
 					break;
