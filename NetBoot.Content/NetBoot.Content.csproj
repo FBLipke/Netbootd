@@ -89,8 +89,6 @@
     <None Include="TFTPRoot\OSChooser\english\toolshlp.osc" />
     <None Include="TFTPRoot\OSChooser\english\warning.osc" />
     <None Include="TFTPRoot\OSChooser\i386\NTLDR" />
-    <None Include="TFTPRoot\OSChooser\i386\startrom.com" />
-    <None Include="TFTPRoot\OSChooser\i386\startrom.n12" />
     <None Include="TFTPRoot\OSChooser\welcome.osc" />
   </ItemGroup>
 
