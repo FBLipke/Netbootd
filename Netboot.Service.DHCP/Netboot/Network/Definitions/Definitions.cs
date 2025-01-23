@@ -212,10 +212,22 @@ namespace Netboot.Network.Definitions
 
 		#region "Microsoft WDS / RIS (2003)"
 		WDSNBP = 250,
-		NTLDRLoaderPath = 251,
 		BCDPath = 252,
+
+		#region "Windows Server 2003 (undocumented PXE loader options)"
+		/// <summary>
+		/// Example: OSChooser\i386\NTLDR
+		/// </summary>
+		NTLDRLoaderPath = 251,
+		/// <summary>
+		/// Example: "boot.ini"
+		/// </summary>
 		BootIni = 253,
+		/// <summary>
+		/// OSChooser\i386\["boot.ini" / "or in option "NTLDRLoaderPath" given filename"]
+		/// </summary>
 		BootIniPath = 254,
+		#endregion
 		#endregion
 
 		End = byte.MaxValue
@@ -273,5 +285,4 @@ namespace Netboot.Network.Definitions
 		LoongArch64EfiHttp,
 		ArmRPIBoot
 	}
-
 }

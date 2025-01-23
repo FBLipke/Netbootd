@@ -21,10 +21,8 @@ namespace Netboot.Common
 		public static string GetString(this byte[] input)
 			=> GetString(input, Encoding.ASCII);
 
-		public static short Get_Int16(this byte[] input)
-		{
-			return IPAddress.NetworkToHostOrder(BitConverter.ToInt16(input));
-		}
+		public static short GetInt16(this byte[] input)
+			=> IPAddress.NetworkToHostOrder(BitConverter.ToInt16(input));
 
 		public static string GetString(this byte[] input, Encoding encoding)
 			=> encoding.GetString(input);

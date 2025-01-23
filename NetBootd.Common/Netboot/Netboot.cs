@@ -99,8 +99,10 @@ namespace Netboot
 
 		public bool Initialize()
 		{
-			Console.WriteLine("Netboot 0.4a ({0})", Functions.IsLittleEndian()
-				? "LE (LittleEndian)" : "BE (BigEndian)");
+			var appVersion = Assembly.GetExecutingAssembly().GetName().Version;
+
+			Console.WriteLine("NetBoot {0}.{1} ({2})", appVersion.Major, appVersion.Minor,
+				Functions.IsLittleEndian() ? "LE (LittleEndian)" : "BE (BigEndian)");
 
 			if (!Platform.Initialize())
 			{
