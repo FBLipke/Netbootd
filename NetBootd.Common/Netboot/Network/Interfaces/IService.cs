@@ -35,8 +35,10 @@ namespace Netboot.Services.Interfaces
 		void Handle_DataReceived(object sender, DataReceivedEventArgs e);
 		void Handle_DataSent(object sender, DataSentEventArgs e);
 
-		void Heartbeat();
+		void Heartbeat(DateTime now);
+
 		void Start();
+
 		void Stop();
 
 		bool Initialize(XmlNode xmlConfigNode);

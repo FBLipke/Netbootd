@@ -26,7 +26,10 @@ namespace Netbootd.Netboot
 			while (!IsExiting)
 			{
 				Thread.Sleep(10000);
-				NetbootBase.Heartbeat();
+				
+				var controlDate = DateTime.Now;
+
+				NetbootBase.Heartbeat(controlDate);
 			}
 		}
 

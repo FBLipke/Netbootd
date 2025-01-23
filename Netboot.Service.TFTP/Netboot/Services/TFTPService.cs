@@ -14,9 +14,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 using Netboot.Common;
 using Netboot.Network.Client;
 using Netboot.Network.EventHandler;
-using Netboot.Network.Interfaces;
 using Netboot.Network.Sockets;
-using Netboot.Service.TFTP.Netboot.Network;
 using Netboot.Service.TFTP.Netboot.Network.Packet;
 using Netboot.Services.Interfaces;
 using System.Net;
@@ -172,7 +170,7 @@ namespace Netboot.Service.TFTP
 			Console.WriteLine("[E] TFTP: ({0}): {1}!", packet.ErrorCode, packet.ErrorMessage);
 		}
 
-		public void Heartbeat()
+		public void Heartbeat(DateTime now)
 		{
 		}
 

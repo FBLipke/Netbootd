@@ -43,7 +43,7 @@ namespace Netboot
 			var serviceModules = new DirectoryInfo(Platform.NetbootDirectory)
 				.GetFiles("Netboot.Service.*.dll", SearchOption.TopDirectoryOnly);
 
-			foreach (var module in serviceModules)
+			foreach (var module in serviceModules.ToList())
 			{
 				var ass = Assembly.LoadFrom(module.FullName);
 
@@ -67,7 +67,6 @@ namespace Netboot
 					catch (MissingMethodException ex)
 					{
 						Console.WriteLine(ex.Message);
-						throw;
 					}
 				}
 			}
@@ -125,8 +124,8 @@ namespace Netboot
 			{
 				foreach (XmlNode xmlnode in services)
 				{
-					var node = xmlnode.Attributes.GetNamedItem("type");
-					if (node.Value != service.ServiceType.ToLower())
+					if (xmlnode.Attributes.GetNamedItem("type").Value
+						!= service.ServiceType.ToLower())
 						continue;
 
 					service.Initialize(xmlnode);
@@ -147,10 +146,10 @@ namespace Netboot
 				server.Start();
 		}
 
-		public void Heartbeat()
+		public void Heartbeat(DateTime now)
 		{
 			foreach (var service in Services.Values.ToList())
-				service.Heartbeat();
+				service.Heartbeat(now);
 		}
 
 		public static void Add_Server(string serviceType, SocketProtocol protocol, IEnumerable<ushort> ports)

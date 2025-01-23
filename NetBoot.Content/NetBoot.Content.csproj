@@ -9,6 +9,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="TFTPRoot\Boot\x64\boot.wim" />
+    <None Remove="TFTPRoot\Boot\x64\bootmgr.exe" />
+    <None Remove="TFTPRoot\Boot\x64\pxeboot.n12" />
+    <None Remove="TFTPRoot\Boot\x64\wdsnbp.com" />
+    <None Remove="TFTPRoot\Boot\x86\boot.sdi" />
+    <None Remove="TFTPRoot\Boot\x86\pxeboot.n12" />
+    <None Remove="TFTPRoot\Boot\x86\wdsnbp.com" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Include="TFTPRoot\Boot\Readme.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -90,12 +100,6 @@
     <None Include="TFTPRoot\OSChooser\english\warning.osc" />
     <None Include="TFTPRoot\OSChooser\i386\NTLDR" />
     <None Include="TFTPRoot\OSChooser\welcome.osc" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Update="TFTPRoot\Boot\x64\boot.wim">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
 
 </Project>

@@ -34,7 +34,7 @@ namespace Netboot.Utility
 
 		public void Initialize(string[] args)
 		{
-			RootPath = Path.Combine(Directory.GetCurrentDirectory(), "TFTPRoot", "Setup", "German", "WIN2k");
+			RootPath = Path.Combine(Directory.GetCurrentDirectory(), "TFTPRoot", "Setup", "English", "WIN2k");
 		}
 
 		public string GetCompressedName(string filename)
@@ -123,7 +123,7 @@ namespace Netboot.Utility
 
 					var os_sData_verMajor = ini.GetValue("SetupData", "MajorVersion");
 					var os_sData_verMinor = ini.GetValue("SetupData", "MinorVersion");
-					var os_sData_LoadIdent =  __strings[ini.GetValue("SetupData", "LoadIdentifier").Replace("%", string.Empty)];
+					var os_sData_LoadIdent = __strings[ini.GetValue("SetupData", "LoadIdentifier").Replace("%", string.Empty)];
 
 					var diskID = new Dictionary<string, Dictionary<string, string>>();
 					var editionType = "Professional";
@@ -146,11 +146,11 @@ namespace Netboot.Utility
 							{
 								continue;
 							}
-							
+
 							if (k[1].Contains("_"))
 							{
 								var _EditionId = k[1].Substring(k[1].IndexOf('_') + 1, ((k[1].IndexOf('.') - 1) - k[1].IndexOf('_'))).ToLowerInvariant(); ;
-							
+
 								if (_EditionId == "ip" || _EditionId == "ap" || _EditionId == "mp" || _EditionId == "xp")
 									editionType = "pro";
 								if (_EditionId == "is" || _EditionId == "as" || _EditionId == "ms" || _EditionId == "xs")
@@ -176,7 +176,7 @@ namespace Netboot.Utility
 						}
 					}
 
-					var TargetDir = Path.Combine(Directory.GetCurrentDirectory(), 
+					var TargetDir = Path.Combine(Directory.GetCurrentDirectory(),
 						"TFTPRoot", "Setup", __nlscode.ToUpperInvariant(), string.Concat(osid, ".", editionType));
 
 					if (!Directory.Exists(TargetDir))
@@ -184,176 +184,173 @@ namespace Netboot.Utility
 
 					#region "Create ristndrd.sif"
 					var tmplFile = Path.Combine(TargetDir, "templates", "ristndrd.sif");
-					
+
 					if (File.Exists(tmplFile))
 						File.Delete(tmplFile);
 
-					var answerFile = new Dictionary<string, Dictionary<string,string>>();
+					{
+						var answerFile = new Dictionary<string, Dictionary<string, string>>();
 
-					answerFile.Add("data", []);
-					answerFile["data"].Add("floppyless", "\"1\"");
-					answerFile["data"].Add("msdosinitiated", "\"1\"");
-					answerFile["data"].Add("OriSrc", "\"\\\\%SERVERNAME%\\[#SMBShare#]]\\%INSTALLPATH%\\%MACHINETYPE%\"");
-					answerFile["data"].Add("OriTyp", "\"4\"");
-					answerFile["data"].Add("LocalSourceOnCd", "1");
+						answerFile.Add("data", []);
+						answerFile["data"].Add("floppyless", "\"1\"");
+						answerFile["data"].Add("msdosinitiated", "\"1\"");
+						answerFile["data"].Add("OriSrc", "\"\\\\%SERVERNAME%\\[#SMBShare#]]\\%INSTALLPATH%\\%MACHINETYPE%\"");
+						answerFile["data"].Add("OriTyp", "\"4\"");
+						answerFile["data"].Add("LocalSourceOnCd", "1");
 
-					answerFile.Add("SetupData", []);
-					answerFile["SetupData"].Add("OsLoadOptions", "\"/noguiboot /fastdetect\"");
-					answerFile["SetupData"].Add("SetupSourceDevice", "\"\\Device\\LanmanRedirector\\%SERVERNAME%\\[#SMBShare#]]\\%INSTALLPATH%\"");
+						answerFile.Add("SetupData", []);
+						answerFile["SetupData"].Add("OsLoadOptions", "\"/noguiboot /fastdetect\"");
+						answerFile["SetupData"].Add("SetupSourceDevice", "\"\\Device\\LanmanRedirector\\%SERVERNAME%\\[#SMBShare#]]\\%INSTALLPATH%\"");
 
-					var forceOEMHal = false;
-					var forceOEMSCSI = false;
+						var forceOEMHal = false;
+						var forceOEMSCSI = false;
 
-					/**
-					 * The following Options are undocumented (experimental)... 
-					 **/
+						/**
+						 * The following 2 Options are undocumented (experimental)... 
+						 **/
 
-					answerFile["SetupData"].Add("ForceOemHal", forceOEMHal ? "1" : "0");
-					answerFile["SetupData"].Add("ForceOemScsi", forceOEMSCSI ? "1" : "0");
+						answerFile["SetupData"].Add("ForceOemHal", forceOEMHal ? "1" : "0");
+						answerFile["SetupData"].Add("ForceOemScsi", forceOEMSCSI ? "1" : "0");
 
-					answerFile.Add("Unattended", []);
-					answerFile["Unattended"].Add("OemPreinstall", "yes");
-					answerFile["Unattended"].Add("NoWaitAfterTextMode", "1");
-					answerFile["Unattended"].Add("FileSystem", "LeaveAlone");
-					answerFile["Unattended"].Add("ExtendOEMPartition", "0");
-					answerFile["Unattended"].Add("ConfirmHardware", "no");
-					answerFile["Unattended"].Add("NtUpgrade", "no");
-					answerFile["Unattended"].Add("Win31Upgrade", "no");
-					answerFile["Unattended"].Add("TargetPath", os_sData_Path);
-					answerFile["Unattended"].Add("OverwriteOemFilesOnUpgrade", "no");
-					answerFile["Unattended"].Add("OemSkipEula", "yes");
-					answerFile["Unattended"].Add("InstallFilesPath", "\"\\\\%SERVERNAME%\\[#SMBShare#]]\\%INSTALLPATH%\\%MACHINETYPE%\"");
+						answerFile.Add("Unattended", []);
+						answerFile["Unattended"].Add("OemPreinstall", "yes");
+						answerFile["Unattended"].Add("NoWaitAfterTextMode", "1");
+						answerFile["Unattended"].Add("FileSystem", "LeaveAlone");
+						answerFile["Unattended"].Add("ExtendOEMPartition", "0");
+						answerFile["Unattended"].Add("ConfirmHardware", "yes");
+						answerFile["Unattended"].Add("NtUpgrade", "no");
+						answerFile["Unattended"].Add("Win31Upgrade", "no");
+						answerFile["Unattended"].Add("TargetPath", os_sData_Path);
+						answerFile["Unattended"].Add("OverwriteOemFilesOnUpgrade", "no");
+						answerFile["Unattended"].Add("OemSkipEula", "yes");
+						answerFile["Unattended"].Add("InstallFilesPath", "\"\\\\%SERVERNAME%\\[#SMBShare#]]\\%INSTALLPATH%\\%MACHINETYPE%\"");
 
-					answerFile.Add("UserData", []);
-					answerFile["UserData"].Add("FullName", "\"%USERFIRSTNAME% %USERLASTNAME%\"");
-					answerFile["UserData"].Add("OrgName", "\"%ORGNAME%\"");
-					answerFile["UserData"].Add("ComputerName", "%MACHINENAME%");
+						answerFile.Add("UserData", []);
+						answerFile["UserData"].Add("FullName", "\"%USERFIRSTNAME% %USERLASTNAME%\"");
+						answerFile["UserData"].Add("OrgName", "\"%ORGNAME%\"");
+						answerFile["UserData"].Add("ComputerName", "%MACHINENAME%");
 
-					answerFile.Add("GuiUnattended", []);
-					answerFile["GuiUnattended"].Add("OemSkipWelcome", "1");
-					answerFile["GuiUnattended"].Add("OemSkipRegional", "1");
-					answerFile["GuiUnattended"].Add("TimeZone", "%TIMEZONE%");
-					answerFile["GuiUnattended"].Add("AdminPassword", "\"*\"");
+						answerFile.Add("GuiUnattended", []);
+						answerFile["GuiUnattended"].Add("OemSkipWelcome", "1");
+						answerFile["GuiUnattended"].Add("OemSkipRegional", "1");
+						answerFile["GuiUnattended"].Add("TimeZone", "%TIMEZONE%");
+						answerFile["GuiUnattended"].Add("AdminPassword", "\"*\"");
 
-					answerFile.Add("LicenseFilePrintData", []);
-					answerFile["LicenseFilePrintData"].Add("AutoMode", "PerSeat");
+						answerFile.Add("LicenseFilePrintData", []);
+						answerFile["LicenseFilePrintData"].Add("AutoMode", "PerSeat");
 
-					answerFile.Add("Display", []);
-					answerFile["Display"].Add("ConfigureAtLogon", "1");
-					answerFile["Display"].Add("AutoConfirm", "1");
-					answerFile["Display"].Add("BitsPerPel", "8");
-					answerFile["Display"].Add("XResolution", "800");
-					answerFile["Display"].Add("YResolution", "600");
-					answerFile["Display"].Add("VRefresh", "60");
+						answerFile.Add("Display", []);
+						answerFile["Display"].Add("ConfigureAtLogon", "1");
+						answerFile["Display"].Add("AutoConfirm", "1");
+						answerFile["Display"].Add("BitsPerPel", "8");
+						answerFile["Display"].Add("XResolution", "800");
+						answerFile["Display"].Add("YResolution", "600");
+						answerFile["Display"].Add("VRefresh", "60");
 
-					answerFile.Add("Networking", []);
-					answerFile["Networking"].Add("ProcessPageSections", "yes");
+						answerFile.Add("Networking", []);
+						answerFile["Networking"].Add("ProcessPageSections", "yes");
 
-					answerFile.Add("Identification", []);
-					answerFile["Identification"].Add("JoinDomain", "%MACHINEDOMAIN%");
-					answerFile["Identification"].Add("CreateComputerAccountInDomain", "yes");
-					answerFile["Identification"].Add("DoOldStyleDomainJoin", "yes");
+						answerFile.Add("Identification", []);
+						answerFile["Identification"].Add("JoinDomain", "%MACHINEDOMAIN%");
+						answerFile["Identification"].Add("CreateComputerAccountInDomain", "yes");
+						answerFile["Identification"].Add("DoOldStyleDomainJoin", "yes");
 
-					answerFile.Add("NetProtocols", []);
-					answerFile["NetProtocols"].Add("MS_TCPIP", "params.MS_TCPIP");
+						answerFile.Add("NetProtocols", []);
+						answerFile["NetProtocols"].Add("MS_TCPIP", "params.MS_TCPIP");
 
-					answerFile.Add("params.MS_TCPIP", []);
-					answerFile["params.MS_TCPIP"].Add("InfID", "MS_TCPIP");
-					answerFile["params.MS_TCPIP"].Add("DHCP", "yes");
+						answerFile.Add("params.MS_TCPIP", []);
+						answerFile["params.MS_TCPIP"].Add("InfID", "MS_TCPIP");
+						answerFile["params.MS_TCPIP"].Add("DHCP", "yes");
 
-					answerFile.Add("NetClients", []);
-					answerFile["NetClients"].Add("MS_MSClient", "params.MS_MSClient");
+						answerFile.Add("NetClients", []);
+						answerFile["NetClients"].Add("MS_MSClient", "params.MS_MSClient");
 
-					answerFile.Add("params.MS_MSClient", []);
-					answerFile["params.MS_MSClient"].Add("InfID", "MS_MSClient");
+						answerFile.Add("params.MS_MSClient", []);
+						answerFile["params.MS_MSClient"].Add("InfID", "MS_MSClient");
 
-					answerFile.Add("NetServices", []);
-					answerFile["NetServices"].Add("MS_Server", "params.MS_Server");
+						answerFile.Add("NetServices", []);
+						answerFile["NetServices"].Add("MS_Server", "params.MS_Server");
 
-					answerFile.Add("params.MS_Server", []);
-					answerFile["params.MS_Server"].Add("InfID", "MS_Server");
-					answerFile["params.MS_Server"].Add("BroadcastsToLanman2Clients", "no");
+						answerFile.Add("params.MS_Server", []);
+						answerFile["params.MS_Server"].Add("InfID", "MS_Server");
+						answerFile["params.MS_Server"].Add("BroadcastsToLanman2Clients", "no");
 
-					answerFile.Add("ServicesSection", []);
+						answerFile.Add("ServicesSection", []);
 
-					answerFile.Add("RemoteInstall", []);
-					answerFile["RemoteInstall"].Add("Repartition", "no");
-					answerFile["RemoteInstall"].Add("UseWholeDisk", "no");
+						answerFile.Add("RemoteInstall", []);
+						answerFile["RemoteInstall"].Add("Repartition", "no");
+						answerFile["RemoteInstall"].Add("UseWholeDisk", "no");
 
-					answerFile.Add("OSChooser", []);
-					answerFile["OSChooser"].Add("Description", "Windows 2000 Professional");
-					answerFile["OSChooser"].Add("Help", "\"[#Description#]\" wird automatisch installiert, ohne dass der Benutzer zur Eingabe aufgefordert wird.");
-					
-					answerFile["OSChooser"]["Help"] = answerFile["OSChooser"]["Help"].Replace("[#Description#]", answerFile["OSChooser"]["Description"]);
-					answerFile["OSChooser"]["Description"] = string.Format("\"{0}\"", answerFile["OSChooser"]["Description"]);
-					answerFile["OSChooser"].Add("LaunchFile", "\"%INSTALLPATH%\\%MACHINETYPE%\\templates\\startrom.com\"");
-					answerFile["OSChooser"].Add("ImageType", "Flat");
-					answerFile["OSChooser"].Add("Version", string.Format("\"{0}.{1}\"", os_sData_verMajor, os_sData_verMinor));
+						answerFile.Add("OSChooser", []);
+						answerFile["OSChooser"].Add("Description", "Windows 2K/XP Professional");
+						answerFile["OSChooser"].Add("Help", "\"[#Description#]\" wird automatisch installiert, ohne dass der Benutzer zur Eingabe aufgefordert wird.");
 
-					var newIni = new INIFile(tmplFile);
-					newIni.SetValues(answerFile);
+						answerFile["OSChooser"]["Help"] = answerFile["OSChooser"]["Help"].Replace("[#Description#]", answerFile["OSChooser"]["Description"]);
+						answerFile["OSChooser"]["Description"] = string.Format("\"{0}\"", answerFile["OSChooser"]["Description"]);
+						answerFile["OSChooser"].Add("LaunchFile", "\"%INSTALLPATH%\\%MACHINETYPE%\\templates\\startrom.com\"");
+						answerFile["OSChooser"].Add("ImageType", "Flat");
+						answerFile["OSChooser"].Add("Version", string.Format("\"{0}.{1}\"", os_sData_verMajor, os_sData_verMinor));
+
+						var newIni = new INIFile(tmplFile);
+						newIni.SetValues(answerFile);
+					}
 					#endregion
-					
-					var copyFilesSections = new List<string>();
-					copyFilesSections.Add("SourceDisksFiles");
 
 					var fileList = new Dictionary<string, NTSrcFileInfo>();
 
-					/** What we get...
-					 *  [KEY]        = [VALUE]
-					 *  acsmib.dll   = 1,,,,,,,2,0,0
-					 *  actsaver.scr = 1,,,,,,,2,0,0,%ChannelScreenSaver%     
-					 *  actxprxy.dll = 2,,,,,,,2,0,0     
-					 *  adcadmin.chm = 1,,,,,,,21,0,0
-					 **/
-
-					if (!copyFilesSections.Any())
-						Console.WriteLine("Cannot find anz sections!");
-
-					foreach (var section in copyFilesSections)
 					{
-						foreach (var key in ini.GetSectionKeys(section).ToList())
+						var copyFilesSections = new List<string>();
+						copyFilesSections.Add("SourceDisksFiles");
+
+						if (!copyFilesSections.Any())
+							Console.WriteLine("Cannot find any sections!");
+
+						foreach (var section in copyFilesSections)
 						{
-							NTSrcFileInfo fileInfo;
-
-							var s = ini.GetValue(section, key).Split(',');
-							var u = diskID[s[0]].FirstOrDefault().Value.Replace("\\", string.Empty);
-							var d = Path.Combine(u, key);
-							var x = Path.Combine(sourcePath.Replace("\\", string.Empty), d);
-
-							var val = string.Empty;
-
-							if (s.Length > 10 && s[10].Contains("%"))
-								s[10] = s[10].Replace("%", string.Empty);
-
-							if (s.Length == 13)
+							foreach (var key in ini.GetSectionKeys(section).ToList())
 							{
-								val = __strings.ContainsKey(s[10]) ? __strings[s[10]] : string.Empty;
-								fileInfo = new(s[0], s[1], s[2], s[3], s[4], s[5], s[6], s[7], s[8], s[9], val, s[11], s[12], d);
-							}
-							else if (s.Length == 12)
-							{
-								val = __strings.ContainsKey(s[10]) ? __strings[s[10]] : string.Empty;
-								fileInfo = new(s[0], s[1], s[2], s[3], s[4], s[5], s[6], s[7], s[8], s[9], val, s[11], string.Empty, d);
-							}
-							else if (s.Length == 11)
-							{
-								val = __strings.ContainsKey(s[10]) ? __strings[s[10]] : string.Empty;
-								fileInfo = new(s[0], s[1], s[2], s[3], s[4], s[5], s[6], s[7], s[8], s[9], val, string.Empty, string.Empty, d);
-							}
-							else if (s.Length == 10)
-							{
-								fileInfo = new(s[0], s[1], s[2], s[3], s[4], s[5], s[6], s[7], s[8], s[9], string.Empty, string.Empty, string.Empty, d);
-							}
-							else
-							{
-								fileInfo = new(s[0], s[1], s[2], s[3], s[4], s[5], s[6], s[7], s[8], string.Empty, string.Empty, string.Empty, string.Empty, d);
-							}
+								NTSrcFileInfo fileInfo;
 
-							fileList.Add(x.ToUpperInvariant(), fileInfo);
+								var s = ini.GetValue(section, key).Split(',');
+								var u = diskID[s[0]].FirstOrDefault().Value.Replace("\\", string.Empty);
+								var d = Path.Combine(u, key);
+								var x = Path.Combine(sourcePath.Replace("\\", string.Empty), d);
+
+								var val = string.Empty;
+
+								if (s.Length > 10 && s[10].Contains("%"))
+									s[10] = s[10].Replace("%", string.Empty);
+
+								if (s.Length == 13)
+								{
+									val = __strings.ContainsKey(s[10]) ? __strings[s[10]] : string.Empty;
+									fileInfo = new(s[0], s[1], s[2], s[3], s[4], s[5], s[6], s[7], s[8], s[9], val, s[11], s[12], d);
+								}
+								else if (s.Length == 12)
+								{
+									val = __strings.ContainsKey(s[10]) ? __strings[s[10]] : string.Empty;
+									fileInfo = new(s[0], s[1], s[2], s[3], s[4], s[5], s[6], s[7], s[8], s[9], val, s[11], string.Empty, d);
+								}
+								else if (s.Length == 11)
+								{
+									val = __strings.ContainsKey(s[10]) ? __strings[s[10]] : string.Empty;
+									fileInfo = new(s[0], s[1], s[2], s[3], s[4], s[5], s[6], s[7], s[8], s[9], val, string.Empty, string.Empty, d);
+								}
+								else if (s.Length == 10)
+								{
+									fileInfo = new(s[0], s[1], s[2], s[3], s[4], s[5], s[6], s[7], s[8], s[9], string.Empty, string.Empty, string.Empty, d);
+								}
+								else
+								{
+									fileInfo = new(s[0], s[1], s[2], s[3], s[4], s[5], s[6], s[7], s[8], string.Empty, string.Empty, string.Empty, string.Empty, d);
+								}
+
+								fileList.Add(x.ToUpperInvariant(), fileInfo);
+							}
 						}
 					}
 
+					#region "File Copy"
 					foreach (var file in fileList)
 					{
 						var dstPath = Path.Combine(TargetDir, file.Value.DiskSrcDir);
@@ -371,12 +368,13 @@ namespace Netboot.Utility
 							compdstFileName += "_";
 
 							if (File.Exists(compSrcFileName))
-								File.Copy(compSrcFileName, compdstFileName,true);
-                        }
+								File.Copy(compSrcFileName, compdstFileName, true);
+						}
 					}
+					#endregion
 
-                    Console.WriteLine("Done!");
-                    break;
+					Console.WriteLine("[I] Done!");
+					break;
 				case "ris":
 
 					break;

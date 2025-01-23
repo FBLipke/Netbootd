@@ -55,7 +55,7 @@ namespace Netboot.Services
 		{
 		}
 
-		public void Heartbeat()
+		public void Heartbeat(DateTime now)
 		{
 		}
 

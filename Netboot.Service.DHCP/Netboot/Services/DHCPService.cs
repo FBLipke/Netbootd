@@ -163,8 +163,6 @@ namespace Netboot.Services.DHCP
 					case WDSNBPOptions.RequestID:
 						Clients[client].WDS.RequestId = wdsOption.AsUInt32();
 						break;
-					case WDSNBPOptions.Message:
-						break;
 					case WDSNBPOptions.VersionQuery:
 						Clients[client].WDS.VersionQuery = true;
 						break;
@@ -190,8 +188,6 @@ namespace Netboot.Services.DHCP
 						Clients[client].WDS.ActionDone = wdsOption.AsBool();
 
 						Clients[client].WDS.ActionDone = (ServerMode == ServerMode.AllowAll);
-						break;
-					case WDSNBPOptions.End:
 						break;
 					default:
 						break;
@@ -222,15 +218,11 @@ namespace Netboot.Services.DHCP
 
 			switch (Clients[client].WDS.NextAction)
 			{
-				case NextActionOptionValues.Drop:
-					break;
 				case NextActionOptionValues.Approval:
 					options.Add(new((byte)WDSNBPOptions.Message, Clients[client].WDS.AdminMessage, Encoding.ASCII));
 					break;
 				case NextActionOptionValues.Referral:
 					options.Add(new((byte)WDSNBPOptions.ReferralServer, Clients[client].WDS.ReferralServer));
-					break;
-				case NextActionOptionValues.Abort:
 					break;
 				default:
 					break;
@@ -403,7 +395,6 @@ namespace Netboot.Services.DHCP
 			}
 			#endregion
 
-			var u = Functions.GetNetBootImages(Directory.GetCurrentDirectory());
 			AddServer?.Invoke(this, new(ServiceType, Protocol, Ports));
 
 			return true;
@@ -448,6 +439,7 @@ namespace Netboot.Services.DHCP
 
 			switch (Clients[client].PXEVendorID)
 			{
+				case DHCPVendorID.HTTPClient:
 				case DHCPVendorID.PXEClient:
 				case DHCPVendorID.PXEServer:
 					#region "Remote Boot Configuration Protocol (RBCP)"
@@ -467,8 +459,6 @@ namespace Netboot.Services.DHCP
 					if (BootServerType == BootServerTypes.WindowsDeploymentServer)
 						Clients[client].Response.AddOption(Handle_WDS_Options(client, packet));
 					#endregion
-					break;
-				case DHCPVendorID.HTTPClient:
 					break;
 				case DHCPVendorID.AAPLBSDPC:
 				default:
@@ -493,12 +483,12 @@ namespace Netboot.Services.DHCP
 			#endregion
 
 			Clients[client].Response = packet.CreateResponse(serverIP);
-	
 
 			var bootfile = GetBootfile(client);
 
 			switch (Clients[client].PXEVendorID)
 			{
+				case DHCPVendorID.HTTPClient:
 				case DHCPVendorID.PXEClient:
 				case DHCPVendorID.PXEServer:
 					Handle_RBCP_Request(client, packet);
@@ -527,8 +517,6 @@ namespace Netboot.Services.DHCP
 					#endregion
 					break;
 				case DHCPVendorID.AAPLBSDPC:
-					break;
-				case DHCPVendorID.HTTPClient:
 					break;
 				default:
 					break;
@@ -582,13 +570,11 @@ namespace Netboot.Services.DHCP
 				.Replace("#arch#", GetArchitecture(Clients[client].Architecture));
 		}
 
-		public void Heartbeat()
+		public void Heartbeat(DateTime now)
 		{
-			var controlDate = DateTime.Now;
-
 			foreach (var client in Clients.ToList())
 			{
-				TimeSpan ts = controlDate - client.Value.LastUpdate;
+				var ts = now - client.Value.LastUpdate;
 
 				if (ts.TotalSeconds >= 30)
 					RemoveClient(client.Key);

@@ -185,7 +185,7 @@ namespace Netboot.Service.BINL
 		{
 		}
 
-		public void Heartbeat()
+		public void Heartbeat(DateTime now)
 		{
 		}
 
