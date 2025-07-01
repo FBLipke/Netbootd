@@ -294,7 +294,7 @@ namespace Netboot.Services.DHCP
 			var ports = xmlConfigNode.Attributes.GetNamedItem("port").Value.Split(',').ToList();
 			if (ports.Count > 0)
 				Ports.AddRange(from port in ports
-							   select ushort.Parse(port.Trim()));
+					 select ushort.Parse(port.Trim()));
 
 			var bserv_val = xmlConfigNode.Attributes.GetNamedItem("behavior").Value;
 
@@ -326,13 +326,29 @@ namespace Netboot.Services.DHCP
 			{
 				foreach (XmlNode mcastSetting in mcastSettings)
 				{
-					McastDiscoveryAddress = IPAddress.Parse(mcastSetting.Attributes.GetNamedItem("addr").Value);
-					McastClientPort = ushort.Parse(mcastSetting.Attributes.GetNamedItem("cport").Value);
-					McastServerPort = ushort.Parse(mcastSetting.Attributes.GetNamedItem("sport").Value);
+					var mcastDiscoveryAddressVal = mcastSetting.Attributes.GetNamedItem("addr").Value;
+					if (!string.IsNullOrEmpty(mcastDiscoveryAddressVal))
+						McastDiscoveryAddress = IPAddress.Parse(mcastDiscoveryAddressVal);
 
-					MulticastDelay = ushort.Parse(mcastSetting.Attributes.GetNamedItem("startdelay").Value);
-					MulticastTimeout = ushort.Parse(mcastSetting.Attributes.GetNamedItem("timeout").Value);
-					DiscoveryControl = byte.Parse(mcastSetting.Attributes.GetNamedItem("discovery").Value);
+					var mcastClientPortVal = mcastSetting.Attributes.GetNamedItem("cport").Value;
+					if (!string.IsNullOrEmpty(mcastClientPortVal))
+						McastClientPort = ushort.Parse(mcastClientPortVal);
+
+					var mcastServerPortVal = mcastSetting.Attributes.GetNamedItem("sport").Value;
+					if (!string.IsNullOrEmpty(mcastServerPortVal))
+						McastServerPort = ushort.Parse(mcastServerPortVal);
+
+					var mcastDelayVal = mcastSetting.Attributes.GetNamedItem("startdelay").Value;
+					if (!string.IsNullOrEmpty(mcastDelayVal))
+						MulticastDelay = ushort.Parse(mcastDelayVal);
+					
+					var mcastTimeoutVal = mcastSetting.Attributes.GetNamedItem("timeout").Value;
+					if (!string.IsNullOrEmpty(mcastTimeoutVal))
+						MulticastTimeout = ushort.Parse(mcastTimeoutVal);
+
+					var discoveryControlVal = mcastSetting.Attributes.GetNamedItem("discovery").Value;
+					if (!string.IsNullOrEmpty(discoveryControlVal))
+						DiscoveryControl = byte.Parse(discoveryControlVal);
 				}
 			}
 

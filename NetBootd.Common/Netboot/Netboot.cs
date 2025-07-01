@@ -136,6 +136,9 @@ namespace Netboot
 
 			#endregion
 
+			foreach (var server in Servers.Values.ToList())
+				server.Initialize();
+
 			return true;
 		}
 

@@ -12,6 +12,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 using System.Net;
+using System.Xml;
 
 namespace Netboot.Network.Interfaces
 {
@@ -19,6 +20,7 @@ namespace Netboot.Network.Interfaces
 	{
 		string ServiceType { get; }
 
+		void Initialize();
 		void Start();
 		void Stop();
 		void Send(Guid socketId, IPacket packet, IClient client);

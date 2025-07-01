@@ -16,6 +16,7 @@ using Netboot.Network.EventHandler;
 using Netboot.Network.Interfaces;
 using Netboot.Network.Sockets;
 using System.Net;
+using System.Xml;
 
 namespace Netboot.Network.Server
 {
@@ -64,6 +65,12 @@ namespace Netboot.Network.Server
 			};
 
 			Sockets.Add(socketID, socket);
+		}
+
+		public void Initialize()
+		{
+			foreach (var socket in Sockets.Values.ToList())
+				socket.Initialize();
 		}
 
 		public void Start()

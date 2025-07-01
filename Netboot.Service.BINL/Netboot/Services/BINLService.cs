@@ -38,7 +38,13 @@ namespace Netboot.Service.BINL
 
 		public SocketProtocol Protocol { get; set; } = SocketProtocol.UDP;
 
-		public string RootPath { get; set; }
+		public string RootPath { get; private set; } = "TFTPRoot";
+
+		public string DirName { get; private set; } = "OSChooser";
+
+		public string OSCFileName { get; private set; } = "welcome.osc";
+
+		public string Language { get; private set; } = "englisch";
 
 		public string ServiceType { get; }
 
@@ -58,7 +64,7 @@ namespace Netboot.Service.BINL
 
 		public void Handle_RQU_Request(Guid server, Guid socket, string client, BINLPacket packet)
 		{
-			var OSChooserDir = new DirectoryInfo(Path.Combine(RootPath, "OSChooser"));
+			var OSChooserDir = new DirectoryInfo(Path.Combine(RootPath, DirName));
 			var directories = OSChooserDir.GetDirectories();
 
 			#region "Get the OSCML screen"
@@ -98,7 +104,7 @@ namespace Netboot.Service.BINL
 				var screen = Encoding.ASCII.GetString(packet.Data);
 
                 var fileContent = File.ReadAllText(Path.Combine(OSChooserDir.FullName,
-					string.IsNullOrEmpty(screen) ? "welcome.osc" : Path.Combine("english",
+					string.IsNullOrEmpty(screen) ? OSCFileName : Path.Combine(Language,
 					string.Format($"{screen.ToLowerInvariant()}.osc"))));
 
 				PrintMessage?.Invoke(this, new($"[I] OSChooser Screen Request: {screen.ToLowerInvariant()}"));
@@ -191,7 +197,27 @@ namespace Netboot.Service.BINL
 
 		public bool Initialize(XmlNode xmlConfigNode)
 		{
-			RootPath = Path.Combine(Directory.GetCurrentDirectory(), "TFTPRoot");
+			if (xmlConfigNode == null)
+				return false;
+
+			var binlRoot = xmlConfigNode.Attributes.GetNamedItem("rootdir").Value;
+			if (!string.IsNullOrEmpty(binlRoot))
+				RootPath = Path.Combine(Directory.GetCurrentDirectory(), binlRoot);
+			else
+				RootPath = Path.Combine(Directory.GetCurrentDirectory(), "TFTPRoot");
+
+			var osclang = xmlConfigNode.Attributes.GetNamedItem("osclang").Value;
+			if (!string.IsNullOrEmpty(osclang))
+				Language = osclang;
+
+			var dirname = xmlConfigNode.Attributes.GetNamedItem("dirname").Value;
+			if (!string.IsNullOrEmpty(dirname))
+				DirName = dirname;
+
+			var oscfile = xmlConfigNode.Attributes.GetNamedItem("oscfile").Value;
+			if (!string.IsNullOrEmpty(oscfile))
+				OSCFileName = oscfile;
+
 			return true;
 		}
 

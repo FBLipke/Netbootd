@@ -15,6 +15,7 @@ using Netboot.Network.EventHandler;
 using Netboot.Network.Interfaces;
 using System.Net;
 using System.Net.Sockets;
+using System.Xml;
 
 namespace Netboot.Network.Sockets
 {
@@ -25,10 +26,11 @@ namespace Netboot.Network.Sockets
 		public event DataReceivedEventHandler? DataReceived;
 		public event DataSendEventHandler? DataSent;
 
-		SocketState? socketState;
 		EndPoint localendpoint;
 		Guid SocketId;
 		Guid ServerId;
+		Socket socket;
+		Memory<byte> buffer;
 
 		bool IsDisposed;
 
@@ -51,12 +53,8 @@ namespace Netboot.Network.Sockets
 			ServiceType = serviceType;
 			Multicast = multicast;
 			Protocol = protocol;
-	
-			socketState = new SocketState
-			{
-				socket = new(localendpoint.AddressFamily, SocketType.Dgram, ProtocolType.Udp),
-				buffer = new byte[BufferLength]
-			};
+			socket = new(localendpoint.AddressFamily, SocketType.Dgram, ProtocolType.Udp);
+			buffer = new byte[BufferLength];
 		}
 
 		public IPAddress GetIPAddress()
@@ -64,37 +62,35 @@ namespace Netboot.Network.Sockets
 
 		public async void Start()
 		{
-			if (socketState == null)
-				return;
-
 			try
 			{
 				switch (Protocol)
 				{
 					case SocketProtocol.RAW:
 					case SocketProtocol.UDP:
-						socketState.socket?.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
-						socketState.socket?.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.Broadcast, true);
+						socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
+						socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.Broadcast, true);
 
 						if (Multicast)
-							socketState.socket?.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership,
+							socket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership,
 								new MulticastOption(IPAddress.Parse("224.0.1.2")));
 
-						socketState.socket?.Bind(localendpoint);
+						socket.Bind(localendpoint);
 						Listening = true;
 
 						try
 						{
 							while (Listening)
 							{
-								var socketTask = await socketState.socket.ReceiveFromAsync
-									(socketState.buffer, new IPEndPoint(IPAddress.Any, 0));
+								var socketTask = await socket.ReceiveFromAsync(buffer, new IPEndPoint(IPAddress.Any, 0));
 
 								if (socketTask.ReceivedBytes == 0 || socketTask.ReceivedBytes == -1)
 									continue;
 
+								var data = buffer.Slice(0, socketTask.ReceivedBytes);
+
 								DataReceived?.Invoke(this, new(false, ServiceType, ServerId, 
-									SocketId, socketState.buffer.ToArray(), (IPEndPoint)socketTask.RemoteEndPoint));
+									SocketId, data.ToArray(), (IPEndPoint)socketTask.RemoteEndPoint));
 							}
 						}
 						catch (SocketException ex)
@@ -117,10 +113,15 @@ namespace Netboot.Network.Sockets
 			}
 		}
 
+		public bool Initialize()
+		{
+			return true;
+		}
+
 		public void Close()
 		{
 			Console.WriteLine($"[I] Closed Socket {SocketId}!");
-			socketState.Close();
+			socket.Close();
 			Listening = false;
 		}
 
@@ -135,7 +136,7 @@ namespace Netboot.Network.Sockets
 					if (client.RemoteEndpoint.Address.Equals(IPAddress.Any))
 						client.RemoteEndpoint.Address = IPAddress.Broadcast;
 
-					var bytesSent = socketState.socket.SendTo(buffer, 0, (int)packet.Buffer.Length,
+					var bytesSent = socket.SendTo(buffer, 0, (int)packet.Buffer.Length,
 						SocketFlags.None, client.RemoteEndpoint);
 					break;
 				default:
@@ -146,7 +147,6 @@ namespace Netboot.Network.Sockets
 		public void Dispose()
 		{
 			Dispose(true);
-			GC.SuppressFinalize(this);
 		}
 
 		protected virtual void Dispose(bool disposing)
@@ -154,9 +154,8 @@ namespace Netboot.Network.Sockets
 			if (!IsDisposed)
 			{
 				if (disposing)
-					socketState?.Dispose();
+					socket.Dispose();
 
-				socketState = null;
 				IsDisposed = true;
 			}
 		}
