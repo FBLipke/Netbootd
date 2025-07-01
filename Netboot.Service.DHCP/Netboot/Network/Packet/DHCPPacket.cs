@@ -28,7 +28,8 @@ namespace Netboot.Network.Packet
 
 		public Dictionary<byte, DHCPOption> Options { get; } = [];
 
-		public DHCPPacket() {
+		public DHCPPacket()
+		{
 			ParsePacket();
 		}
 
@@ -434,6 +435,9 @@ namespace Netboot.Network.Packet
 						HardwareAddress = HardwareAddress
 					};
 					packet.AddOption(new((byte)DHCPOptions.ServerIdentifier, packet.ServerIP));
+
+
+					// Can we skip this? :/
 
 					switch (GetVendorIdent)
 					{

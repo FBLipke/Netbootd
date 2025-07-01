@@ -19,15 +19,18 @@ namespace Netboot.Network.Client
 {
 	public partial class DHCPClient : BaseClient
 	{
-		public DHCPClient(string clientId, string serviceType, IPEndPoint remoteEndpoint, Guid serverid, Guid socketId, DHCPVendorID vendorID)
-			: base(clientId, serviceType, remoteEndpoint, serverid, socketId)
+		public DHCPClient(bool testClient, string clientId, string serviceType, IPEndPoint remoteEndpoint, Guid serverid, Guid socketId, DHCPVendorID vendorID)
+			: base(testClient, clientId, serviceType, remoteEndpoint, serverid, socketId)
 		{
 			RBCP = new RBCPClient();
 			WDS = new WDSClient();
 			BSDP = new BSDPClient();
-			PXEVendorID = vendorID;
+			VendorID = vendorID;
 			Response = new DHCPPacket();
+			NetBootdClient = testClient;
 		}
+
+		public bool NetBootdClient { get; private set; }
 
 		public Architecture Architecture { get; set; }
 
@@ -39,12 +42,18 @@ namespace Netboot.Network.Client
 
 		public DHCPPacket Response { get; set; }
 
-		public DHCPVendorID PXEVendorID { get; private set; }
+		public DHCPVendorID VendorID { get; private set; }
 
 		public override void Dispose()
 		{
 			Response.Dispose();
 			base.Dispose();
+		}
+
+		public override void Heartbeat()
+		{
+			var packet = new DHCPPacket();
+			base.Heartbeat();
 		}
 	}
 }

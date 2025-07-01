@@ -117,7 +117,7 @@ namespace Netboot.Services.DHCP
 
 		void AddClient(string clientId, string serviceType, IPEndPoint remoteEndpoint, Guid serverId, Guid socketId, DHCPVendorID vendorID)
 		{
-			var client = new DHCPClient(clientId, serviceType, remoteEndpoint, serverId, socketId, vendorID);
+			var client = new DHCPClient(false, clientId, serviceType, remoteEndpoint, serverId, socketId, vendorID);
 
 			if (!Clients.TryAdd(clientId, client))
 			{
@@ -241,8 +241,6 @@ namespace Netboot.Services.DHCP
 			{
 				case DHCPVendorID.PXEClient:
 				case DHCPVendorID.PXEServer:
-				case DHCPVendorID.AAPLBSDPC:
-				case DHCPVendorID.HTTPClient:
 					AddClient(clientid, e.ServiceType, e.RemoteEndpoint, e.ServerId, e.SocketId, requestPacket.GetVendorIdent);
 
 					Console.WriteLine("[I] Got {1}Request from: {0}", Clients[clientid].RemoteEndpoint,
@@ -273,7 +271,6 @@ namespace Netboot.Services.DHCP
 							}
 							break;
 						case BOOTPOPCode.BootReply:
-							break;
 						default:
 							RemoveClient(clientid);
 							break;
@@ -281,6 +278,7 @@ namespace Netboot.Services.DHCP
 					break;
 				default:
 					RemoveClient(clientid);
+					Console.WriteLine("[W] DHCP: Vendor ID not supported.");
 					return;
 			}
 		}
@@ -437,7 +435,7 @@ namespace Netboot.Services.DHCP
 			UpdateBootfile?.Invoke(server, new(GetBootfile(client), 0, client));
 
 
-			switch (Clients[client].PXEVendorID)
+			switch (Clients[client].VendorID)
 			{
 				case DHCPVendorID.HTTPClient:
 				case DHCPVendorID.PXEClient:
@@ -461,7 +459,9 @@ namespace Netboot.Services.DHCP
 					#endregion
 					break;
 				case DHCPVendorID.AAPLBSDPC:
+					break;
 				default:
+					Console.WriteLine("[!] DHCP Request not supported!");
 					break;
 			}
 
@@ -486,7 +486,7 @@ namespace Netboot.Services.DHCP
 
 			var bootfile = GetBootfile(client);
 
-			switch (Clients[client].PXEVendorID)
+			switch (Clients[client].VendorID)
 			{
 				case DHCPVendorID.HTTPClient:
 				case DHCPVendorID.PXEClient:

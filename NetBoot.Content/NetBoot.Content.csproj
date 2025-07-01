@@ -35,6 +35,18 @@
     <None Include="Config\nt5.yaml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Include="Dumps\AUT_NTLMSSP.bin" />
+    <None Include="Dumps\CHL_NTLMSSP.bin" />
+    <None Include="Dumps\dhcp_Discover.bin" />
+    <None Include="Dumps\dupp.pcap" />
+    <None Include="Dumps\MSFT50_Request.bin" />
+    <None Include="Dumps\NEG_NTLMSSP.bin" />
+    <None Include="Dumps\tftp_rrq.bin" />
+    <None Include="Dumps\tftp_rrq2.bin" />
+    <None Include="Dumps\win2k\000000000000000000008A98147E1BFE.sif" />
+    <None Include="Dumps\win2k\LAYOUT.INF" />
+    <None Include="Dumps\win2k\ristndrd.sif" />
+    <None Include="Dumps\win2k\TXTSETUP.SIF" />
     <None Include="TFTPRoot\Boot\x64\default.bcd">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

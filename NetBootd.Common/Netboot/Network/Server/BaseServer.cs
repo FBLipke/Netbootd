@@ -43,7 +43,8 @@ namespace Netboot.Network.Server
 			foreach (var (address, port) in from address in addresses
 				from port in ports select (address, port))
 			{
-				Add(new(address, port));
+				if (address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
+					Add(new(address, port));
 			}
 		}
 

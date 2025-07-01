@@ -12,17 +12,4 @@
     <ProjectReference Include="..\NetBootd.Common\NetBoot.Common.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Include="Dumps\AUT_NTLMSSP.bin">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="Dumps\CHL_NTLMSSP.bin" />
-    <None Include="Dumps\dupp.pcap" />
-    <None Include="Dumps\NEG_NTLMSSP.bin" />
-    <None Include="Dumps\win2k\000000000000000000008A98147E1BFE.sif" />
-    <None Include="Dumps\win2k\LAYOUT.INF" />
-    <None Include="Dumps\win2k\ristndrd.sif" />
-    <None Include="Dumps\win2k\TXTSETUP.SIF" />
-  </ItemGroup>
-
 </Project>

@@ -24,5 +24,6 @@ namespace Netboot.Network.Interfaces
 		IPEndPoint RemoteEndpoint { get; set; }
 
 		void Close();
+		void Heartbeat();
 	}
 }

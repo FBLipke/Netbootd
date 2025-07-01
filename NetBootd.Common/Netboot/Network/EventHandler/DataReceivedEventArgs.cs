@@ -17,13 +17,14 @@ namespace Netboot.Network.EventHandler
 {
 	public class DataReceivedEventArgs
 	{
+		public bool TestClient { get; private set; }
 		public byte[] Packet { get; private set; }
 		public IPEndPoint RemoteEndpoint { get; private set; }
 		public Guid SocketId { get; private set; }
 		public Guid ServerId { get; private set; }
 		public string ServiceType { get; private set; }
 
-		public DataReceivedEventArgs(string serviceType, Guid serverId,
+		public DataReceivedEventArgs(bool testClient, string serviceType, Guid serverId,
 			Guid socketId, byte[] packet, IPEndPoint remoteEndpoint)
 		{
 			ServiceType = serviceType;

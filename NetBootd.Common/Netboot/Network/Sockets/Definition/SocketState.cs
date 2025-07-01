@@ -18,7 +18,7 @@ namespace Netboot.Network.Sockets
     internal class SocketState : IDisposable
     {
         public Socket? socket;
-        public byte[] buffer = [];
+        public Memory<byte> buffer;
         private bool IsDisposed;
 
         public SocketState()
@@ -43,8 +43,6 @@ namespace Netboot.Network.Sockets
                 if (disposing)
                 {
                     socket?.Dispose();
-                    if (buffer != null)
-                        Array.Clear(buffer, 0, buffer.Length);
                 }
 
                 socket = null;

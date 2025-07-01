@@ -19,8 +19,8 @@ namespace Netboot.Network.Client
 {
 	public class TFTPClient : BaseClient
 	{
-		public TFTPClient(string clientId, string serviceType, IPEndPoint remoteEndpoint, Guid serverid, Guid socketId)
-			: base(clientId, serviceType, remoteEndpoint, serverid, socketId)
+		public TFTPClient(bool testClient, string clientId, string serviceType, IPEndPoint remoteEndpoint, Guid serverid, Guid socketId)
+			: base(testClient, clientId, serviceType, remoteEndpoint, serverid, socketId)
 		{ 
 			BytesRead = 0;
 		}

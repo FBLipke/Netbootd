@@ -75,10 +75,10 @@ namespace Netboot.Service.TFTP
 			Clients.Remove(id);
 		}
 
-		void AddClient(string clientId, string serviceType, IPEndPoint remoteEndpoint, Guid serverId, Guid socketId)
+		void AddClient(bool testClient, string clientId, string serviceType, IPEndPoint remoteEndpoint, Guid serverId, Guid socketId)
 		{
 			if (!Clients.TryGetValue(clientId, out TFTPClient? value))
-				Clients.Add(clientId, new(clientId, serviceType, remoteEndpoint, serverId, socketId));
+				Clients.Add(clientId, new(testClient, clientId, serviceType, remoteEndpoint, serverId, socketId));
 			else
 				value.RemoteEndpoint = remoteEndpoint;
 		}
@@ -92,7 +92,7 @@ namespace Netboot.Service.TFTP
 			{
 				case TFTPOPCodes.RRQ:
 					RemoveClient(clientid);
-					AddClient(clientid, e.ServiceType, e.RemoteEndpoint, e.ServerId, e.SocketId);
+					AddClient(false, clientid, e.ServiceType, e.RemoteEndpoint, e.ServerId, e.SocketId);
 					Handle_Read_Request(e.ServerId, e.SocketId, clientid, requestPacket);
 					break;
 				case TFTPOPCodes.ACK:

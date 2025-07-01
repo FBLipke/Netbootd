@@ -78,6 +78,24 @@ namespace Netboot.Utility
 					break;
 				default:
 					break;
+				case "!test":
+					Console.WriteLine("!test: Netboot tests!!");
+					Console.WriteLine();
+					Console.WriteLine("Syntax: !test [service]");
+					Console.WriteLine("Send test packet to a service!");
+
+					switch (args[2])
+					{
+						case "dhcpc":
+
+							break;
+
+
+
+
+					}
+
+					break;
 			}
 		}
 

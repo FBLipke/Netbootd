@@ -27,7 +27,6 @@ namespace Netboot.Network.Sockets
 
 		SocketState? socketState;
 		EndPoint localendpoint;
-		EndPoint remoteendpoint;
 		Guid SocketId;
 		Guid ServerId;
 
@@ -46,14 +45,13 @@ namespace Netboot.Network.Sockets
 		public BaseSocket(Guid serverId, Guid socketId, string serviceType, SocketProtocol protocol, IPEndPoint localep, bool multicast = false, int buffersize = ushort.MaxValue)
 		{
 			localendpoint = localep;
-			remoteendpoint = new IPEndPoint(IPAddress.Any, 0);
 			BufferLength = buffersize;
 			SocketId = socketId;
 			ServerId = serverId;
 			ServiceType = serviceType;
 			Multicast = multicast;
 			Protocol = protocol;
-
+	
 			socketState = new SocketState
 			{
 				socket = new(localendpoint.AddressFamily, SocketType.Dgram, ProtocolType.Udp),
@@ -64,7 +62,7 @@ namespace Netboot.Network.Sockets
 		public IPAddress GetIPAddress()
 			=> ((IPEndPoint)localendpoint).Address;
 
-		public void Start()
+		public async void Start()
 		{
 			if (socketState == null)
 				return;
@@ -73,25 +71,38 @@ namespace Netboot.Network.Sockets
 			{
 				switch (Protocol)
 				{
-					case SocketProtocol.NONE:
-						break;
-					case SocketProtocol.TCP:
-						break;
 					case SocketProtocol.RAW:
 					case SocketProtocol.UDP:
 						socketState.socket?.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
 						socketState.socket?.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.Broadcast, true);
-						/*
-										if (Multicast)
-										{
-											socketState.socket?.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership,
-												new MulticastOption(IPAddress.Parse("224.0.1.2")));
-										}
-						*/
-						socketState.socket?.Bind(localendpoint);
 
-						socketState.socket?.BeginReceiveFrom(socketState.buffer, 0, socketState.buffer.Length,
-							SocketFlags.None, ref localendpoint, new(EndReceive), socketState);
+						if (Multicast)
+							socketState.socket?.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership,
+								new MulticastOption(IPAddress.Parse("224.0.1.2")));
+
+						socketState.socket?.Bind(localendpoint);
+						Listening = true;
+
+						try
+						{
+							while (Listening)
+							{
+								var socketTask = await socketState.socket.ReceiveFromAsync
+									(socketState.buffer, new IPEndPoint(IPAddress.Any, 0));
+
+								if (socketTask.ReceivedBytes == 0 || socketTask.ReceivedBytes == -1)
+									continue;
+
+								DataReceived?.Invoke(this, new(false, ServiceType, ServerId, 
+									SocketId, socketState.buffer.ToArray(), (IPEndPoint)socketTask.RemoteEndPoint));
+							}
+						}
+						catch (SocketException ex)
+						{
+							Listening = false;
+							Console.WriteLine(ex);
+						}
+						
 						break;
 					default:
 						break;
@@ -113,66 +124,10 @@ namespace Netboot.Network.Sockets
 			Listening = false;
 		}
 
-		void EndReceive(IAsyncResult asyncResult)
-		{
-			try
-			{
-				switch (Protocol)
-				{
-					case SocketProtocol.NONE:
-						break;
-					case SocketProtocol.TCP:
-						break;
-					case SocketProtocol.UDP:
-					case SocketProtocol.RAW:
-						socketState = (SocketState)asyncResult.AsyncState;
-						var client = socketState.socket;
-						if (client == null)
-							return;
-
-						if (socketState == null)
-							return;
-
-						var bytesRead = client.EndReceiveFrom(asyncResult, ref remoteendpoint);
-						if (bytesRead == 0 || bytesRead == -1)
-							return;
-
-						#region "Read data"
-						var data = new byte[bytesRead];
-						Array.Copy(socketState.buffer, data, data.Length);
-						#endregion
-
-						DataReceived?.Invoke(this, new(ServiceType, ServerId, SocketId, data,
-							(IPEndPoint)remoteendpoint));
-
-						socketState.socket.BeginReceiveFrom(socketState.buffer, 0, socketState.buffer.Length,
-							SocketFlags.None, ref localendpoint, new(EndReceive), socketState);
-						break;
-					default:
-						break;
-				}
-
-			}
-			catch (ObjectDisposedException ex)
-			{
-				Console.WriteLine(ex);
-				Listening = false;
-			}
-			catch (SocketException ex)
-			{
-				Console.WriteLine(ex);
-				Listening = false;
-			}
-		}
-
 		public void SendTo(IPacket packet, IClient client)
 		{
 			switch (Protocol)
 			{
-				case SocketProtocol.NONE:
-					break;
-				case SocketProtocol.TCP:
-					break;
 				case SocketProtocol.RAW:
 				case SocketProtocol.UDP:
 					var buffer = packet.Buffer.GetBuffer();

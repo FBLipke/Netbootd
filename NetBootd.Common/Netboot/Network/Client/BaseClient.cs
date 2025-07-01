@@ -18,6 +18,8 @@ namespace Netboot.Network.Client
 {
 	public class BaseClient : IClient, IDisposable
 	{
+		private bool testClient { get; } = false;
+
 		public Guid SocketId { get; set; }
 		
 		public Guid ServerId { get; set; }
@@ -32,9 +34,10 @@ namespace Netboot.Network.Client
 
 		public IPEndPoint RemoteEndpoint { get; set; }
 
-		public BaseClient(string clientId, string serviceType,
+		public BaseClient(bool test, string clientId, string serviceType,
 			IPEndPoint remoteEndpoint, Guid serverid, Guid socketId)
 		{
+			testClient = test;
 			ServiceType = serviceType;
 			SocketId = socketId;
 			ServerId = serverid;
@@ -54,6 +57,10 @@ namespace Netboot.Network.Client
 		}
 
 		public virtual void Dispose()
+		{
+		}
+
+		public virtual void Heartbeat()
 		{
 		}
 	}
