@@ -14,7 +14,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 namespace Netboot.Network.Definitions
 {
 	/// <summary>
-	/// Options used by the Windows Deployment Server NBP
+	/// Options used by WDSNBP
 	/// </summary>
 	public enum WDSNBPOptions : byte
 	{
@@ -39,7 +39,7 @@ namespace Netboot.Network.Definitions
 	}
 
 	/// <summary>
-	/// Options used by the WDSNBPOptions.NextAction
+	/// Options used by NextAction
 	/// </summary>
 	public enum NextActionOptionValues : byte
 	{
@@ -61,12 +61,12 @@ namespace Netboot.Network.Definitions
 	}
 
 	/// <summary>
-	/// Options used by the NBPVersion
+	/// Options used by NBPVersion
 	/// </summary>
 	public enum NBPVersionValues : ushort
 	{
-		Seven = 7,
-		Eight = 8,
+		Seven = 7, // NT5 (Mixed ????)
+		Eight = 8, // NT6 (Only WDS ????)
 		Unknown = ushort.MinValue
 	}
 }

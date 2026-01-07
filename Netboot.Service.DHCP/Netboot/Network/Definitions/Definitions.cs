@@ -29,17 +29,22 @@ namespace Netboot.Network.Definitions
 		SerialLine = 20
 	}
 
-	public enum BOOTPVendor : uint
+	public enum MagicCookie : uint
 	{
 		/// <summary>
-		///	The BOOTP Packet has no Vendor specific options set.
+		///	The Packet has only BOOTP specific options set.
+		///	(Hint: It has usally only a maximum size of approx 240 bytes)
 		/// </summary>
-		DHCP = 1666417251
+		BOOTP = 0,
+		/// <summary>
+		/// The Packet has DHCP specific options set (99.130.83.99).
+		/// </summary>
+		DHCP = 1666417251 
 	}
 
     public enum ServerMode
     {
-        AllowAll,
+        AllowAll = 0,
         KnownOnly
     }
 

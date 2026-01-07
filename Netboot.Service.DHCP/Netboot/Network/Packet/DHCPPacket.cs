@@ -328,12 +328,12 @@ namespace Netboot.Network.Packet
 			}
 		}
 
-		public BOOTPVendor BOOTPVendor
+		public MagicCookie MagicCookie
 		{
 			get
 			{
 				Buffer.Position = 236;
-				return (BOOTPVendor)BitConverter.ToUInt32(Read_Bytes(4));
+				return (MagicCookie)BitConverter.ToUInt32(Read_Bytes(4));
 			}
 			set
 			{
@@ -367,30 +367,29 @@ namespace Netboot.Network.Packet
 				return;
 			
 			Options.Clear();
-			var cookieEndoffset = DHCP_OPTIONS_START_OFFSET;
 
-			for (var i = cookieEndoffset; i < Buffer.Length;)
+			Buffer.Seek(DHCP_OPTIONS_START_OFFSET, SeekOrigin.Begin);
+			
+			while (Buffer.Position < Buffer.Length)
 			{
 				#region "Parse DHCP Option"
-				Buffer.Position = i;
-
+				
 				// Option
 				var opt = (byte)Buffer.ReadByte();
 
 				if (opt != byte.MaxValue)
 				{
+					if (opt == byte.MinValue)
+						break;
+					
 					// Length
-					Buffer.Position = i + 1;
 					var len = Buffer.ReadByte();
 
 					// Data					
 					var data = new byte[len];
-					Buffer.Position = i + 2;
+					
 					Buffer.Read(data, 0, len);
-
 					AddOption(new(opt, data));
-
-					i += (byte)(2 + len);
 				}
 				else
 				{
@@ -430,7 +429,7 @@ namespace Netboot.Network.Packet
 						YourIP = YourIP,
 						ServerIP = serverIP,
 						GatewayIP = GatewayIP,
-						BOOTPVendor = BOOTPVendor,
+						MagicCookie = MagicCookie,
 						BootpOPCode = BOOTPOPCode.BootReply,
 						HardwareAddress = HardwareAddress
 					};

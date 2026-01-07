@@ -98,7 +98,7 @@ namespace Netboot.Network.Definitions
 			{
 				#region "Option"
 				var typeBytes = new byte[sizeof(ushort)];
-				BinaryPrimitives.WriteUInt16BigEndian(typeBytes, entry.Id);
+				BinaryPrimitives.WriteUInt16LittleEndian(typeBytes, entry.Id);
 				Array.Copy(typeBytes, 0, menuebuffer, offset, typeBytes.Length);
 				offset += typeBytes.Length;
 				#endregion
