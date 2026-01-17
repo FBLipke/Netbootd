@@ -21,9 +21,9 @@ namespace Netboot.Network.Packet
 	{
 		Dictionary<string, SecurityBuffer> SecurityBuffers = [];
 
-		public NTLMSSPPacket(string serviceType, ntlmssp_message_type essageType) : base(serviceType)
+		public NTLMSSPPacket(string serviceType, ntlmssp_message_type messageType) : base(serviceType)
 		{
-			MessageType = essageType;
+			MessageType = messageType;
 		}
 
 		public NTLMSSPPacket(string serviceType, byte[] data) : base(serviceType, data)

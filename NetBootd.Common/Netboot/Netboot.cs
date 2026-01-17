@@ -28,7 +28,7 @@ namespace Netboot
 		public static Dictionary<string, IService> Services = [];
 		private string[] cmdArgs = [];
 
-		public static NetbootPlatform Platform = new NetbootPlatform();
+		public static NetbootPlatform Platform = new();
 
 		public NetbootBase(string[] args)
 		{

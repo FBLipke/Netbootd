@@ -9,6 +9,7 @@
 	- bootmgr.exe
 	- boot.wim
 	- pxeboot.n12/com
+	- startrom.n12/com
 	- *.1 (its simply a 1.44 MB floppy disk image) (source: https://bootdisk.com/bootdisk.htm)
 	- booter (the netboot/pxe  boot files for osx)
 3. Edit if needed the default files.

@@ -34,7 +34,7 @@ namespace Netboot.Utility
 
 		public void Initialize(string[] args)
 		{
-			RootPath = Path.Combine(Directory.GetCurrentDirectory(), "TFTPRoot", "Setup", "English", "WIN2k");
+			RootPath = Path.Combine(Directory.GetCurrentDirectory(), "TFTPRoot", "Setup", "Englisch", "WIN2k");
 		}
 
 		public string GetCompressedName(string filename)
@@ -147,7 +147,7 @@ namespace Netboot.Utility
 								continue;
 							}
 
-							if (k[1].Contains("_"))
+							if (k[1].Contains('_'))
 							{
 								var _EditionId = k[1].Substring(k[1].IndexOf('_') + 1, ((k[1].IndexOf('.') - 1) - k[1].IndexOf('_'))).ToLowerInvariant(); ;
 
@@ -189,21 +189,27 @@ namespace Netboot.Utility
 						File.Delete(tmplFile);
 
 					{
-						var answerFile = new Dictionary<string, Dictionary<string, string>>();
+						var answerFile = new Dictionary<string, Dictionary<string, string>>
+						{
+							{ "data", [] }
+						};
 
-						answerFile.Add("data", []);
 						answerFile["data"].Add("floppyless", "\"1\"");
 						answerFile["data"].Add("msdosinitiated", "\"1\"");
-						answerFile["data"].Add("OriSrc", "\"\\\\%SERVERNAME%\\[#SMBShare#]]\\%INSTALLPATH%\\%MACHINETYPE%\"");
+						answerFile["data"].Add("OriSrc", "\"\\\\%SERVERNAME%\\[#SMBShare#]\\%INSTALLPATH%\\%MACHINETYPE%\"");
 						answerFile["data"].Add("OriTyp", "\"4\"");
 						answerFile["data"].Add("LocalSourceOnCd", "1");
 
 						answerFile.Add("SetupData", []);
 						answerFile["SetupData"].Add("OsLoadOptions", "\"/noguiboot /fastdetect\"");
-						answerFile["SetupData"].Add("SetupSourceDevice", "\"\\Device\\LanmanRedirector\\%SERVERNAME%\\[#SMBShare#]]\\%INSTALLPATH%\"");
+						answerFile["SetupData"].Add("SetupSourceDevice", "\"\\Device\\LanmanRedirector\\%SERVERNAME%\\[#SMBShare#]\\%INSTALLPATH%\"");
 
 						var forceOEMHal = false;
 						var forceOEMSCSI = false;
+
+						var _ExtendOEMPartiton = false;
+						var _OEMSkipkEula = false;
+						var _OEMBlankAdminPassword = false;
 
 						/**
 						 * The following 2 Options are undocumented (experimental)... 
@@ -215,26 +221,30 @@ namespace Netboot.Utility
 						answerFile.Add("Unattended", []);
 						answerFile["Unattended"].Add("OemPreinstall", "yes");
 						answerFile["Unattended"].Add("NoWaitAfterTextMode", "1");
+						answerFile["Unattended"].Add("NoWaitAfterGUIMode", "1");
 						answerFile["Unattended"].Add("FileSystem", "LeaveAlone");
-						answerFile["Unattended"].Add("ExtendOEMPartition", "0");
+						answerFile["Unattended"].Add("ExtendOEMPartition", _ExtendOEMPartiton ? "1" : "0");
 						answerFile["Unattended"].Add("ConfirmHardware", "yes");
 						answerFile["Unattended"].Add("NtUpgrade", "no");
 						answerFile["Unattended"].Add("Win31Upgrade", "no");
 						answerFile["Unattended"].Add("TargetPath", os_sData_Path);
 						answerFile["Unattended"].Add("OverwriteOemFilesOnUpgrade", "no");
-						answerFile["Unattended"].Add("OemSkipEula", "yes");
-						answerFile["Unattended"].Add("InstallFilesPath", "\"\\\\%SERVERNAME%\\[#SMBShare#]]\\%INSTALLPATH%\\%MACHINETYPE%\"");
+						answerFile["Unattended"].Add("OemSkipEula", _OEMSkipkEula ? "yes" : "no");
+						answerFile["Unattended"].Add("InstallFilesPath", "\"\\\\%SERVERNAME%\\[#SMBShare#]\\%INSTALLPATH%\\%MACHINETYPE%\"");
 
 						answerFile.Add("UserData", []);
 						answerFile["UserData"].Add("FullName", "\"%USERFIRSTNAME% %USERLASTNAME%\"");
 						answerFile["UserData"].Add("OrgName", "\"%ORGNAME%\"");
 						answerFile["UserData"].Add("ComputerName", "%MACHINENAME%");
 
+						#region "GuiUnattended"
 						answerFile.Add("GuiUnattended", []);
+						answerFile["GuiUnattended"].Add("OemBlankAdminPassword", _OEMBlankAdminPassword ? "1" : "0");
 						answerFile["GuiUnattended"].Add("OemSkipWelcome", "1");
 						answerFile["GuiUnattended"].Add("OemSkipRegional", "1");
 						answerFile["GuiUnattended"].Add("TimeZone", "%TIMEZONE%");
 						answerFile["GuiUnattended"].Add("AdminPassword", "\"*\"");
+						#endregion
 
 						answerFile.Add("LicenseFilePrintData", []);
 						answerFile["LicenseFilePrintData"].Add("AutoMode", "PerSeat");
@@ -302,7 +312,7 @@ namespace Netboot.Utility
 						var copyFilesSections = new List<string>();
 						copyFilesSections.Add("SourceDisksFiles");
 
-						if (!copyFilesSections.Any())
+						if (copyFilesSections.Count == 0)
 							Console.WriteLine("Cannot find any sections!");
 
 						foreach (var section in copyFilesSections)

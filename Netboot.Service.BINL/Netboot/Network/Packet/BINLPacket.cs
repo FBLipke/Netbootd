@@ -55,6 +55,57 @@ namespace Netboot.Network.Packet
 			}
 		}
 
+
+		public NetcardRequestVersion NetcardRequestVersion
+		{
+			get
+			{
+				var curPOS = Buffer.Position;
+
+				switch (MessageType)
+				{
+					case BINLMessageTypes.NetcardRequest:
+						Buffer.Position = 12;
+						break;
+					case BINLMessageTypes.NetcardResponse:
+						Buffer.Position = 16;
+						break;
+					default:
+						return 0;
+				}
+
+				var lenBytes = Read_Bytes(sizeof(uint));
+				var result = BinaryPrimitives.ReadUInt32LittleEndian(lenBytes);
+				Buffer.Position = curPOS;
+
+				return (NetcardRequestVersion)result;
+			}
+			set
+			{
+				var curPOS = Buffer.Position;
+				switch (MessageType)
+				{
+					case BINLMessageTypes.NetcardRequest:
+						Buffer.Position = 12;
+						break;
+					case BINLMessageTypes.NetcardResponse:
+						Buffer.Position = 16;
+						break;
+					default:
+						return;
+				}
+
+				var lenBytes = new byte[sizeof(uint)];
+				BinaryPrimitives.WriteUInt32LittleEndian(lenBytes, (uint)value);
+
+				Write_Bytes(lenBytes);
+				Buffer.Position = curPOS;
+			}
+		}
+
+		/// <summary>
+		/// Get or set the Length of the Packet without Length (this) and Tag (OPCode)
+		/// </summary>
 		public uint Length
 		{
 			get
@@ -82,6 +133,9 @@ namespace Netboot.Network.Packet
 			}
 		}
 
+		/// <summary>
+		/// Get or set the plain NTLMSSP Data out of the Packet.
+		/// </summary>
 		public NTLMSSPPacket NTLMSSP
 		{
 			get
@@ -123,7 +177,6 @@ namespace Netboot.Network.Packet
 				Buffer.Position = curPOS;
 			}
 		}
-
 
 		public ushort Fragment
 		{
@@ -179,12 +232,26 @@ namespace Netboot.Network.Packet
 			}
 		}
 
-		public uint SignLength
+		public uint Status
 		{
 			get
 			{
 				var curPOS = Buffer.Position;
-				Buffer.Position = 16;
+
+				switch (MessageType)
+				{
+					case BINLMessageTypes.NetcardResponse:
+						Buffer.Position = 12;
+						break;
+					case BINLMessageTypes.NetcardError:
+						Buffer.Position = 12;
+						break;
+					case BINLMessageTypes.HalResponse:
+						Buffer.Position = 8;
+						break;
+					default:
+						return 0;
+				}
 
 				var sigLenBytes = Read_Bytes(sizeof(uint));
 				var result = BinaryPrimitives.ReadUInt32LittleEndian(sigLenBytes);
@@ -196,12 +263,70 @@ namespace Netboot.Network.Packet
 			set
 			{
 				var curPOS = Buffer.Position;
+				switch (MessageType)
+				{
+					case BINLMessageTypes.NetcardResponse:
+						Buffer.Position = 12;
+						break;
+					case BINLMessageTypes.NetcardError:
+						Buffer.Position = 12;
+						break;
+					case BINLMessageTypes.HalResponse:
+						Buffer.Position = 8;
+						break;
+					default:
+						Buffer.Position = curPOS;
+						return;
+				}
+
+				var sigLenBytes = new byte[sizeof(uint)];
+				BinaryPrimitives.WriteUInt32LittleEndian(sigLenBytes, value);
+				Write_Bytes(sigLenBytes);
+				
+				Buffer.Position = curPOS;
+			}
+		}
+
+		public uint SignLength
+		{
+			get
+			{
+				var curPOS = Buffer.Position;
+				Buffer.Position = 16;
+
+				var sigLenBytes = Read_Bytes(sizeof(uint));
+				var result = BinaryPrimitives.ReadUInt32LittleEndian(sigLenBytes);
+				Buffer.Position = curPOS;
+
+				switch (MessageType)
+				{
+					case BINLMessageTypes.RequestSigned:
+					case BINLMessageTypes.ResponseSigned:
+					case BINLMessageTypes.ErrorSigned:
+						return result;
+					default:
+						return 0;
+				}
+			}
+
+			set
+			{
+				var curPOS = Buffer.Position;
 				Buffer.Position = 16;
 
 				var sigLenBytes = new byte[sizeof(uint)];
 				BinaryPrimitives.WriteUInt32LittleEndian(sigLenBytes, value);
+				switch (MessageType)
+				{
+					case BINLMessageTypes.RequestSigned:
+					case BINLMessageTypes.ResponseSigned:
+					case BINLMessageTypes.ErrorSigned:
+						Write_Bytes(sigLenBytes);
+						break;
+					default:
+						break;
+				}
 
-				Write_Bytes(sigLenBytes);
 				Buffer.Position = curPOS;
 			}
 		}
@@ -216,7 +341,15 @@ namespace Netboot.Network.Packet
 				var signBytes = Read_Bytes(SignLength);
 				Buffer.Position = curPOS;
 
-				return signBytes;
+				switch (MessageType)
+				{
+					case BINLMessageTypes.RequestSigned:
+					case BINLMessageTypes.ResponseSigned:
+					case BINLMessageTypes.ErrorSigned:
+						return signBytes;
+					default:
+						return [];
+				}
 			}
 
 			set
@@ -224,7 +357,17 @@ namespace Netboot.Network.Packet
 				var curPOS = Buffer.Position;
 				Buffer.Position = 20;
 
-				Write_Bytes(value);
+				switch (MessageType)
+				{
+					case BINLMessageTypes.RequestSigned:
+					case BINLMessageTypes.ResponseSigned:
+					case BINLMessageTypes.ErrorSigned:
+						Write_Bytes(value);
+						break;
+					default:
+						break;
+				}
+
 				Buffer.Position = curPOS;
 			}
 		}

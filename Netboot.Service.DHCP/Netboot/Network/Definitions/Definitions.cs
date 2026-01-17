@@ -72,8 +72,11 @@ namespace Netboot.Network.Definitions
 		MenuPrompt = 10,
 		MulticastAddressAllocation = 11,
 		CredentialTypes = 12,
+		/// <summary>
+		/// 
+		/// </summary>
 		NetworkCardPath = 64,
-		ManInfo = 65,
+		ManagementInformation = 65,
 		OSInformation = 66,
 		BootOSInfo = 67,
 		PromptInfo = 68,
@@ -81,7 +84,8 @@ namespace Netboot.Network.Definitions
 		BootOSInfo2 = 70,
 		BootItem = 71,
 
-		#region "LCM Options"
+		#region "LCM Options (see: https://gitlab.com/wireshark/wireshark/-/issues/15498 for more informations...)"
+
 		LCMServer = 179,
 		LCMDomain = 180,
 		LCMNicOptions = 181,

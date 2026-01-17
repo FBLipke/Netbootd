@@ -99,7 +99,9 @@ namespace Netboot.Network.Definitions
 
 	public enum NetcardRequestVersion
 	{
-		Version_2 = 2,
+		Error = 0,
+		Version_1 = 1,
+		Version_2 = 2
 	}
 
 	public enum NetcardType

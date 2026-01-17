@@ -100,7 +100,7 @@ namespace Netboot.Network.Packet
 
 		public void Write_IPAddress(IPAddress address) => Write_Bytes(address.GetAddressBytes());
 
-		public ushort Read_UINT16() => BitConverter.ToUInt16(Read_Bytes(2));
+		public ushort Read_UINT16() => BitConverter.ToUInt16(Read_Bytes(sizeof(ushort)));
 
 		public void Write_UINT16(ushort value)
 		{

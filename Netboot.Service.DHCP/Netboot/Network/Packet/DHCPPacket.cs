@@ -28,10 +28,7 @@ namespace Netboot.Network.Packet
 
 		public Dictionary<byte, DHCPOption> Options { get; } = [];
 
-		public DHCPPacket()
-		{
-			ParsePacket();
-		}
+		public DHCPPacket() => ParsePacket();
 
 		public DHCPPacket(string serviceType, byte[] data)
 			: base(serviceType, data) => ParsePacket();
@@ -144,6 +141,7 @@ namespace Netboot.Network.Packet
 				SetPosition(4);
 				var result = Read_UINT32();
 				RestorePosition();
+				
 				return result;
 			}
 			set
@@ -161,6 +159,7 @@ namespace Netboot.Network.Packet
 				SetPosition(8);
 				var result = Read_UINT16();
 				RestorePosition();
+
 				return result;
 			}
 			set
@@ -302,6 +301,8 @@ namespace Netboot.Network.Packet
 				SetPosition(44);
 				Write_Bytes(bytes);
 				RestorePosition();
+
+				AddOption(new ((byte)DHCPOptions.TFTPServerName, serverName));
 			}
 		}
 
@@ -325,6 +326,8 @@ namespace Netboot.Network.Packet
 				SetPosition(108);
 				Write_Bytes(fileName);
 				RestorePosition();
+
+				AddOption(new((byte)DHCPOptions.BootfileName, fileName));
 			}
 		}
 
@@ -351,7 +354,8 @@ namespace Netboot.Network.Packet
 				Options[dhcpoption.Option] = dhcpoption;
 		}
 
-		public DHCPOption? GetOption(byte opt) => HasOption(opt) ? Options[opt] : null;
+		public DHCPOption? GetOption(byte opt)
+			=> HasOption(opt) ? Options[opt] : null;
 
 		public bool HasOption(byte opt)
 			=> Options.ContainsKey(opt);
@@ -388,7 +392,7 @@ namespace Netboot.Network.Packet
 					// Data					
 					var data = new byte[len];
 					
-					Buffer.Read(data, 0, len);
+					Buffer.Read(data, 0, data.Length);
 					AddOption(new(opt, data));
 				}
 				else

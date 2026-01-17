@@ -1,0 +1,83 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Netboot>
+	<sif type="Unattended">
+		<content>
+			<data>
+				<floppyless>1</floppyless>
+				<msdosinitiated>1</msdosinitiated>
+				<OriSrc>[[#OriSrc#]]</OriSrc>
+				<OriTyp>[[#OriTyp#]]</OriTyp>
+				<LocalSourceOnCD>1</LocalSourceOnCD>
+				<DisableAdminAccountOnDomainJoin>0</DisableAdminAccountOnDomainJoin>
+			</data>
+			<SetupData>
+				<OsLoadOptions>/fastdetect</OsLoadOptions>
+				<SetupSourceDevice>[[#SetupSourceDevice#]]</SetupSourceDevice>
+			</SetupData>
+			<Unattended>
+				<OemPreInstall>yes</OemPreInstall>
+				<NoWaitAfterTextMode>1</NoWaitAfterTextMode>
+				<FileSystem>LeaveAlone</FileSystem>
+				<ExtendOEMPartition>no</ExtendOEMPartition>
+				<ConfirmHardware>yes</ConfirmHardware>
+				<NtUpgrade>no</NtUpgrade>
+				<Win31Upgrade>no</Win31Upgrade>
+				<!--
+				<TargetPath>*</TargetPath> : NT4: Default
+				<TargetPath>\WINNT</TargetPath> : NT4: My Custom Path
+				<TargetPath>manual</TargetPath> : NT4: Ask the User.....
+				-->
+				<TargetPath>*</TargetPath>
+				<OverwriteOemFilesOnUpgrade>no</OverwriteOemFilesOnUpgrade>
+				<OemSkipEula>yes</OemSkipEula>
+				<InstallFilesPath>[[#InstallFilesPath#]]</InstallFilesPath>
+			</Unattended>
+			<OEM_ADs> <!-- Should be placed relative to the %OEM% Directory-->
+				<Banner>Banner.bmp</Banner> <!-- Should be placed relative to the %OEM% Directory -->
+				<Logo>Logo.bmp</Logo> <!-- Should be placed relative to the %OEM% Directory -->
+				<Background>Background.bmp</Background> <!-- Should be placed relative to the %OEM% Directory -->
+			</OEM_ADs>
+			<UserData>
+				<FullName>[[#FullName#]]</FullName>
+				<OrgName>[[#Orgname#]]</OrgName>
+				<ComputerName>[[#ComputerName#]]</ComputerName>
+			</UserData>
+			<GuiUnattended>
+				<OemSkipWelcome>1</OemSkipWelcome>
+				<OemSkipRegional>1</OemSkipRegional>
+				<TimeZone>110</TimeZone>
+				<AdminPassword>*</AdminPassword>
+			</GuiUnattended>
+			<LicenseFilePrintData>
+				<AutoMode>perSeat</AutoMode>
+			</LicenseFilePrintData>
+			<Display>
+				<ConfigureAtLogon>1</ConfigureAtLogon>
+				<BitsPerPel>[[#BitsPerPel#]]</BitsPerPel>
+				<XResolution>[[#XResolution#]]</XResolution>
+				<YResolution>[[#YResolution#]]</YResolution>
+				<VRefresh>60</VRefresh>
+				<AutoConfirm>1</AutoConfirm>
+			</Display>
+			<Network>
+				<ProcessPageSections>1</ProcessPageSections>
+			</Network>
+			<Identification>
+				<JoinDomain>[[#JoinDomain#]]</JoinDomain>
+				<CreateComputerAccountInDomain>No</CreateComputerAccountInDomain>
+				<DoOldStyleDomainJoin>Yes</DoOldStyleDomainJoin>
+			</Identification>
+			<RemoteInstall>
+				<Repartition>No</Repartition>
+				<UseWholeDisk>No</UseWholeDisk>
+			</RemoteInstall>
+			<OSChooser>
+				<Description>[[#Description#]]</Description>
+				<Help>[[#Help#]]</Help>
+				<LaunchFile>[[#LaunchFile#]]</LaunchFile>
+				<ImageType>[[#ImageType#]]</ImageType>
+				<Version>[[#Version#]]</Version>
+			</OSChooser>
+		</content>
+	</sif>
+</Netboot>

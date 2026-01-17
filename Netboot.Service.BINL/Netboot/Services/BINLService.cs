@@ -46,6 +46,8 @@ namespace Netboot.Service.BINL
 
 		public string Language { get; private set; } = "englisch";
 
+		public bool NTLMV2Enabled { get; private set; } = false;
+
 		public string ServiceType { get; }
 
 		public Dictionary<string, BINLClient> Clients { get; set; } = [];
@@ -91,7 +93,7 @@ namespace Netboot.Service.BINL
 				oscml.AppendFormat("<SELECT NAME=\"LANGUAGE\" SIZE={0}>", directories.Count());
 
 				foreach (var Language in directories)
-					if (Language.Name != "i386")
+					if (Language.Name != "i386" && Language.Name != "amd64")
 						oscml.AppendFormat($"<OPTION VALUE=\"{Language.Name.ToUpper()}\"> {Language.Name}");
 
 				oscml.AppendLine("</SELECT>");
@@ -101,24 +103,40 @@ namespace Netboot.Service.BINL
 			}
 			else
 			{
-				var screen = Encoding.ASCII.GetString(packet.Data);
+				string filePath = string.Empty;
+				try
+				{
+					var screen = Encoding.ASCII.GetString(packet.Data);
+					filePath = Path.Combine(OSChooserDir.FullName,
+						string.IsNullOrEmpty(screen) ? OSCFileName : Path.Combine(Language,
+						string.Format($"{screen.ToLowerInvariant()}.osc")));
 
-                var fileContent = File.ReadAllText(Path.Combine(OSChooserDir.FullName,
-					string.IsNullOrEmpty(screen) ? OSCFileName : Path.Combine(Language,
-					string.Format($"{screen.ToLowerInvariant()}.osc"))));
+					var fileContent = File.ReadAllText(filePath);
 
-				PrintMessage?.Invoke(this, new($"[I] OSChooser Screen Request: {screen.ToLowerInvariant()}"));
+					PrintMessage?.Invoke(this, new($"[I] OSChooser Screen Request: {screen.ToLowerInvariant()}"));
 
-				fileContent = fileContent.Replace("\r\n", "\n");
+					fileContent = fileContent.Replace("\r\n", "\n");
 
-				var domain = IPGlobalProperties.GetIPGlobalProperties().DomainName;
-				var hostname = Environment.MachineName;
+					var domain = IPGlobalProperties.GetIPGlobalProperties().DomainName;
+					var hostname = Environment.MachineName;
 
-				if (!domain.Contains('.') && !string.IsNullOrEmpty(domain))
-					domain = string.Join(".", hostname, domain); // HOSTNAME.LOCALDOMAIN
+					if (!domain.Contains('.') && !string.IsNullOrEmpty(domain))
+						domain = string.Join(".", hostname, domain); // HOSTNAME.LOCALDOMAIN
 
-				fileContent = fileContent.Replace("%MACHINEDOMAIN%", string.IsNullOrEmpty(domain) ? hostname : domain);
-				oscml.Append(fileContent);
+					fileContent = fileContent.Replace("%MACHINEDOMAIN%", string.IsNullOrEmpty(domain) ? hostname : domain);
+					fileContent = fileContent.Replace("%SERVERDOMAIN%", string.IsNullOrEmpty(domain) ? hostname : domain);
+					fileContent = fileContent.Replace("%NTLMV2Enabled%", NTLMV2Enabled ? "1" : "0");
+					fileContent = fileContent.Replace("%SERVERNAME%", hostname);
+					fileContent = fileContent.Replace("%ServerUTCFileTime%", string.Format("{0}", DateTimeOffset.UtcNow.ToUnixTimeSeconds()));
+
+					oscml.Append(fileContent);
+				}
+				catch (FileNotFoundException ex)
+				{
+					var errcontent = string.Format("<OSCML> \\\r\n\t\t\t<META KEY=\\\"F3\\\" ACTION=\\\"REBOOT\\\"><META KEY=\\\"ENTER\\\" HREF=\\\"LOGIN\\\">" +
+						"<TITLE>  Client Installation Wizard                                           Error</TITLE><FOOTER>[F3] restart computer [ENTER] Continue</FOOTER> \\\r\n\t\t\t<BODY left=5 right=75><BR>The requested file \"{0}\" was not found on the Server.</BODY></OSCML>", filePath);
+					oscml.Append(errcontent);
+				}
 			}
 			#endregion
 
@@ -177,6 +195,7 @@ namespace Netboot.Service.BINL
 			switch (request.MessageType)
 			{
 				case BINLMessageTypes.RequestUnsigned:
+					Console.WriteLine(" ==== (OSC-Header (Seq: {0} Frag: {1}/{2}) ====", request.Sequence, request.Fragment, request.TotalFragments);
 					Handle_RQU_Request(e.ServerId, e.SocketId, clientid, request);
 					break;
 				case BINLMessageTypes.Negotiate:
