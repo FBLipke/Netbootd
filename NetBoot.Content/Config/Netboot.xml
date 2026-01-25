@@ -29,10 +29,10 @@
 					<Option id ="210" type="string">/linux</Option>
 				</DHCP>
 			</Service>
-			<Service type="binl" port="44776,1638" SMBShare="RemInst" rootdir="TFTPRoot" dirname="OSChooser" oscfile="welcome.osc" osclang="englisch"/>
+			<Service type="binl" port="44776" SMBShare="RemInst" rootdir="TFTPRoot" oscfile="welcome.osc" osclang="englisch"/>
 			<Service type="tftp" port="69" max_blksize="16384">
 			</Service>
-			<Service type="biss" port="69" max_blksize="16384">
+			<Service type="biss" port="1638">
 			</Service>
 		</Services>
 	</Configuration>

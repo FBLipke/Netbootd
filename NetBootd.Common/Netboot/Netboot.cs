@@ -97,6 +97,12 @@ namespace Netboot
             Console.WriteLine($"[I] Added Service for '{service.ServiceType}'");
 		}
 
+		public void Setup(XmlNode xmlConfigNode)
+		{
+			foreach (var service in Services.Values.ToList())
+				service.Setup(xmlConfigNode);
+		}
+
 		public bool Initialize()
 		{
 			var appVersion = Assembly.GetExecutingAssembly().GetName().Version;
@@ -129,7 +135,7 @@ namespace Netboot
 					if (xmlnode.Attributes.GetNamedItem("type").Value
 						!= service.ServiceType.ToLower())
 						continue;
-
+					service.Setup(xmlnode);
 					service.Initialize(xmlnode);
 				}
 			}

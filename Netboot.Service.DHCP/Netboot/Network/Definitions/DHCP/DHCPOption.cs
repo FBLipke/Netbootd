@@ -20,7 +20,9 @@ namespace Netboot.Network.Definitions
 	public class DHCPOption
 	{
 		public byte Option { get; private set; }
+		
 		public byte Length { get; private set; }
+
 		public byte[] Data { get; private set; }
 
 		public DHCPOption(byte option)
@@ -136,7 +138,7 @@ namespace Netboot.Network.Definitions
 		}
 
 		public ushort AsUInt16()
-			=> BinaryPrimitives.ReadUInt16BigEndian(Data);
+			=> BinaryPrimitives.ReadUInt16LittleEndian(Data);
 
 		public byte AsByte()
 			=> Data.FirstOrDefault();

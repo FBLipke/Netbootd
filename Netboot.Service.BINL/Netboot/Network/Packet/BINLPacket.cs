@@ -32,26 +32,23 @@ namespace Netboot.Network.Packet
 		{
 			get
 			{
-				var curPOS = Buffer.Position;
-				Buffer.Position = 0;
-
+				SetPosition(0);
+				
 				var signatureBytes = Read_Bytes(sizeof(uint));
-				var result = (BINLMessageTypes)BinaryPrimitives
-					.ReadUInt32BigEndian(signatureBytes);
+				var result = (BINLMessageTypes)BinaryPrimitives.ReadUInt32BigEndian(signatureBytes);
 
-				Buffer.Position = curPOS;
+				RestorePosition();
 				return result;
 			}
 			set
 			{
-				var curPOS = Buffer.Position;
-				Buffer.Position = 0;
-
+				SetPosition(0);
+				
 				var signatureBytes = new byte[sizeof(uint)];
 				BinaryPrimitives.WriteUInt32BigEndian(signatureBytes, (uint)value);
 
 				Write_Bytes(signatureBytes);
-				Buffer.Position = curPOS;
+				RestorePosition();
 			}
 		}
 
@@ -60,15 +57,13 @@ namespace Netboot.Network.Packet
 		{
 			get
 			{
-				var curPOS = Buffer.Position;
-
 				switch (MessageType)
 				{
 					case BINLMessageTypes.NetcardRequest:
-						Buffer.Position = 12;
+						SetPosition(12);
 						break;
 					case BINLMessageTypes.NetcardResponse:
-						Buffer.Position = 16;
+						SetPosition(16);
 						break;
 					default:
 						return 0;
@@ -76,20 +71,19 @@ namespace Netboot.Network.Packet
 
 				var lenBytes = Read_Bytes(sizeof(uint));
 				var result = BinaryPrimitives.ReadUInt32LittleEndian(lenBytes);
-				Buffer.Position = curPOS;
+				RestorePosition();
 
 				return (NetcardRequestVersion)result;
 			}
 			set
 			{
-				var curPOS = Buffer.Position;
 				switch (MessageType)
 				{
 					case BINLMessageTypes.NetcardRequest:
-						Buffer.Position = 12;
+						SetPosition(12);
 						break;
 					case BINLMessageTypes.NetcardResponse:
-						Buffer.Position = 16;
+						SetPosition(16);
 						break;
 					default:
 						return;
@@ -99,7 +93,7 @@ namespace Netboot.Network.Packet
 				BinaryPrimitives.WriteUInt32LittleEndian(lenBytes, (uint)value);
 
 				Write_Bytes(lenBytes);
-				Buffer.Position = curPOS;
+				RestorePosition();
 			}
 		}
 
@@ -110,26 +104,24 @@ namespace Netboot.Network.Packet
 		{
 			get
 			{
-				var curPOS = Buffer.Position;
-				Buffer.Position = 4;
-
+				SetPosition(4);
+				
 				var lenBytes = Read_Bytes(sizeof(uint));
 				var result = BinaryPrimitives.ReadUInt32LittleEndian(lenBytes);
-				Buffer.Position = curPOS;
+				RestorePosition();
 
 				return result;
 			}
 
 			set
 			{
-				var curPOS = Buffer.Position;
-				Buffer.Position = 4;
-
+				SetPosition(4);
+				
 				var lenBytes = new byte[sizeof(uint)];
 				BinaryPrimitives.WriteUInt32LittleEndian(lenBytes, value);
 
 				Write_Bytes(lenBytes);
-				Buffer.Position = curPOS;
+				RestorePosition();
 			}
 		}
 
@@ -140,12 +132,12 @@ namespace Netboot.Network.Packet
 		{
 			get
 			{
-				var curPOS = Buffer.Position;
-				Buffer.Position = 8;
+				SetPosition(8);
+
 				var ntlmsspBytes = Read_Bytes(Length);
 
 				var result = new NTLMSSPPacket(ServiceType, ntlmsspBytes);
-				Buffer.Position = curPOS;
+				RestorePosition();
 
 				return result;
 			}
@@ -155,26 +147,24 @@ namespace Netboot.Network.Packet
 		{
 			get
 			{
-				var curPOS = Buffer.Position;
-				Buffer.Position = 8;
+				SetPosition(8);
 
 				var seqBytes = Read_Bytes(sizeof(uint));
 				var result = BinaryPrimitives.ReadUInt32LittleEndian(seqBytes);
-				Buffer.Position = curPOS;
+				RestorePosition();
 
 				return result;
 			}
 
 			set
 			{
-				var curPOS = Buffer.Position;
-				Buffer.Position = 8;
+				SetPosition(8);
 
 				var seqBytes = new byte[sizeof(uint)];
 				BinaryPrimitives.WriteUInt32LittleEndian(seqBytes, value);
 
 				Write_Bytes(seqBytes);
-				Buffer.Position = curPOS;
+				RestorePosition();
 			}
 		}
 
@@ -182,26 +172,25 @@ namespace Netboot.Network.Packet
 		{
 			get
 			{
-				var curPOS = Buffer.Position;
-				Buffer.Position = 12;
+				SetPosition(12);
 
 				var fragBytes = Read_Bytes(sizeof(ushort));
 				var result = BinaryPrimitives.ReadUInt16LittleEndian(fragBytes);
-				Buffer.Position = curPOS;
+				RestorePosition();
 
 				return result;
 			}
 
 			set
 			{
-				var curPOS = Buffer.Position;
-				Buffer.Position = 12;
+				SetPosition(12);
 
 				var fragBytes = new byte[sizeof(ushort)];
 				BinaryPrimitives.WriteUInt16LittleEndian(fragBytes, value);
 
 				Write_Bytes(fragBytes);
-				Buffer.Position = curPOS;
+				
+				RestorePosition();
 			}
 		}
 
@@ -209,26 +198,24 @@ namespace Netboot.Network.Packet
 		{
 			get
 			{
-				var curPOS = Buffer.Position;
-				Buffer.Position = 14;
+				SetPosition(14);
 
 				var fragBytes = Read_Bytes(sizeof(ushort));
 				var result = BinaryPrimitives.ReadUInt16LittleEndian(fragBytes);
-				Buffer.Position = curPOS;
+				RestorePosition();
 
 				return result;
 			}
 
 			set
 			{
-				var curPOS = Buffer.Position;
-				Buffer.Position = 14;
+				SetPosition(14);
 
 				var fragBytes = new byte[sizeof(ushort)];
 				BinaryPrimitives.WriteUInt16LittleEndian(fragBytes, value);
 
 				Write_Bytes(fragBytes);
-				Buffer.Position = curPOS;
+				RestorePosition();
 			}
 		}
 
@@ -236,54 +223,48 @@ namespace Netboot.Network.Packet
 		{
 			get
 			{
-				var curPOS = Buffer.Position;
-
 				switch (MessageType)
 				{
 					case BINLMessageTypes.NetcardResponse:
-						Buffer.Position = 12;
-						break;
 					case BINLMessageTypes.NetcardError:
-						Buffer.Position = 12;
+						SetPosition(12);
 						break;
 					case BINLMessageTypes.HalResponse:
-						Buffer.Position = 8;
+						SetPosition(8);
 						break;
 					default:
+						RestorePosition();
 						return 0;
 				}
 
 				var sigLenBytes = Read_Bytes(sizeof(uint));
 				var result = BinaryPrimitives.ReadUInt32LittleEndian(sigLenBytes);
-				Buffer.Position = curPOS;
+				RestorePosition();
 
 				return result;
 			}
 
 			set
 			{
-				var curPOS = Buffer.Position;
 				switch (MessageType)
 				{
 					case BINLMessageTypes.NetcardResponse:
-						Buffer.Position = 12;
-						break;
 					case BINLMessageTypes.NetcardError:
-						Buffer.Position = 12;
+						SetPosition(12);
 						break;
 					case BINLMessageTypes.HalResponse:
-						Buffer.Position = 8;
+						SetPosition(8);
 						break;
 					default:
-						Buffer.Position = curPOS;
+						RestorePosition();
 						return;
 				}
 
 				var sigLenBytes = new byte[sizeof(uint)];
 				BinaryPrimitives.WriteUInt32LittleEndian(sigLenBytes, value);
 				Write_Bytes(sigLenBytes);
-				
-				Buffer.Position = curPOS;
+
+				RestorePosition();
 			}
 		}
 
@@ -291,12 +272,11 @@ namespace Netboot.Network.Packet
 		{
 			get
 			{
-				var curPOS = Buffer.Position;
-				Buffer.Position = 16;
+				SetPosition(16);
 
 				var sigLenBytes = Read_Bytes(sizeof(uint));
 				var result = BinaryPrimitives.ReadUInt32LittleEndian(sigLenBytes);
-				Buffer.Position = curPOS;
+				RestorePosition();
 
 				switch (MessageType)
 				{
@@ -311,8 +291,7 @@ namespace Netboot.Network.Packet
 
 			set
 			{
-				var curPOS = Buffer.Position;
-				Buffer.Position = 16;
+				SetPosition(16);
 
 				var sigLenBytes = new byte[sizeof(uint)];
 				BinaryPrimitives.WriteUInt32LittleEndian(sigLenBytes, value);
@@ -327,7 +306,8 @@ namespace Netboot.Network.Packet
 						break;
 				}
 
-				Buffer.Position = curPOS;
+				RestorePosition();
+
 			}
 		}
 
@@ -335,11 +315,11 @@ namespace Netboot.Network.Packet
 		{
 			get
 			{
-				var curPOS = Buffer.Position;
-				Buffer.Position = 20;
+				SetPosition(20);
 
 				var signBytes = Read_Bytes(SignLength);
-				Buffer.Position = curPOS;
+
+				RestorePosition();
 
 				switch (MessageType)
 				{
@@ -354,9 +334,8 @@ namespace Netboot.Network.Packet
 
 			set
 			{
-				var curPOS = Buffer.Position;
-				Buffer.Position = 20;
-
+				SetPosition(20);
+				
 				switch (MessageType)
 				{
 					case BINLMessageTypes.RequestSigned:
@@ -368,7 +347,40 @@ namespace Netboot.Network.Packet
 						break;
 				}
 
-				Buffer.Position = curPOS;
+				RestorePosition();
+			}
+		}
+
+		public Common.Definitions.Architecture Architecture
+		{
+			get
+			{
+
+				SetPosition(12);
+				var archBytes =  Read_UINT32();
+				RestorePosition();
+
+				return (Common.Definitions.Architecture)archBytes;
+			}
+			set
+			{
+			
+			}
+		}
+
+		public Guid Guid
+		{
+			get
+			{
+				SetPosition(16);
+				var uuidBytes = Read_Bytes(16);
+				RestorePosition();
+
+				return new Guid(BitConverter.ToString(uuidBytes).Replace("-", string.Empty));
+			}
+			set
+			{
+
 			}
 		}
 
@@ -376,22 +388,20 @@ namespace Netboot.Network.Packet
 		{
 			get
 			{
-				var curPOS = Buffer.Position;
-				Buffer.Position = 36;
+				SetPosition(36);
 
 				var screenBytes = Read_Bytes(((Length + 8) - Buffer.Position) - 1);
-				Buffer.Position = curPOS;
+				RestorePosition();
 
 				return screenBytes;
 			}
 
 			set
 			{
-				var curPOS = Buffer.Position;
-				Buffer.Position = 36;
+				SetPosition(36);
 
 				Write_Bytes(value);
-				Buffer.Position = curPOS;
+				RestorePosition();
 			}
 		}
 	}

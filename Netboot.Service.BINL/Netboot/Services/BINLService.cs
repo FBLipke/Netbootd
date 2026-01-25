@@ -64,7 +64,28 @@ namespace Netboot.Service.BINL
 			Ports.Clear();
 		}
 
-		public void Handle_RQU_Request(Guid server, Guid socket, string client, BINLPacket packet)
+		public void Setup(XmlNode xmlConfigNode)
+		{
+			var binlRoot = xmlConfigNode.Attributes.GetNamedItem("rootdir").Value;
+			if (!string.IsNullOrEmpty(binlRoot))
+				RootPath = Path.Combine(Directory.GetCurrentDirectory(), binlRoot);
+			else
+				RootPath = Path.Combine(Directory.GetCurrentDirectory(), "TFTPRoot");
+
+			var osclang = xmlConfigNode.Attributes.GetNamedItem("osclang").Value;
+			if (!string.IsNullOrEmpty(osclang))
+				Language = osclang;
+
+			var oscfile = xmlConfigNode.Attributes.GetNamedItem("oscfile").Value;
+			if (!string.IsNullOrEmpty(oscfile))
+				OSCFileName = oscfile;
+
+			Directory.CreateDirectory(Path.Combine(RootPath, "Setup", "Images"));
+			Directory.CreateDirectory(Path.Combine(RootPath, "Setup", "OSChooser", "i386"));
+
+		}
+
+		string Handle_OSCScreen_Request(ref BINLPacket packet)
 		{
 			var OSChooserDir = new DirectoryInfo(Path.Combine(RootPath, DirName));
 			var directories = OSChooserDir.GetDirectories();
@@ -134,19 +155,29 @@ namespace Netboot.Service.BINL
 				catch (FileNotFoundException ex)
 				{
 					var errcontent = string.Format("<OSCML> \\\r\n\t\t\t<META KEY=\\\"F3\\\" ACTION=\\\"REBOOT\\\"><META KEY=\\\"ENTER\\\" HREF=\\\"LOGIN\\\">" +
-						"<TITLE>  Client Installation Wizard                                           Error</TITLE><FOOTER>[F3] restart computer [ENTER] Continue</FOOTER> \\\r\n\t\t\t<BODY left=5 right=75><BR>The requested file \"{0}\" was not found on the Server.</BODY></OSCML>", filePath);
+						"<TITLE>  Client Installation Wizard                                           Error</TITLE><FOOTER>[F3] restart computer [ENTER] Continue</FOOTER>" +
+						"<BODY left=5 right=75><BR>The requested file \"{0}\" was not found on the Server.</BODY></OSCML>", ex.FileName);
 					oscml.Append(errcontent);
 				}
 			}
 			#endregion
 
-			var response = new BINLPacket(ServiceType, BINLMessageTypes.ResponseUnsigned);
-			response.Sequence = packet.Sequence;
-			response.Fragment = packet.Fragment;
-			response.TotalFragments = packet.TotalFragments;
-			response.SignLength = packet.SignLength;
-			response.Sign = packet.Sign;
-			response.Data = Encoding.ASCII.GetBytes(oscml.ToString());
+			return oscml.ToString();
+		}
+
+		public void Handle_RQU_Request(Guid server, Guid socket, string client, BINLPacket packet)
+		{
+			var oscfile = Handle_OSCScreen_Request(ref packet);
+
+			var response = new BINLPacket(ServiceType, BINLMessageTypes.ResponseUnsigned)
+			{
+				Sequence = packet.Sequence,
+				Fragment = packet.Fragment,
+				TotalFragments = packet.TotalFragments,
+				SignLength = packet.SignLength,
+				Sign = packet.Sign,
+				Data = Encoding.ASCII.GetBytes(oscfile)
+			};
 			response.Length = ((uint)response.Buffer.Length - 8);
 
 			ServerSendPacket?.Invoke(this, new(ServiceType, server, socket, response, Clients[client]));
@@ -218,24 +249,6 @@ namespace Netboot.Service.BINL
 		{
 			if (xmlConfigNode == null)
 				return false;
-
-			var binlRoot = xmlConfigNode.Attributes.GetNamedItem("rootdir").Value;
-			if (!string.IsNullOrEmpty(binlRoot))
-				RootPath = Path.Combine(Directory.GetCurrentDirectory(), binlRoot);
-			else
-				RootPath = Path.Combine(Directory.GetCurrentDirectory(), "TFTPRoot");
-
-			var osclang = xmlConfigNode.Attributes.GetNamedItem("osclang").Value;
-			if (!string.IsNullOrEmpty(osclang))
-				Language = osclang;
-
-			var dirname = xmlConfigNode.Attributes.GetNamedItem("dirname").Value;
-			if (!string.IsNullOrEmpty(dirname))
-				DirName = dirname;
-
-			var oscfile = xmlConfigNode.Attributes.GetNamedItem("oscfile").Value;
-			if (!string.IsNullOrEmpty(oscfile))
-				OSCFileName = oscfile;
 
 			return true;
 		}

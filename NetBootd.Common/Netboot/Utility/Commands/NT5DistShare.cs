@@ -11,6 +11,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Microsoft.VisualBasic;
 using Netboot.Common;
 using Netboot.Utility.Definitions;
 using System;
@@ -21,7 +22,16 @@ namespace Netboot.Utility
 {
 	public class NT5DistShare : IDisposable
 	{
+		public INIFile DOSNET { get; private set; }
+
+		public Version Version { get; private set; }
+		public string SourcePath = Directory.GetCurrentDirectory();
 		public string RootPath = Directory.GetCurrentDirectory();
+		public string SetupDiskRoot = Directory.GetCurrentDirectory();
+		public string NLS = string.Empty;
+
+		public Dictionary<string, string> Directories = new();
+		public Dictionary<string, List<string>> FilesToCopy = new();
 
 		public NT5DistShare()
 		{
@@ -29,26 +39,52 @@ namespace Netboot.Utility
 		}
 
 		public void Dispose()
+		{}
+
+		public void Initialize(string srcType, string sourcePath)
 		{
+			Console.BackgroundColor = ConsoleColor.DarkBlue;
+			Console.ForegroundColor = ConsoleColor.White;
+			Console.Clear();
+			RootPath = Path.Combine(Directory.GetCurrentDirectory(), "TFTPRoot", "Setup", Guid.NewGuid().ToString(), "WIN2k");
+			GetPathOfDosnet(sourcePath);
 		}
 
-		public void Initialize(string[] args)
+		bool GetPathOfDosnet(string _path)
 		{
-			RootPath = Path.Combine(Directory.GetCurrentDirectory(), "TFTPRoot", "Setup", "Englisch", "WIN2k");
-		}
+			var _dosnet = new FileInfo(Directory.GetFiles(_path, "dosnet.inf", SearchOption.AllDirectories).FirstOrDefault());
 
-		public string GetCompressedName(string filename)
-		{
-			var tmp = filename;
-
-			if (!tmp.EndsWith("_"))
+			if (!_dosnet.Exists)
 			{
-				var x = tmp.ToCharArray();
-				x[x.Length - 1] = '_';
-				tmp = new string(x);
+				Console.WriteLine("File not found: {0}", _dosnet.FullName);
+				return false;
 			}
 
-			return tmp;
+			DOSNET = new INIFile(_dosnet.FullName);
+			
+			if (!DOSNET.Open())
+				return false;
+
+			SetupDiskRoot = _dosnet.Directory.Parent.FullName;
+			var _SrcDirs = DOSNET.GetSectionKeys("Directories");
+
+
+			Console.WriteLine("Found Following SOurceDirs:");
+			
+			foreach (var key in _SrcDirs) {
+				Console.WriteLine($"{key}");
+			}
+
+			Console.WriteLine(SetupDiskRoot);
+
+			Console.WriteLine(" ============================ ");
+
+			foreach (var dirEntry in _SrcDirs)
+			{
+				Console.WriteLine(dirEntry);
+			}
+
+			return true;
 		}
 
 		public void Start(string srcType, string sourcePath)
@@ -61,7 +97,6 @@ namespace Netboot.Utility
 				case "nt5":
 					// TODO: Use nt5.yml here...
 
-
 					var osid = "winnt";
 					var SectionsToRead = new List<string>
 					{
@@ -72,6 +107,12 @@ namespace Netboot.Utility
 					{
 						SectionsToRead.Add("SourceDisksNames.x86");
 						osid = "win2000";
+					}
+
+					if (File.Exists(Path.Combine(SourcePath, "cdrom_ip.5")))
+					{
+						SectionsToRead.Add("SourceDisksNames.x86");
+						osid = "win";
 					}
 
 					if (File.Exists(Path.Combine(SourcePath, "cdrom_ap.5")))
@@ -109,14 +150,7 @@ namespace Netboot.Utility
 						{ string.Empty, string.Empty }
 					};
 
-					foreach (var key in ini.GetSectionKeys("Strings"))
-					{
-						var val = ini.GetValue("Strings", key, string.Empty).Split(',').FirstOrDefault();
-						if (string.IsNullOrEmpty(val))
-							continue;
-
-						__strings.Add(key, val);
-					}
+					
 
 					var os_sData_arch = ini.GetValue("SetupData", "Architecture");
 					var os_sData_Path = ini.GetValue("SetupData", "DefaultPath");
@@ -309,8 +343,10 @@ namespace Netboot.Utility
 					var fileList = new Dictionary<string, NTSrcFileInfo>();
 
 					{
-						var copyFilesSections = new List<string>();
-						copyFilesSections.Add("SourceDisksFiles");
+						var copyFilesSections = new List<string>
+						{
+							"SourceDisksFiles"
+						};
 
 						if (copyFilesSections.Count == 0)
 							Console.WriteLine("Cannot find any sections!");

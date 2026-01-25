@@ -88,6 +88,9 @@
     <None Include="TFTPRoot\OSChooser\welcome.osc">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Include="TFTPRoot\windows\i386\TXTSETUP.SIF">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
   <ItemGroup>

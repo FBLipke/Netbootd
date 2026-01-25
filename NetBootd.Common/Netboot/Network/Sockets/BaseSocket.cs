@@ -44,7 +44,8 @@ namespace Netboot.Network.Sockets
 
 		public bool Multicast { get; private set; }
 
-		public BaseSocket(Guid serverId, Guid socketId, string serviceType, SocketProtocol protocol, IPEndPoint localep, bool multicast = false, int buffersize = ushort.MaxValue)
+		public BaseSocket(Guid serverId, Guid socketId, string serviceType, SocketProtocol protocol,
+			IPEndPoint localep, bool multicast = false, int buffersize = ushort.MaxValue)
 		{
 			localendpoint = localep;
 			BufferLength = buffersize;

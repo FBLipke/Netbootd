@@ -8596,11 +8596,12 @@ MUI_PRIMARY_LANG_ID_DIR = "system32\mui\0007"
 
 
 
+
 SetupSourcePath = "\"
 MajorVersion = 5
 MinorVersion = 0
 DefaultPath=\WINNT
-
+ComputerName = Administrator1
 OsLoadOptions = "/fastdetect /noguiboot /nodebug"
 
 

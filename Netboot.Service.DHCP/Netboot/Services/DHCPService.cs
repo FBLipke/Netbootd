@@ -11,6 +11,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Netboot.Common.Definitions;
 using Netboot.Network.Client;
 using Netboot.Network.Definitions;
 using Netboot.Network.EventHandler;
@@ -106,6 +107,11 @@ namespace Netboot.Services.DHCP
 		public event ServerSendPacketEventHandler? ServerSendPacket;
 		public event PrintMessageEventHandler? PrintMessage;
 
+
+		public void Setup(XmlNode xmlConfigNode)
+		{
+		}
+
 		public void Dispose()
 		{
 			foreach (var client in Clients.Values.ToList())
@@ -132,9 +138,9 @@ namespace Netboot.Services.DHCP
 
 		private void RemoveClient(string id)
 		{
-			if (Clients.ContainsKey(id))
+			if (Clients.TryGetValue(id, out DHCPClient? value))
 			{
-				Clients[id].Dispose();
+				value.Dispose();
 				Clients.Remove(id);
 			}
 		}

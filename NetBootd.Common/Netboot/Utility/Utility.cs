@@ -19,20 +19,22 @@ namespace Netboot.Utility
 	{
 		public Utility(string[] args)
 		{
-
+			Initialize(args);
 		}
 
-		public void Initialize()
+		public void Initialize(string[] args)
 		{
 			Console.WriteLine("Netboot utility 0.1a ({0})", Functions.IsLittleEndian()
 				? "LE (LittleEndian)" : "BE (BigEndian)");
+
+			RunCommand(args);
 		}
 
 		public void RunCommand(string[] args)
 		{
 			if (args.Length == 0)
 			{
-				Console.WriteLine("Aviable Commands:");
+				Console.WriteLine("Available Commands:");
 
 				return;
 			}
@@ -59,7 +61,8 @@ namespace Netboot.Utility
 
 									using (var nt5dist = new NT5DistShare())
 									{
-										nt5dist.Start(args[2], args[3]);
+										nt5dist.Initialize(args[2], args[3]);
+										//nt5dist.Start(args[2], args[3]);
 									}
 									break;
 								case "osx":

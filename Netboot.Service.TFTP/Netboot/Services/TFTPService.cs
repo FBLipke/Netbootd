@@ -66,6 +66,11 @@ namespace Netboot.Service.TFTP
 			Ports.Clear();
 		}
 
+		public void Setup(XmlNode xmlConfigNode)
+		{
+
+		}
+
 		private void RemoveClient(string id)
 		{
 			if (!Clients.ContainsKey(id))

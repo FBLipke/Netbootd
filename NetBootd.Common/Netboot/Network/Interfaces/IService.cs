@@ -41,6 +41,8 @@ namespace Netboot.Services.Interfaces
 
 		void Stop();
 
+		void Setup(XmlNode xmlConfigNode);
+
 		bool Initialize(XmlNode xmlConfigNode);
 	}
 }

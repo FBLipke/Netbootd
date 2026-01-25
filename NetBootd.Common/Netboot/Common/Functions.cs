@@ -28,6 +28,20 @@ namespace Netboot.Common
 			return nano;
 		}
 
+		public static string GetCompressedName(string filename)
+		{
+			var tmp = filename;
+
+			if (!tmp.EndsWith("_"))
+			{
+				var x = tmp.ToCharArray();
+				x[x.Length - 1] = '_';
+				tmp = new string(x);
+			}
+
+			return tmp;
+		}
+
 		public static void PrintMessage(string message)
 			=> Console.WriteLine(message);
 

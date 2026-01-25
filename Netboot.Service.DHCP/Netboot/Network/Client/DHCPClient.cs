@@ -11,6 +11,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Netboot.Common.Definitions;
 using Netboot.Network.Definitions;
 using Netboot.Network.Packet;
 using System.Net;
@@ -36,7 +37,6 @@ namespace Netboot.Network.Client
 			}
 
 			NetBootdClient = testClient;
-			Console.WriteLine(NicSpecType);
 		}
 
 		public bool NetBootdClient { get; private set; }

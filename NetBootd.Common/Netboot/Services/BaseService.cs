@@ -72,5 +72,10 @@ namespace Netboot.Services
 		public void Stop()
 		{
 		}
+
+		public void Setup(XmlNode xmlConfigNode)
+		{
+
+		}
 	}
 }

@@ -11,13 +11,11 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System.ComponentModel.DataAnnotations;
-
 namespace Netboot.Common
 {
 	public class INIFile
 	{
-		Dictionary<string, Dictionary<string, string>> Sections = [];
+		Dictionary<string, Dictionary<string, List<string?>>> Sections = [];
 
 		string FilePath = string.Empty;
 		bool isOpen = false;
@@ -54,8 +52,8 @@ namespace Netboot.Common
 					}
 					else
 					{
-						var value = string.Empty;
-						var key = string.Empty;
+						string? value;
+						string? key;
 
 						if (line.Contains('='))
 						{
@@ -76,19 +74,21 @@ namespace Netboot.Common
 							 * Solution Read and return as Key ...
 							 */
 
-							key = line;
-							value = string.Empty;
+							var parts = line.Split(',', 1);
+
+							key = parts.FirstOrDefault();
+							value = parts.LastOrDefault();
 						}
 
 						if (!Sections[sectionName].ContainsKey(key))
-							Sections[sectionName].Add(key, value);
+							Sections[sectionName].Add(key, [value]);
 						else
-							if (ReplaceDuplicates)
-								Sections[sectionName][key] = value;
+							Sections[sectionName][key].Add(value);
 					}
 				}
 
 				reader.Close();
+				isOpen = false;
 			}
 
 			return true;
@@ -112,7 +112,7 @@ namespace Netboot.Common
 
 		public string GetValue(string section, string key, string defaultValue = "")
 		{
-			var value = Sections[section][key];
+			var value = Sections[section][key].Trim();
 			return !string.IsNullOrEmpty(value) ? value : defaultValue;
 		}
 
@@ -135,6 +135,8 @@ namespace Netboot.Common
 		{
 			using (var sw = new StreamWriter(FilePath))
 			{
+				isOpen = true;
+
 				sw.AutoFlush = true;
 				sw.NewLine = "\r\n";
 
@@ -149,10 +151,11 @@ namespace Netboot.Common
 				}
 
 				sw.Close();
+				isOpen = false;
 			}
 		}
 
-		public List<string> GetSectionKeys(string section)
+		public IEnumerable<string> GetSectionKeys(string section)
 			=> Sections[section].Keys.ToList();
 	}
 }

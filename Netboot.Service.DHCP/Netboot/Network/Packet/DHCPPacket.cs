@@ -335,13 +335,17 @@ namespace Netboot.Network.Packet
 		{
 			get
 			{
-				Buffer.Position = 236;
-				return (MagicCookie)BitConverter.ToUInt32(Read_Bytes(4));
+				SetPosition(236);
+				var cookie = (MagicCookie)BitConverter.ToUInt32(Read_Bytes(4));
+				RestorePosition();
+
+				return cookie;
 			}
 			set
 			{
-				Buffer.Position = 236;
+				SetPosition(236);
 				Write_Bytes(BitConverter.GetBytes(Convert.ToUInt32(value)));
+				RestorePosition();
 			}
 		}
 

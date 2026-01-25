@@ -8,7 +8,7 @@
 				<OriSrc>[[#OriSrc#]]</OriSrc>
 				<OriTyp>[[#OriTyp#]]</OriTyp>
 				<LocalSourceOnCD>1</LocalSourceOnCD>
-				<DisableAdminAccountOnDomainJoin>0</DisableAdminAccountOnDomainJoin>
+				<DisableAdminAccountOnDomainJoin>[[#DisableAdminAccountOnDomainJoin#]]</DisableAdminAccountOnDomainJoin>
 			</data>
 			<SetupData>
 				<OsLoadOptions>/fastdetect</OsLoadOptions>

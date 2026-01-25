@@ -27,7 +27,7 @@ namespace Netboot.Utility
 			AppDomain.CurrentDomain.DomainUnload += CurrentDomain_ProcessExit;
 
 			NetbootUtil = new Utility(args);
-			NetbootUtil.Initialize();
+			NetbootUtil.Initialize(args);
 
 			#region "keep program alive"
 			var x = string.Empty;
