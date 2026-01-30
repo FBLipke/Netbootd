@@ -38,10 +38,6 @@
     <None Include="Config\Netboot.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="Config\nt5.yaml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="Config\nt5\ristndrd.xml" />
     <None Include="Dumps\dupp.pcap" />
     <None Include="Dumps\win2k\000000000000000000008A98147E1BFE.sif" />
     <None Include="Dumps\win2k\LAYOUT.INF" />
@@ -88,12 +84,12 @@
     <None Include="TFTPRoot\OSChooser\welcome.osc">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="TFTPRoot\windows\i386\TXTSETUP.SIF">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="Config\ris\ristndrd.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="TFTPRoot\OSChooser\englisch\00004e28.osc">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

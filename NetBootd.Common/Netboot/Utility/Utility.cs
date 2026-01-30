@@ -26,8 +26,6 @@ namespace Netboot.Utility
 		{
 			Console.WriteLine("Netboot utility 0.1a ({0})", Functions.IsLittleEndian()
 				? "LE (LittleEndian)" : "BE (BigEndian)");
-
-			RunCommand(args);
 		}
 
 		public void RunCommand(string[] args)
@@ -44,8 +42,11 @@ namespace Netboot.Utility
 				case "!dist":
 					Console.WriteLine("!dist: Distribution share management!");
 					Console.WriteLine();
-					Console.WriteLine("Syntax: !dist add (OStype) (CD ROOT)");
-					Console.WriteLine("OSType: \"nt5\" (Windows 2K/XP/2003)");
+					Console.WriteLine("Syntax: !dist (mode) (type) (Disk ROOT)");
+					Console.WriteLine("Mode: add/del/mod");
+					Console.WriteLine("Type: \"ris\" Performs RIS Operations");
+					Console.WriteLine("Type: \"wds\" Performs WDS Operations");
+
 					switch (args[1])
 					{
 						case "add":
@@ -54,15 +55,15 @@ namespace Netboot.Utility
 
 							switch (args[2])
 							{
-								case "nt5":
+								case "ris":
 									// https://msfn.org/board/topic/127677-txtsetupsif-layoutinf-reference/
 									if (args.Length == 3)
 										return;
 
 									using (var nt5dist = new NT5DistShare())
 									{
-										nt5dist.Initialize(args[2], args[3]);
-										//nt5dist.Start(args[2], args[3]);
+										nt5dist.Initialize(string.Empty, args[2], args[3]);
+										nt5dist.Start(args[2], args[3]);
 									}
 									break;
 								case "osx":

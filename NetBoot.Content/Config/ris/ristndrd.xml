@@ -5,41 +5,40 @@
 			<data>
 				<floppyless>1</floppyless>
 				<msdosinitiated>1</msdosinitiated>
-				<OriSrc>[[#OriSrc#]]</OriSrc>
-				<OriTyp>[[#OriTyp#]]</OriTyp>
+				<AutoPartition>0</AutoPartition>
+				<OriSrc>\\%SERVERNAME%\RemInst\%INSTALLPATH%\%MACHINETYPE%\</OriSrc>
+				<OriTyp>4</OriTyp>
 				<LocalSourceOnCD>1</LocalSourceOnCD>
-				<DisableAdminAccountOnDomainJoin>[[#DisableAdminAccountOnDomainJoin#]]</DisableAdminAccountOnDomainJoin>
+				<DisableAdminAccountOnDomainJoin>no</DisableAdminAccountOnDomainJoin>
+				<UnattendedInstall>yes</UnattendedInstall>
 			</data>
 			<SetupData>
-				<OsLoadOptions>/fastdetect</OsLoadOptions>
-				<SetupSourceDevice>[[#SetupSourceDevice#]]</SetupSourceDevice>
+				<OsLoadOptions>/fastdetect /noguiboot</OsLoadOptions>
+				<SetupSourceDevice>"\Device\LanmanRedirector\%SERVERNAME%\RemInst\%INSTALLPATH%"</SetupSourceDevice>
 			</SetupData>
 			<Unattended>
 				<OemPreInstall>yes</OemPreInstall>
+				<UnattendMode>FullUnattended</UnattendMode>
 				<NoWaitAfterTextMode>1</NoWaitAfterTextMode>
 				<FileSystem>LeaveAlone</FileSystem>
 				<ExtendOEMPartition>no</ExtendOEMPartition>
 				<ConfirmHardware>yes</ConfirmHardware>
 				<NtUpgrade>no</NtUpgrade>
 				<Win31Upgrade>no</Win31Upgrade>
-				<!--
-				<TargetPath>*</TargetPath> : NT4: Default
-				<TargetPath>\WINNT</TargetPath> : NT4: My Custom Path
-				<TargetPath>manual</TargetPath> : NT4: Ask the User.....
-				-->
 				<TargetPath>*</TargetPath>
 				<OverwriteOemFilesOnUpgrade>no</OverwriteOemFilesOnUpgrade>
 				<OemSkipEula>yes</OemSkipEula>
-				<InstallFilesPath>[[#InstallFilesPath#]]</InstallFilesPath>
+				<AutoActivate>no</AutoActivate>
+				<InstallFilesPath>\\%SERVERNAME%\RemInst\%INSTALLPATH%\%MACHINETYPE%"</InstallFilesPath>
 			</Unattended>
-			<OEM_ADs> <!-- Should be placed relative to the %OEM% Directory-->
-				<Banner>Banner.bmp</Banner> <!-- Should be placed relative to the %OEM% Directory -->
-				<Logo>Logo.bmp</Logo> <!-- Should be placed relative to the %OEM% Directory -->
-				<Background>Background.bmp</Background> <!-- Should be placed relative to the %OEM% Directory -->
+			<OEM_ADs>
+				<Banner>Banner.bmp</Banner>
+				<Logo>Logo.bmp</Logo>
+				<Background>Background.bmp</Background>
 			</OEM_ADs>
 			<UserData>
-				<FullName>[[#FullName#]]</FullName>
-				<OrgName>[[#Orgname#]]</OrgName>
+				<FullName>Windows User</FullName>
+				<OrgName>Private</OrgName>
 				<ComputerName>[[#ComputerName#]]</ComputerName>
 			</UserData>
 			<GuiUnattended>
@@ -47,15 +46,16 @@
 				<OemSkipRegional>1</OemSkipRegional>
 				<TimeZone>110</TimeZone>
 				<AdminPassword>*</AdminPassword>
+				<EncryptedAdminPassword>no</EncryptedAdminPassword>
 			</GuiUnattended>
 			<LicenseFilePrintData>
 				<AutoMode>perSeat</AutoMode>
 			</LicenseFilePrintData>
 			<Display>
 				<ConfigureAtLogon>1</ConfigureAtLogon>
-				<BitsPerPel>[[#BitsPerPel#]]</BitsPerPel>
-				<XResolution>[[#XResolution#]]</XResolution>
-				<YResolution>[[#YResolution#]]</YResolution>
+				<BitsPerPel>32</BitsPerPel>
+				<XResolution>1024</XResolution>
+				<YResolution>768</YResolution>
 				<VRefresh>60</VRefresh>
 				<AutoConfirm>1</AutoConfirm>
 			</Display>
@@ -63,9 +63,9 @@
 				<ProcessPageSections>1</ProcessPageSections>
 			</Network>
 			<Identification>
-				<JoinDomain>[[#JoinDomain#]]</JoinDomain>
-				<CreateComputerAccountInDomain>No</CreateComputerAccountInDomain>
-				<DoOldStyleDomainJoin>Yes</DoOldStyleDomainJoin>
+				<JoinDomain>FBLIPKE</JoinDomain>
+				<CreateComputerAccountInDomain>yes</CreateComputerAccountInDomain>
+				<DoOldStyleDomainJoin>yes</DoOldStyleDomainJoin>
 			</Identification>
 			<RemoteInstall>
 				<Repartition>No</Repartition>

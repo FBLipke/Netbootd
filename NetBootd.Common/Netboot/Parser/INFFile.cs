@@ -15,7 +15,7 @@ namespace Netboot.Common
 {
 	public class INIFile
 	{
-		Dictionary<string, Dictionary<string, List<string?>>> Sections = [];
+		Dictionary<string, Dictionary<string, List<string>>> Sections = [];
 
 		string FilePath = string.Empty;
 		bool isOpen = false;
@@ -101,7 +101,12 @@ namespace Netboot.Common
 				Console.WriteLine($"[{section.Key}]");
 
 				foreach (var value in section.Value)
-					Console.WriteLine($"{value.Key} = {value.Value}");
+				{
+					if (value.Value.Count > 1)
+						Console.WriteLine($"{value.Key} = { string.Join(',', value.Value.ToArray())}");
+					else
+						Console.WriteLine($"{value.Key} = { value.Value.FirstOrDefault()}");
+				}
 
 				Console.WriteLine("");
 			}
@@ -110,22 +115,21 @@ namespace Netboot.Common
 		public bool HasSection(string section)
 			=> Sections.ContainsKey(section);
 
-		public string GetValue(string section, string key, string defaultValue = "")
-		{
-			var value = Sections[section][key].Trim();
-			return !string.IsNullOrEmpty(value) ? value : defaultValue;
-		}
+		public IEnumerable<string> GetValue(string section, string key, string defaultValue = "")
+			=> Sections[section][key];
+
+		public IEnumerable<string> GetValues(string section, string key, string delimiter = ",")
+			=> Sections[section][key];
 
 		public void SetValue(string section, string key, string value)
 		{
 			if (!Sections.ContainsKey(section))
 				Sections.Add(section, []);
 
-			if (!Sections[section].TryAdd(key, value))
-				Sections[section][key] = value;
+			Sections[section][key].Add(value);
 		}
 
-		public void SetValues(Dictionary<string, Dictionary<string, string>> data)
+		public void SetValues(Dictionary<string, Dictionary<string, List<string>>> data)
 		{
 			Sections = data;
 			Commit();
@@ -145,7 +149,7 @@ namespace Netboot.Common
 					sw.WriteLine($"[{section.Key}]");
 
 					foreach (var value in section.Value)
-						sw.WriteLine($"{value.Key} = {value.Value}");
+						sw.WriteLine($"{value.Key} = {value.Value.FirstOrDefault()}");
 
 					sw.WriteLine("");
 				}
