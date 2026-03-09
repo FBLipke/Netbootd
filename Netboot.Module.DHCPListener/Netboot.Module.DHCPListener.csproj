@@ -1,0 +1,39 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<BaseOutputPath>..\</BaseOutputPath>
+		<EnableDynamicLoading>true</EnableDynamicLoading>
+		<EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+	</PropertyGroup>
+
+	<ItemGroup>
+	  <Compile Include="Event\BootServiceRequestEventArgs.cs" />
+	  <Compile Include="Event\ListenerRequestReceivedEventArgs.cs" />
+	  <Compile Include="DHCPListener.cs" />
+	  <Compile Include="DHCPListenerBase.cs" />
+	  <Compile Include="Interfaces\IBootService.cs" />
+	  <Compile Include="Network\Client\BSDP\BSDPClient.cs" />
+	  <Compile Include="Network\Client\DHCPClient.cs" />
+	  <Compile Include="Network\Client\Interfaces\IDHCPClient.cs" />
+	  <Compile Include="Network\Client\WDS\WDSClient.cs" />
+	  <Compile Include="Network\Definitions\BSDP\Definitions.cs" />
+	  <Compile Include="Network\Definitions\Definitions.cs" />
+	  <Compile Include="Network\Definitions\DHCP\DHCPOption.cs" />
+	  <Compile Include="Network\Definitions\Functions.cs" />
+	  <Compile Include="Network\Definitions\HWAddress.cs" />
+	  <Compile Include="Network\Definitions\RBCP\BootMenueEntry.cs" />
+	  <Compile Include="Network\Definitions\RBCP\BootServer.cs" />
+	  <Compile Include="Network\Definitions\RBCP\Definitions.cs" />
+	  <Compile Include="Network\Definitions\WDS\Definitions.cs" />
+	  <Compile Include="Network\Packet\DHCPPacket.cs" />
+	  <Compile Include="Event\RegisterBootServicetEventArgs.cs" />
+	</ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\NetBootd.Common\Netboot.Common.csproj" />
+  </ItemGroup>
+
+</Project>

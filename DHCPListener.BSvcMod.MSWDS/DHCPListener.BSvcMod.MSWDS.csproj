@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<BaseOutputPath>..\</BaseOutputPath>
+		<EnableDynamicLoading>true</EnableDynamicLoading>
+		<EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+	</PropertyGroup>
+
+	<ItemGroup>
+	  <Compile Include="Definitions\Definitions.cs" />
+	  <Compile Include="MSWDS.cs" />
+	  <Compile Include="Network\Client\WDSClient.cs" />
+	  <Compile Include="Network\Interfaces\IWDSClient.cs" />
+	</ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Netboot.Module.DHCPListener\Netboot.Module.DHCPListener.csproj" />
+  </ItemGroup>
+
+</Project>

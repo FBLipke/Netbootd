@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Namiono>
+	<Module Name="DHCPListener">
+		<Servers>
+			<Server Type="UDP" Mode="DHCP" Port="67;4011" />
+		</Servers>
+		<Install provider="DHCPListener">
+			<Entries>
+			</Entries>
+		</Install>
+	</Module>
+</Namiono>

@@ -10,22 +10,21 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="Netboot\Network\Client\BSDP\BSDPClient.cs" />
-    <Compile Include="Netboot\Network\Client\DHCPClient.cs" />
-    <Compile Include="Netboot\Network\Client\RBCP\RBCPClient.cs" />
-    <Compile Include="Netboot\Network\Definitions\BSDP\Definitions.cs" />
-    <Compile Include="Netboot\Network\Definitions\RBCP\BootMenueEntry.cs" />
-    <Compile Include="Netboot\Network\Definitions\Functions.cs" />
-    <Compile Include="Netboot\Network\Client\WDS\WDSClient.cs" />
-    <Compile Include="Netboot\Network\Definitions\RBCP\BootServer.cs" />
-    <Compile Include="Netboot\Network\Definitions\Definitions.cs" />
-    <Compile Include="Netboot\Network\Definitions\DHCP\DHCPOption.cs" />
-    <Compile Include="Netboot\Network\Definitions\RBCP\Definitions.cs" />
-    <Compile Include="Netboot\Network\Definitions\WDS\Definitions.cs" />
-    <Compile Include="Netboot\Network\Packet\DHCPPacket.cs" />
-    <Compile Include="Netboot\Services\DHCPService.cs" />
-    <Compile Include="Netboot\EventHandler\DHCPServiceBehaviorEventargs.cs" />
-    <Compile Include="Netboot\EventHandler\UpdateBootfileEventargs.cs" />
+    <Compile Include="Network\Client\BSDP\BSDPClient.cs" />
+    <Compile Include="Network\Client\DHCPClient.cs" />
+    <Compile Include="Network\Client\RBCP\RBCPClient.cs" />
+    <Compile Include="Network\Definitions\BSDP\Definitions.cs" />
+    <Compile Include="Network\Definitions\RBCP\BootMenueEntry.cs" />
+    <Compile Include="Network\Definitions\Functions.cs" />
+    <Compile Include="Network\Client\WDS\WDSClient.cs" />
+    <Compile Include="Network\Definitions\RBCP\BootServer.cs" />
+    <Compile Include="Network\Definitions\Definitions.cs" />
+    <Compile Include="Network\Definitions\DHCP\DHCPOption.cs" />
+    <Compile Include="Network\Definitions\WDS\Definitions.cs" />
+    <Compile Include="Network\Packet\DHCPPacket.cs" />
+    <Compile Include="Services\DHCPService.cs" />
+    <Compile Include="EventHandler\DHCPServiceBehaviorEventargs.cs" />
+    <Compile Include="EventHandler\UpdateBootfileEventargs.cs" />
   </ItemGroup>
 
   <ItemGroup>
