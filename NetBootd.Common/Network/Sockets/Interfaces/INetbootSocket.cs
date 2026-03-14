@@ -1,7 +1,7 @@
 ﻿using System.Net;
 using System.Text;
 
-namespace Netboot.Common.Network.sockets.Interfaces
+namespace Netboot.Common.Network.Sockets.Interfaces
 {
 	public interface INetbootSocket : IDisposable
 	{
@@ -13,7 +13,7 @@ namespace Netboot.Common.Network.sockets.Interfaces
 
 		IPAddress MulticastGroup { get; set; }
 
-		byte MUlticastTTL { get; set; }
+		byte MulticastTTL { get; set; }
 
 		void Start();
 

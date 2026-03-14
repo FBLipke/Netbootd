@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<BaseOutputPath>..\</BaseOutputPath>
+		<EnableDynamicLoading>true</EnableDynamicLoading>
+		<EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+	</PropertyGroup>
+
+	<ItemGroup>
+	  <Compile Include="Event\ListenerRequestReceivedEventArgs.cs" />
+	  <Compile Include="Event\PacketBacklogEventArgs.cs" />
+	  <Compile Include="Network\Client\TFTPClient.cs" />
+	  <Compile Include="Network\Interfaces\ITFTPClient.cs" />
+	  <Compile Include="Network\Definitions\Definitions.cs" />
+	  <Compile Include="Network\Definitions\TFTPPacketBacklogEntry.cs" />
+	  <Compile Include="Network\Packet\TFTPPacket.cs" />
+	  <Compile Include="TFTPServerBase.cs" />
+	  <Compile Include="TFTPServer.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\NetBoot.Content\NetBoot.Content.csproj" />
+	  <ProjectReference Include="..\NetBootd.Common\Netboot.Common.csproj" />
+	</ItemGroup>
+
+</Project>

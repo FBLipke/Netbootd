@@ -1,11 +1,9 @@
 ﻿using Netboot.Common.Network.Sockets;
-using Netboot.Common.Network.sockets;
-using Netboot.Common.Network.sockets.Interfaces;
-using Netboot.Common.Network.sockets.TCP;
-using Netboot.Common.Network.sockets.UDP;
+using Netboot.Common.Network.Sockets.Interfaces;
 using Netboot.Common.System;
 using System.Text;
 using System.Net;
+using System.Runtime.InteropServices;
 
 namespace Netboot.Common.Network
 {
@@ -30,45 +28,33 @@ namespace Netboot.Common.Network
 
 		public void Start()
 		{
-			foreach (KeyValuePair<Guid, INetbootServer> server in Servers)
+			foreach (var server in Servers.ToList())
 				server.Value.Start();
 		}
 
 		public void Send(Guid server, Guid socket, Guid client, byte[] data)
 		{
-			lock (Servers)
-			{
-				if (Servers.ContainsKey(server))
-					if (Servers[server].Sockets.ContainsKey(socket))
-						Servers[server]?.Sockets[socket]?.Send(client, data);
-			}
+			if (Servers.ContainsKey(server))
+				if (Servers[server].Sockets.ContainsKey(socket))
+					Servers[server]?.Sockets[socket]?.Send(client, data);
 		}
 
 		public void Send(Guid server, Guid socket, Guid client, byte[] data, bool keepalive)
 		{
-			lock (Servers)
-			{
-				Servers[server].Sockets[socket].Send(client, data, keepalive);
-			}
+			Servers[server].Sockets[socket].Send(client, data, keepalive);
 		}
 
 		public void Send(Guid server, Guid socket, Guid client, MemoryStream data, bool keepalive)
 		{
-			lock (Servers)
-			{
-				Servers[server].Sockets[socket].Send(client, data, keepalive);
-			}
+			Servers[server].Sockets[socket].Send(client, data, keepalive);
 		}
 
 		public void Send(Guid server, Guid socket, Guid client, string data, Encoding encoding, bool keepalive)
 		{
-			lock (Servers)
-			{
-				Servers[server].Sockets[socket].Send(client, data, encoding, keepalive);
-			}
+			Servers[server].Sockets[socket].Send(client, data, encoding, keepalive);
 		}
 
-		public void Add(ProtoType protocolType, ServerMode mode, List<ushort> port)
+		public Guid Add(ProtoType protocolType, List<ushort> port)
 		{
 			var guid = Guid.NewGuid();
 
@@ -76,11 +62,11 @@ namespace Netboot.Common.Network
 			switch (protocolType)
 			{
 				case ProtoType.Tcp:
-					server = new NetbootTcpServer(protocolType, guid, mode, port);
+					server = new NetbootTcpServer(protocolType, guid, port);
 					break;
 				case ProtoType.Raw:
 				case ProtoType.Udp:
-					server = new NetbootUdpServer(protocolType, guid, mode, port);
+					server = new NetbootUdpServer(protocolType, guid, port);
 					break;
 				default:
 					throw new InvalidOperationException(string.Format("Invalid Protocoltype: {0}", protocolType));
@@ -114,11 +100,14 @@ namespace Netboot.Common.Network
 
 				Servers[guid].ServerReceivedData += (sender, e) =>
 				{
-					ReceivedData.DynamicInvoke(this, new ReceivedDataArgs(e.Server, e.Socket, e.Client, e.ProtocolType, e.Data));
+					ReceivedData?.Invoke(this, new ReceivedDataArgs(
+						e.Server, e.Socket, e.Client, e.ProtocolType, e.Data));
 				};
 
 				Servers[guid].Start();
 			}
+
+			return guid;
 		}
 
 		public IPEndPoint GetEndPoint(Guid server, Guid socket)
@@ -129,25 +118,19 @@ namespace Netboot.Common.Network
 
 		public void Close()
 		{
-			lock (Servers)
-			{
-				foreach (var NetbootServer in Servers.Values)
-				{
-					lock (NetbootServer)
-						NetbootServer.Close();
-				}
-			}
+			foreach (var NetbootServer in Servers.Values.ToList())
+				NetbootServer.Close();
 		}
 
 		public void Stop()
 		{
-			foreach (var NetbootServer in Servers.Values)
+			foreach (var NetbootServer in Servers.Values.ToList())
 				NetbootServer.Stop();
 		}
 
 		public void Dispose()
 		{
-			foreach (var NetbootServer in Servers.Values)
+			foreach (var NetbootServer in Servers.Values.ToList())
 				NetbootServer.Dispose();
 
 			Servers.Clear();
@@ -155,13 +138,13 @@ namespace Netboot.Common.Network
 
 		public void HeartBeat()
 		{
-			foreach (var NetbootServer in Servers.Values)
+			foreach (var NetbootServer in Servers.Values.ToList())
 				NetbootServer.HeartBeat();
 		}
 
 		public void Bootstrap()
 		{
-			foreach (var NetbootServer in Servers.Values)
+			foreach (var NetbootServer in Servers.Values.ToList())
 				NetbootServer.Bootstrap();
 		}
 

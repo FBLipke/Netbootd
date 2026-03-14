@@ -11,23 +11,19 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Netboot.Common.Network.Sockets.Definition;
-
-namespace Netboot.Common.Network.EventHandler
+namespace Netboot.Module.TFTPServer
 {
-	public class AddServerEventArgs
-	{
-		public string ServiceType { get; private set; }
 
-		public SocketProtocol Protocol { get; private set; }
+    public class PacketBacklogEventArgs
+    {
+        public TFTPPacketBacklogEntry TFTPPacketBacklogEntry { get; private set; }
 
-		public List<ushort> Ports { get; private set; }
+        public Guid Client { get; private set; }
 
-		public AddServerEventArgs(string type, SocketProtocol protocol, List<ushort> ports)
-		{
-			Protocol = protocol;
-			ServiceType = type;
-			Ports = ports;
-		}
-	}
+        public PacketBacklogEventArgs(Guid client, TFTPPacketBacklogEntry packetBacklogEntry)
+        {
+            TFTPPacketBacklogEntry = packetBacklogEntry;
+            Client = client;
+        }
+    }
 }

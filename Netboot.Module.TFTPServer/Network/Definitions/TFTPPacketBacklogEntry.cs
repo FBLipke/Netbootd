@@ -11,27 +11,19 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Netboot.Common.Network.Interfaces;
-
-namespace Netboot.Common.Network.EventHandler
+namespace Netboot.Module.TFTPServer
 {
-	public class ServerSendPacketEventArgs
-	{
-		public Guid ServerId { get; set; }
-		public Guid SocketId { get; set; }
+    public class TFTPPacketBacklogEntry
+    {
+        public long BytesRead { get; set; }
+        public long BytesToRead { get; set; }
+        public ushort Block {get; set; }
 
-		public string ServiceType { get; set; }
-
-		public IPacket Packet { get; set; }
-		public IClient Client { get; set; }
-
-		public ServerSendPacketEventArgs(string serviceType, Guid server, Guid socket, IPacket packet, IClient client)
-		{
-			ServiceType = serviceType;
-			ServerId = server;
-			SocketId = socket;
-			Packet = packet;
-			Client = client;
-		}
-	}
+        public TFTPPacketBacklogEntry(long bytesRead, long bytesToRead, ushort block)
+        {
+            BytesRead = bytesRead;
+            BytesToRead = bytesToRead;
+            Block = block;
+        }
+    }
 }

@@ -4,7 +4,6 @@ using Netboot.Common.System;
 using Netboot.Module.DHCPListener.Event;
 using System.Net;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 
 namespace Netboot.Module.DHCPListener
 {
@@ -50,28 +49,27 @@ namespace Netboot.Module.DHCPListener
 			Database = database;
 			Filesystem = filesystem;
 
-			BootServiceRequest += (sender, e) => {
-			};
+            BootServiceRequest += (sender, e) => {
+            };
 
-			ListenerRequestReceived += (sender, e) => {
-				var serverEP = NetbootBase.NetworkManager.ServerManager.GetEndPoint(e.Server, e.Socket);
-					BootServiceRequest?.Invoke(this, new BootServiceRequestEventArgs(e.Request, e.Server, e.Socket, e.Client));
-			};
+            ListenerRequestReceived += (sender, e) => {
+                Thread.Sleep(1);
+                BootServiceRequest?.Invoke(this, new BootServiceRequestEventArgs(e.Request, e.Server, e.Socket, e.Client));
+            };
 
-			_RegisterBootService = (sender, e) => {
-				if (Bootservices.ContainsKey(e.Type))
-					Bootservices[e.Type].Add(sender);
-				else
-					Bootservices.Add(sender.ServerType, [sender]);
+            _RegisterBootService = (sender, e) => {
+                if (Bootservices.ContainsKey(e.Type))
+                    Bootservices[e.Type].Add(sender);
+                else
+                    Bootservices.Add(sender.ServerType, [sender]);
 
-				NetbootBase.Log("I", "DHCPListener",
-					string.Format("Registered BootService \"{0}\"", sender.ServerType));
-			};
-		}
+                NetbootBase.Log("I", "DHCPListener",
+                    string.Format("Registered BootService \"{0}\"", sender.ServerType));
+            };
+        }
 
 		public void Start()
 		{
-
 		}
 
 		public void Stop()
@@ -101,7 +99,7 @@ namespace Netboot.Module.DHCPListener
 								 let moduleName = module.Name.Split('.')[2].Trim()
 								 select (t, moduleName);
 
-				foreach (var (t, name) in retvalColl)
+				foreach (var (t, name) in retvalColl.ToList())
 				{
 					try
 					{
@@ -145,7 +143,7 @@ namespace Netboot.Module.DHCPListener
 
 		public void Handle_Listener_Request(Guid server, Guid socket, Guid client, MemoryStream memoryStream)
 		{
-			ListenerRequestReceived?.DynamicInvoke(this, new ListenerRequestReceivedEventArgs(memoryStream, server, socket, client));
+			ListenerRequestReceived?.Invoke(this, new ListenerRequestReceivedEventArgs(memoryStream, server, socket, client));
 		}
 
 		public void Handle_BootService_Request(Guid client, DHCPPacket requestPacket)

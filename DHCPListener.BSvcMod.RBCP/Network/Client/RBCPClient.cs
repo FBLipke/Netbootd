@@ -52,7 +52,9 @@ namespace DHCPListener.BSvcMod.RBCP
 		
 		public Guid Client {get; set; }
 
-		private void _ctorFunc()
+        public bool TestClient { get; set; }
+
+        private void _ctorFunc()
 		{
 			VendorId = Request.GetVendorIdent;
 			Response = new DHCPPacket();
@@ -71,13 +73,15 @@ namespace DHCPListener.BSvcMod.RBCP
 			NicSpecType = NicSpecType.UNDI;
 		}
 
-		public RBCPClient(Guid id, DHCPPacket request, Guid server, Guid socket, Guid client)
+		public RBCPClient(bool testClient, Guid id, DHCPPacket request, Guid server, Guid socket, Guid client)
 		{
 			Server = server;
 			Client = client;
 			Socket = socket;
 
-			Request = request;
+			TestClient = testClient;
+
+            Request = request;
 			Id = id;
 			_ctorFunc();
 		}

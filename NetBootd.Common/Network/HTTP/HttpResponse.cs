@@ -2339,7 +2339,7 @@ namespace Netboot.Common.Network.HTTP
 
             Cookies = httpRequest.Cookies;
 
-            if (Cookies.Any())
+            if (Cookies.Count != 0)
             {
                 foreach (var cookie in Cookies)
                 {
@@ -2362,7 +2362,7 @@ namespace Netboot.Common.Network.HTTP
             if (Headers.Count == 0)
                 stringBuilder.AppendFormat("No headers in this Request... {0}", Environment.NewLine);
 
-            foreach (KeyValuePair<string, string> header in Headers)
+            foreach (var header in Headers)
                 stringBuilder.AppendFormat("Name: {0}{1}Value: {2}{1}",
                     header.Key, Environment.NewLine, header.Value);
 

@@ -2,7 +2,6 @@
 using Netboot.Common.Cryptography.Interfaces;
 using Netboot.Common.Database.Interfaces;
 using Netboot.Common.Network.HTTP;
-using Netboot.Common.Network.sockets;
 using Netboot.Common.Network.Sockets;
 using Netboot.Common.Provider;
 using Netboot.Common.Provider.Events;
@@ -51,7 +50,7 @@ namespace Netboot.Module
 		public void Bootstrap()
 		{
 			NetbootBase.NetworkManager.ServerManager
-				.Add(ProtoType.Tcp, ServerMode.Http, new List<ushort>(90));
+				.Add(ProtoType.Tcp, new List<ushort>(90));
 
 			NetbootBase.NetworkManager.HTTPRequestReceived += (sender, e) =>
 			{

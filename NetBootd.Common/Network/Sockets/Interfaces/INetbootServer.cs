@@ -2,7 +2,7 @@
 using System.Net;
 using System.Text;
 
-namespace Netboot.Common.Network.sockets.Interfaces
+namespace Netboot.Common.Network.Sockets.Interfaces
 {
 	public interface INetbootServer : IDisposable
 	{
@@ -18,13 +18,11 @@ namespace Netboot.Common.Network.sockets.Interfaces
 
 		Guid Id { get; set; }
 
-		ServerMode ServerMode { get; set; }
-
 		ProtoType ProtocolType { get; set; }
 
 		Filesystem FileSystem { get; set; }
 
-		void Add(ServerMode mode, IPEndPoint endpoint);
+		void Add(IPEndPoint endpoint);
 
 		void Remove(Guid socket);
 		void Start();

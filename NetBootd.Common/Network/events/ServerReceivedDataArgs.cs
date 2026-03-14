@@ -1,12 +1,10 @@
-﻿using Netboot.Common.Network.sockets;
-using System;
+﻿using System;
 
 namespace Netboot.Common.Network.Sockets
 {
 	public class ServerReceivedDataArgs : EventArgs
 	{
 		public ServerReceivedDataArgs(
-		  ServerMode mode,
 		  ProtoType protocolType,
 		  Guid server,
 		  Guid socket,
@@ -14,13 +12,10 @@ namespace Netboot.Common.Network.Sockets
 		  byte[] data)
 		{
 			Server = server;
-			ServerMode = mode;
 			Socket = socket;
 			Client = client;
 			Data = data;
 		}
-
-		public ServerMode ServerMode { get; private set; }
 
 		public Guid Server { get; private set; }
 

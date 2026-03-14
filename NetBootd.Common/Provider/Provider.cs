@@ -1,13 +1,7 @@
-﻿// Decompiled with JetBrains decompiler
-// Type: Netboot.Common.Provider.Provider
-// Assembly: Netboot.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: CE4FCADF-C52D-4962-B4B8-C6D36FAB8FAE
-// Assembly location: C:\Users\LipkeGu\Desktop\Netboot___\Netboot.Common.dll
-
-using Netboot.Common;
+﻿using Netboot.Common;
 using Netboot.Common.Cryptography.Interfaces;
 using Netboot.Common.Database.Interfaces;
-using Netboot.Common.Network.sockets;
+using Netboot.Common.Network.Sockets;
 using Netboot.Common.Provider.Events;
 using Netboot.Common.System;
 using Newtonsoft.Json;
@@ -60,8 +54,6 @@ namespace Netboot.Common.Provider
 				}
 			}
 			#endregion
-
-			Console.WriteLine("Loaded {0} Modules...", serviceModules.Count);
 		}
 
 		public static bool HasProperty(object obj, string name) => obj.GetType().GetProperty(name) != null;
@@ -149,6 +141,7 @@ namespace Netboot.Common.Provider
 				if (!dictionary1.ContainsKey(member.Id))
 					dictionary1.Add(member.Id, member);
 			}
+
 			NetbootBase.Log("I", name, string.Format("Loaded {0} entries from Database...", dictionary2.Count));
 			return dictionary1;
 		}
@@ -484,10 +477,9 @@ namespace Netboot.Common.Provider
 								break;
 							case "Servers":
 								var serverType = (ProtoType)Enum.Parse(typeof(ProtoType), attributes.GetNamedItem("Type").Value, true);
-								var serverMode = (ServerMode)Enum.Parse(typeof(ServerMode), attributes.GetNamedItem("Mode").Value, true);
 								var serverPort =  new List<ushort>([ushort.Parse(attributes.GetNamedItem("Port").Value)]);
 
-								NetbootBase.NetworkManager.ServerManager.Add(serverType, serverMode, serverPort);
+								NetbootBase.NetworkManager.ServerManager.Add(serverType, serverPort);
 								break;
 							default:
 								break;

@@ -1,10 +1,9 @@
-﻿using Netboot.Common.Network.Sockets;
-using Netboot.Common.Network.sockets.Interfaces;
+﻿using Netboot.Common.Network.Sockets.Interfaces;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
 
-namespace Netboot.Common.Network.sockets.TCP
+namespace Netboot.Common.Network.Sockets
 {
 	public class NetbootTcpSocket : IDisposable, INetbootSocket
 	{
@@ -22,14 +21,13 @@ namespace Netboot.Common.Network.sockets.TCP
 
 		public Dictionary<Guid, INetbootClient> Clients { get; set; }
 
-
 		public Guid Id { get; set; }
 
 		IPEndPoint LocalEndpoint;
 
 		public bool Listening { get; set; }
 		public IPAddress MulticastGroup { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-		public byte MUlticastTTL { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+		public byte MulticastTTL { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
 		public NetbootTcpSocket(Guid id, IPEndPoint endpoint)
 		{
@@ -43,7 +41,7 @@ namespace Netboot.Common.Network.sockets.TCP
 			{
 				Clients.Add(e.Client.Id, e.Client);
 
-				SocketAddedClient.DynamicInvoke(this, new SocketAddedClientEventArgs(Id, e.Client.Id));
+				SocketAddedClient?.Invoke(this, new SocketAddedClientEventArgs(Id, e.Client.Id));
 			};
 		}
 
@@ -58,7 +56,7 @@ namespace Netboot.Common.Network.sockets.TCP
 			}
 			catch (SocketException ex)
 			{
-				SocketFailedToStart.DynamicInvoke(this, new SocketFailedToStartEventArgs(Id, ex));
+				SocketFailedToStart?.Invoke(this, new SocketFailedToStartEventArgs(Id, ex));
 			}
 		}
 
@@ -71,10 +69,10 @@ namespace Netboot.Common.Network.sockets.TCP
 			client.ClientClosedConnection += (sender, e) => Remove(e.Client);
 			client.ClientError += (sender, e) => Remove(e.Client);
 			client.DataReadFromClient += (sender, e) =>
-				SocketReadDataFromClient.DynamicInvoke
+				SocketReadDataFromClient?.Invoke
 					(this, new SocketReadDataFromClientArgs(Id, e.Client, e.Data));
 
-			InternalClientAccepted?.DynamicInvoke(this, new ClientAcceptedEventArgs(client));
+			InternalClientAccepted?.Invoke(this, new ClientAcceptedEventArgs(client));
 			_sock.BeginAcceptTcpClient(new AsyncCallback(WaitForClients), null);
 		}
 
@@ -94,30 +92,27 @@ namespace Netboot.Common.Network.sockets.TCP
 		{
 			if (!Clients.ContainsKey(client))
 				return;
+
 			Clients.Remove(client);
 
-			SocketClosedClient?.DynamicInvoke(this, new SocketClosedClientEventArgs(client, Id));
+			SocketClosedClient?.Invoke(this, new SocketClosedClientEventArgs(client, Id));
 		}
 
 		public void Close()
 		{
 			Listening = false;
 
-			lock (Clients.Values)
-				foreach (var NetbootTcpClient in Clients.Values)
-					if (NetbootTcpClient != null)
-						lock (NetbootTcpClient)
-							NetbootTcpClient.Close();
+			foreach (var NetbootTcpClient in Clients.Values.ToList())
+				NetbootTcpClient?.Close();
 
 			_sock.Stop();
 		}
 
 		public void HeartBeat()
 		{
-			lock (Clients.Values)
-				foreach (var NetbootTcpClient in Clients.Values)
-					if (!NetbootTcpClient.Connected)
-						Clients.Remove(NetbootTcpClient.Id);
+			foreach (var NetbootTcpClient in Clients.Values.ToList())
+				if (!NetbootTcpClient.Connected)
+					Clients.Remove(NetbootTcpClient.Id);
 		}
 
 		public void Send(Guid client, MemoryStream data, bool keepAlive)
@@ -138,28 +133,14 @@ namespace Netboot.Common.Network.sockets.TCP
 
 		public void Dispose()
 		{
-			lock (Clients)
-			{
-				foreach (var NetbootTcpClient in Clients.Values)
-					lock (NetbootTcpClient)
-						NetbootTcpClient.Dispose();
+			foreach (var NetbootTcpClient in Clients.Values.ToList())
+				NetbootTcpClient.Dispose();
 
-				Clients.Clear();
-			}
-
-			_sock = null;
+			Clients.Clear();
 		}
 
 		public void Send(Guid client, byte[] data)
 			=> Send(client, data, false);
-
-		private class ClientAcceptedEventArgs
-		{
-			public ClientAcceptedEventArgs(INetbootClient client)
-				=> Client = client;
-
-			public INetbootClient Client { get; private set; }
-		}
 
 		public IPEndPoint GetEndPoint() => LocalEndpoint;
 

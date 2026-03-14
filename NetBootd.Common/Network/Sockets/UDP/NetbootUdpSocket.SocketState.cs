@@ -1,16 +1,13 @@
 ﻿using System.Net.Sockets;
 
-namespace Netboot.Common.Network.sockets.UDP
+namespace Netboot.Common.Network.Sockets
 {
-	public partial class NetbootUdpSocket
+	public class SocketState
 	{
-		protected class SocketState
-		{
-			public byte[] Buffer;
-			public int Buffersize;
-			public Socket Socket;
-			public int Length;
-			public SocketType Type;
-		}
+		public byte[] Buffer;
+		public int Buffersize;
+		public Socket Socket;
+		public int Length;
+		public SocketType Type;
 	}
 }

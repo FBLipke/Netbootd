@@ -20,5 +20,7 @@ namespace DHCPListener.BSvcMod.RBCP
 		byte MulticastTimeout { get; set; }
 
 		byte MulticastDelay { get; set; }
+
+		bool TestClient { get; set; }
 	}
 }

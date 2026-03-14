@@ -32,11 +32,11 @@ namespace Netboot.Common.Cryptography
 
 		public NTLMState()
 		{
-			NTHash = Array.Empty<byte>();
-			LMHash = Array.Empty<byte>();
-			Challenge = Array.Empty<byte>();
-			LM_Response = Array.Empty<byte>();
-			NT_Response = Array.Empty<byte>();
+			NTHash = [];
+			LMHash = [];
+			Challenge = [];
+			LM_Response = [];
+			NT_Response = [];
 		}
 
 		public string GetHash(string text, string key)

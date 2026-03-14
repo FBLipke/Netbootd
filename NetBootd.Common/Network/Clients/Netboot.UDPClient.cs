@@ -1,10 +1,8 @@
-﻿using Netboot.Common.Network.Sockets;
-using Netboot.Common.Network.sockets.Interfaces;
+﻿using Netboot.Common.Network.Sockets.Interfaces;
 using System.Net;
-using System.Net.Sockets;
 using System.Text;
 
-namespace Netboot.Common.Network.sockets.UDP
+namespace Netboot.Common.Network.Sockets
 {
 	public class NetbootUdpClient : IDisposable, INetbootClient
 	{

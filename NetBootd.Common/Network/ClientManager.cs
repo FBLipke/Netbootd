@@ -1,11 +1,7 @@
 ﻿using Netboot.Common.Network.HTTP;
 using Netboot.Common.Network.Sockets;
 using Netboot.Common.System;
-using Netboot.Common;
-using Netboot.Common.Network.sockets.Interfaces;
-using Netboot.Common.Network.sockets.TCP;
-using System;
-using System.Collections.Generic;
+using Netboot.Common.Network.Sockets.Interfaces;
 
 namespace Netboot.Common.Network
 {
@@ -38,15 +34,13 @@ namespace Netboot.Common.Network
 		public void Add(string host, ushort port)
 		{
 			var key = Guid.NewGuid();
-			var NetbootTcpClient = new NetbootTcpClient(Guid.NewGuid(), host, port);
+			var client = new NetbootTcpClient(Guid.NewGuid(), host, port);
 
-			NetbootTcpClient.DataReadFromClient += (sender, e) =>
+			client.DataReadFromClient += (sender, e) =>
 			{
-				var managerReceivedData = ClientManagerReceivedData;
-
-				managerReceivedData(this, new ClientManagerReceivedDataArgs(e.Client, e.Data));
+                ClientManagerReceivedData?.Invoke(this, new ClientManagerReceivedDataArgs(e.Client, e.Data));
 			};
-			NetbootTcpClient.ClientError += (sender, e) =>
+			client.ClientError += (sender, e) =>
 			{
 				if (!Clients.ContainsKey(e.Client))
 				{
@@ -56,14 +50,15 @@ namespace Netboot.Common.Network
 				{
 					NetbootBase.Log("W", "Netboot.ClientManager", string.Format("Client ({0}) removed due to errors!", e.Client));
 					Clients.Remove(e.Client);
-					ClientManagerClosedConnection.DynamicInvoke(this, new ClientManagerClosedConnectionArgs(e.Client));
+					
+					ClientManagerClosedConnection?.Invoke(this, new ClientManagerClosedConnectionArgs(e.Client));
 				}
 			};
 
 			if (!Clients.ContainsKey(key))
-				Clients.Add(key, NetbootTcpClient);
+				Clients.Add(key, client);
 
-			NetbootTcpClient.ClientClosedConnection += (sender, e) =>
+			client.ClientClosedConnection += (sender, e) =>
 			{
 				NetbootBase.Log("W", "Netboot.ClientManager", string.Format("Client ({0}) removed!", e.Client));
 				Clients.Remove(e.Client);
@@ -74,31 +69,31 @@ namespace Netboot.Common.Network
 
 		public void Close()
 		{
-			foreach (var NetbootTcpClient in Clients.Values)
+			foreach (var NetbootTcpClient in Clients.Values.ToList())
 				NetbootTcpClient.Close();
 		}
 
 		public void Dispose()
 		{
-			foreach (var NetbootTcpClient in Clients.Values)
+			foreach (var NetbootTcpClient in Clients.Values.ToList())
 				NetbootTcpClient.Dispose();
 		}
 
 		public void HeartBeat()
 		{
-			foreach (var NetbootTcpClient in Clients.Values)
+			foreach (var NetbootTcpClient in Clients.Values.ToList())
 				NetbootTcpClient.HeartBeat();
 		}
 
 		public void Start()
 		{
-			foreach (var NetbootTcpClient in Clients.Values)
+			foreach (var NetbootTcpClient in Clients.Values.ToList())
 				NetbootTcpClient.Start();
 		}
 
 		public void Stop()
 		{
-			foreach (var NetbootTcpClient in Clients.Values)
+			foreach (var NetbootTcpClient in Clients.Values.ToList())
 				NetbootTcpClient.Disconnect();
 		}
 

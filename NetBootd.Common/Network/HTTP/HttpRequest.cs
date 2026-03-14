@@ -18,7 +18,7 @@ namespace Netboot.Common.Network.HTTP
 			var stringBuilder = new StringBuilder();
 			stringBuilder.AppendFormat("{0} {1} {2}\n\r", Method, Path, Version);
 			
-			foreach (var header in Headers)
+			foreach (var header in Headers.ToList())
 				stringBuilder.AppendFormat("{0}:{1}\n\r", header.Key, header.Value);
 			
 			stringBuilder.Append("\n\r");
@@ -72,7 +72,7 @@ namespace Netboot.Common.Network.HTTP
 			if (Headers.Count == 0)
 				stringBuilder.AppendFormat("No headers in this Request... {0}", Environment.NewLine);
 			
-			foreach (var header in Headers)
+			foreach (var header in Headers.ToList())
 				stringBuilder.AppendFormat("Name: {0}{1}Value: {2}{1}", header.Key, Environment.NewLine, header.Value);
 			
 			stringBuilder.AppendFormat("Cookies:{0}", Environment.NewLine);
@@ -80,13 +80,13 @@ namespace Netboot.Common.Network.HTTP
 			if (Cookies.Count == 0)
 				stringBuilder.AppendFormat("No cookies in this Request... {0}", Environment.NewLine);
 			
-			foreach (var cookie in Cookies)
+			foreach (var cookie in Cookies.ToList())
 				stringBuilder.AppendFormat("Name: {0}{1}Value: {2}{1}", cookie.Name, Environment.NewLine, cookie.Value);
 			
 			if (Parameters.Count == 0)
 				stringBuilder.AppendFormat("No parameters in this Request... {0}", Environment.NewLine);
 			
-			foreach (var parameter in Parameters)
+			foreach (var parameter in Parameters.ToList())
 				stringBuilder.AppendFormat("Name: {0}{1}Value: {2}{1}", parameter.Key, Environment.NewLine, parameter.Value);
 			
 			return stringBuilder.ToString();

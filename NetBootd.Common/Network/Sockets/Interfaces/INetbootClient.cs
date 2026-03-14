@@ -2,7 +2,7 @@
 using System.Net.Sockets;
 using System.Text;
 
-namespace Netboot.Common.Network.sockets.Interfaces
+namespace Netboot.Common.Network.Sockets.Interfaces
 {
 	public interface INetbootClient : IDisposable
 	{

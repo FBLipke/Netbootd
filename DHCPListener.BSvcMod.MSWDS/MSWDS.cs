@@ -1,14 +1,15 @@
 ﻿using Netboot.Common;
 using Netboot.Module.DHCPListener;
+using Netboot.Module.DHCPListener.Interfaces;
 using System.Buffers.Binary;
 using System.Net;
 using System.Text;
 
 namespace DHCPListener.BSvcMod.MSWDS
 {
-	public class MSWDS : IBootService
-	{
-		internal Dictionary<Guid, IWDSClient> Clients = [];
+	public class MSWDS : IBootService, IDHCPListener
+    {
+		Dictionary<Guid, IWDSClient> Clients = [];
 
 		public BootServerType ServerType { get; set; } = BootServerType.WindowsDeploymentServer;
 
@@ -76,8 +77,8 @@ namespace DHCPListener.BSvcMod.MSWDS
 							Clients[clientId] = new WDSClient(clientId, requestPacket, server, socket, client);
 							#endregion
 
-							var serverIP = NetbootBase.NetworkManager.ServerManager.GetEndPoint(server, socket);
-							Clients[clientId].Response = Clients[clientId].Request.CreateResponse(serverIP.Address);
+							var serverIP = NetbootBase.NetworkManager.ServerManager.GetEndPoint(server, socket).Address;
+							Clients[clientId].Response = Clients[clientId].Request.CreateResponse(serverIP);
 
 							Handle_BootService_Request(clientId, Clients[clientId].Request);
 							break;
@@ -96,9 +97,9 @@ namespace DHCPListener.BSvcMod.MSWDS
 
 		}
 
-		void Handle_DHCP_Request(Guid clientid, DHCPPacket request)
+		public void Handle_DHCP_Request(Guid clientid, DHCPPacket request)
 		{
-			NetbootBase.Log("I", string.Format("DHCPListener[{0}]", ServerType),
+			NetbootBase.Log("I", string.Format("DHCP[{0}]", ServerType),
 				string.Format("Got WDS {0} request from WDS Client: {1}", request.GetMessageType(), clientid));
 
 			Handle_WDS_Request(clientid);
@@ -117,7 +118,7 @@ namespace DHCPListener.BSvcMod.MSWDS
 		void Handle_WDS_Request(Guid client)
 		{
 			var wdsData = Clients[client].Request.GetEncOptions(250);
-			foreach (var wdsOption in wdsData.Values)
+			foreach (var wdsOption in wdsData.Values.ToList())
 			{
 				switch ((WDSNBPOptions)wdsOption.Option)
 				{
@@ -206,5 +207,8 @@ namespace DHCPListener.BSvcMod.MSWDS
 			return new(250, options);
 		}
 
-	}
+        public void Handle_DHCP_Discover(Guid clientid, DHCPPacket request)
+        {
+        }
+    }
 }

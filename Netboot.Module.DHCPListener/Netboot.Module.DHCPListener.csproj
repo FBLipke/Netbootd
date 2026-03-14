@@ -15,6 +15,7 @@
 	  <Compile Include="DHCPListener.cs" />
 	  <Compile Include="DHCPListenerBase.cs" />
 	  <Compile Include="Interfaces\IBootService.cs" />
+	  <Compile Include="Interfaces\IDHCPListener.cs" />
 	  <Compile Include="Network\Client\BSDP\BSDPClient.cs" />
 	  <Compile Include="Network\Client\DHCPClient.cs" />
 	  <Compile Include="Network\Client\Interfaces\IDHCPClient.cs" />

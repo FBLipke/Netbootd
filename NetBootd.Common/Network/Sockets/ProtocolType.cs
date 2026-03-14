@@ -4,7 +4,7 @@
 // MVID: CE4FCADF-C52D-4962-B4B8-C6D36FAB8FAE
 // Assembly location: C:\Users\LipkeGu\Desktop\Netboot___\Netboot.Common.dll
 
-namespace Netboot.Common.Network.sockets
+namespace Netboot.Common.Network.Sockets
 {
 	public enum ProtoType
 	{

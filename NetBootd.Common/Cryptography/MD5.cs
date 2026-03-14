@@ -24,9 +24,9 @@ namespace Netboot.Common.Cryptography
 			if (string.IsNullOrEmpty(text))
 				return string.Empty;
 
-			var numArray = (byte[])null;
+			var numArray = null as byte[];
 
-			using (var cryptoServiceProvider = new MD5CryptoServiceProvider())
+			using (var cryptoServiceProvider = global::System.Security.Cryptography.MD5.Create())
 				numArray = cryptoServiceProvider.ComputeHash(Encoding.ASCII.GetBytes(text));
 
 			return BitConverter.ToString(numArray).Replace("-", string.Empty).ToLower();

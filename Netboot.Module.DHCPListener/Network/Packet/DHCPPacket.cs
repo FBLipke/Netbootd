@@ -116,7 +116,7 @@ namespace Netboot.Module.DHCPListener
 						var ident = identStr.Split(delim).FirstOrDefault();
 
 						if (!string.IsNullOrEmpty(ident))
-							Enum.TryParse(ident, out vendorId);
+                            _ = Enum.TryParse(ident, out vendorId);
 					}
 				}
 
@@ -422,14 +422,15 @@ namespace Netboot.Module.DHCPListener
 			}
 
 
-			Options.OrderBy(key => key.Key);
+            Options.OrderBy(key => key.Key);
 			Buffer.Position = curPos;
 		}
 
 		public DHCPPacket CreateResponse(IPAddress serverIP)
 		{
 			DHCPPacket? packet = null;
-			var msgType = (DHCPMessageType)GetOption((byte)DHCPOptions.MessageType).Data.First();
+
+			var msgType = GetMessageType();
 
 			var expectedLength = HasOption((byte)DHCPOptions.MaximumDhcpMessageSize) ? BinaryPrimitives.ReadUInt16LittleEndian
 				(GetOption((byte)DHCPOptions.MaximumDhcpMessageSize).Data) : 1024;
@@ -480,11 +481,11 @@ namespace Netboot.Module.DHCPListener
 					switch (msgType)
 					{
 						case DHCPMessageType.Discover:
-							packet.AddOption(new((byte)DHCPOptions.MessageType, (byte)DHCPMessageType.Offer));
+                            packet.SetMessageType(DHCPMessageType.Offer);
 							break;
 						case DHCPMessageType.Request:
 						case DHCPMessageType.Inform:
-							packet.AddOption(new((byte)DHCPOptions.MessageType, (byte)DHCPMessageType.Ack));
+                            packet.SetMessageType(DHCPMessageType.Ack);
 
 							if (Options.ContainsKey(43))
 								packet.Options.Add(43, Options[43]);
@@ -500,10 +501,25 @@ namespace Netboot.Module.DHCPListener
 					break;
 				case BOOTPOPCode.BootReply:
 					packet = new DHCPPacket();
-					switch (msgType)
+					packet.HardwareType = DHCPHardwareType.Ethernet;
+                    packet.Hop = this.Hop;
+                    packet.TransactionId = this.TransactionId;
+                    packet.Seconds = this.Seconds;
+                    packet.Flags = this.Flags;
+					packet.ClientIP = Netboot.Common.Functions.DNSLookup(Environment.MachineName).AddressList.FirstOrDefault();
+                    packet.YourIP = IPAddress.None;
+                    packet.ServerIP = IPAddress.None;
+                    packet.GatewayIP = IPAddress.None;
+					packet.MagicCookie = MagicCookie.DHCP;
+                    packet.BootpOPCode = BOOTPOPCode.BootReply;
+					packet.HardwareAddress = new HWAddress(Netboot.Common.Functions.GetMacAddress().GetAddressBytes());
+                    packet.HardwareLength = (byte)packet.HardwareAddress.Length;
+
+                    switch (msgType)
 					{
 						case DHCPMessageType.Offer:
-							break;
+                            packet.SetMessageType(DHCPMessageType.Request);
+                            break;
 						case DHCPMessageType.Ack:
 							break;
 						default:
@@ -518,6 +534,39 @@ namespace Netboot.Module.DHCPListener
 		public DHCPMessageType GetMessageType() => (DHCPMessageType)GetOption
 				((byte)DHCPOptions.MessageType).Data.First();
 
+		public void SetMessageType(DHCPMessageType msgType)
+		{
+			AddOption(new DHCPOption<byte>
+				((byte)DHCPOptions.MessageType, (byte)msgType));
+		}
+
+		public static DHCPPacket CreateRequest(IPAddress server)
+		{
+            var packet = new DHCPPacket();
+            packet.HardwareType = DHCPHardwareType.Ethernet;
+            packet.Hop = 0;
+            packet.TransactionId = (uint)new Random().Next(0, int.MaxValue) | (uint)new Random().Next(0, 2) << 31;
+            packet.Seconds = 0;
+            packet.Flags = BootpFlags.Unicast;
+            packet.ClientIP = Common.Functions.DNSLookup(Environment.MachineName).AddressList.FirstOrDefault();
+            packet.YourIP = IPAddress.None;
+            packet.ServerIP = IPAddress.None;
+            packet.GatewayIP = IPAddress.None;
+            packet.MagicCookie = MagicCookie.DHCP;
+            packet.BootpOPCode = BOOTPOPCode.BootReply;
+            packet.HardwareAddress = new HWAddress(Netboot.Common.Functions.GetMacAddress().GetAddressBytes());
+            packet.HardwareLength = (byte)packet.HardwareAddress.Length;
+
+			packet.SetMessageType(DHCPMessageType.Request);
+
+			packet.AddOption(new DHCPOption<byte>(60, "PXEClient", Encoding.ASCII));
+            packet.AddOption(new DHCPOption<byte>(93, (uint)Architecture.X86PC));
+            packet.AddOption(new DHCPOption<byte>(97, ClientIdentType.UUID, Guid.NewGuid()));
+            packet.AddOption(new((byte)DHCPOptions.ServerIdentifier, server));
+
+            return packet;
+        }
+
 		public void CommitOptions()
 		{
 			Options.OrderBy(key => key.Key);
@@ -530,7 +579,7 @@ namespace Netboot.Module.DHCPListener
 			var offset = 240;
 
 			Buffer.Position = offset;
-			foreach (var option in Options.Values)
+			foreach (var option in Options.Values.ToList())
 			{
 				#region "DHCP Option Number"
 				offset += Write_UINT8(Convert.ToByte(option.Option), offset);

@@ -1,14 +1,11 @@
-﻿using Netboot.Common.Network.Sockets;
-using Netboot.Common.Network.sockets.Interfaces;
-using System;
-using System.IO;
+﻿using Netboot.Common.Network.Sockets.Interfaces;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
 
-namespace Netboot.Common.Network.sockets.TCP
+namespace Netboot.Common.Network.Sockets
 {
-	public partial class NetbootTcpClient : INetbootClient
+	public class NetbootTcpClient : INetbootClient
 	{
 		private TcpClient _client;
 
@@ -24,6 +21,7 @@ namespace Netboot.Common.Network.sockets.TCP
 		{
 			if (Connected)
 				return;
+
 			Connect(RemoteEndpoint);
 		}
 
@@ -50,7 +48,7 @@ namespace Netboot.Common.Network.sockets.TCP
 			}
 			catch (SocketException ex)
 			{
-				ClientError.DynamicInvoke(this, new ClientErrorEventArgs(Id, ex));
+				ClientError.Invoke(this, new ClientErrorEventArgs(Id, ex));
 			}
 		}
 
@@ -60,7 +58,9 @@ namespace Netboot.Common.Network.sockets.TCP
 
 
 		public Guid Id { get; set; }
+
 		public bool Connected { get; set; }
+		
 		public IPEndPoint RemoteEndpoint { get; set; }
 
 		public void Send(string data, Encoding encoding, bool keepAlive)
@@ -83,7 +83,7 @@ namespace Netboot.Common.Network.sockets.TCP
 				else
 				{
 					Array.Resize(ref array, newSize);
-					DataReadFromClient.DynamicInvoke(this, new DataReadFromClientEventArgs(Id, array));
+					DataReadFromClient.Invoke(this, new DataReadFromClientEventArgs(Id, array));
 				}
 			}
 		}
@@ -99,7 +99,7 @@ namespace Netboot.Common.Network.sockets.TCP
 			}
 			catch (Exception ex)
 			{
-				ClientError.DynamicInvoke(this, new ClientErrorEventArgs(Id, ex));
+				ClientError.Invoke(this, new ClientErrorEventArgs(Id, ex));
 			}
 		}
 
@@ -119,7 +119,7 @@ namespace Netboot.Common.Network.sockets.TCP
 			{
 				InputStream = OutputStream = new BufferedStream(_client.GetStream());
 
-				ClientConnected.DynamicInvoke(this, new ClientConnectedEventArgs(Id));
+				ClientConnected.Invoke(this, new ClientConnectedEventArgs(Id));
 			}
 		}
 
@@ -139,14 +139,15 @@ namespace Netboot.Common.Network.sockets.TCP
 		{
 			InputStream?.Close();
 			OutputStream?.Close();
+
 			if (_client != null)
 			{
 				_client.Close();
-				_client = null;
 			}
+
 			Connected = false;
 
-			ClientClosedConnection.DynamicInvoke
+			ClientClosedConnection?.Invoke
 				(this, new ClientConnectionClosedEventArgs(Id));
 		}
 
@@ -166,20 +167,17 @@ namespace Netboot.Common.Network.sockets.TCP
 			if (InputStream != null)
 			{
 				InputStream.Dispose();
-				InputStream = null;
 			}
 
 			if (OutputStream != null)
 			{
 				OutputStream.Dispose();
-				OutputStream = null;
 			}
 
 			if (_client == null)
 				return;
 
 			_client.Close();
-			_client = null;
 		}
 
 		public void Send(ref byte[] data)

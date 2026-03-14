@@ -1,6 +1,5 @@
 ﻿using Netboot.Common.Network.Sockets;
 using Netboot.Common.System;
-using Netboot.Common.Network.sockets;
 using System.Net;
 using System.Net.NetworkInformation;
 
@@ -29,20 +28,11 @@ namespace Netboot.Common.Network
 				switch (ServerManager.Servers[e.Server].ProtocolType)
 				{
 					case ProtoType.Tcp:
-						switch (ServerManager.Servers[e.Server].ServerMode)
-						{
-							case ServerMode.HttpMedia:
-							case ServerMode.Http:
-								HTTPRequestReceived?.DynamicInvoke(this,
-									new HTTPRequestReceivedEventArgs(e.Server, e.Socket, e.Client,
-										ServerManager.Servers[e.Server].ServerMode == ServerMode.HttpMedia, e.Context));
-								break;
-							default:
-								return;
-						}
+						HTTPRequestReceived?.Invoke(this,
+							new HTTPRequestReceivedEventArgs(e.Server, e.Socket, e.Client, true, e.Context));
 						break;
 					case ProtoType.Udp:
-						UDPRequestReceived?.DynamicInvoke(this, 
+						UDPRequestReceived?.Invoke(this, 
 							new UDPRequestReceivedEventArgs(e.Server, e.Socket, e.Client, e.Data));
 						break;
 					default:
@@ -52,18 +42,7 @@ namespace Netboot.Common.Network
 			};
 		}
 
-		public static void GetIPAddresses(ServerMode mode, List<ushort> ports, Action<ServerMode, IPEndPoint> @delegate)
-		{
-			foreach (var _port in ports)
-			{
-				foreach (var networkInterface in NetworkInterface.
-					GetAllNetworkInterfaces().Where(adap => adap.GetIPProperties().GatewayAddresses.Count != 0))
-					{
-						foreach (var unicastAddress in networkInterface.GetIPProperties().UnicastAddresses)
-							@delegate(mode, new IPEndPoint(unicastAddress.Address, _port));
-					}
-			}
-		}
+		
 
 		public void Close()
 		{

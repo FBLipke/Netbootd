@@ -1,5 +1,4 @@
 ﻿using Netboot.Common.Network.HTTP;
-using Netboot.Common.Network.sockets;
 using System;
 using System.Net.Sockets;
 

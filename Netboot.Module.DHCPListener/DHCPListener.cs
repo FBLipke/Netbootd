@@ -3,24 +3,22 @@ using Netboot.Common.Cryptography.Interfaces;
 using Netboot.Common.Database;
 using Netboot.Common.Database.Interfaces;
 using Netboot.Common.Network.HTTP;
-using Netboot.Common.Network.sockets;
+using Netboot.Common.Network.Sockets;
 using Netboot.Common.Provider;
 using Netboot.Common.Provider.Events;
 using Netboot.Common.System;
 using Newtonsoft.Json;
-using System.Buffers.Binary;
-using System.Globalization;
-using System.Text;
 
 namespace Netboot.Module.DHCPListener
 {
-	public class DHCPListener : IProvider, IManager, ILog
+	public class DHCPListener : IProvider, IManager
 	{
 		public Filesystem Filesystem { get; set; }
 
 		public IDatabase Database { get; set; }
 
-		public Dictionary<Guid, IMember> Members { get; set; }
+        public Guid Server { get; private set; }
+        public Dictionary<Guid, IMember> Members { get; set; }
 
 		public bool VolativeModule { get; set; } = false;
 
@@ -57,7 +55,7 @@ namespace Netboot.Module.DHCPListener
 
 		public void Bootstrap()
 		{
-			NetbootBase.NetworkManager.ServerManager.Add(ProtoType.Udp, ServerMode.Udp, [67, 4011]);
+			Server = NetbootBase.NetworkManager.ServerManager.Add(ProtoType.Udp, [67, 68, 4011]);
 
 			NetbootBase.NetworkManager.UDPRequestReceived += (sender, e) => {
 				Base.Handle_Listener_Request(e.Server, e.Socket, e.Client,e.Data);
@@ -89,17 +87,12 @@ namespace Netboot.Module.DHCPListener
 			Base.Dispose();
 
 			if (Database != null)
-			{
 				Database.Dispose();
-				Database = null;
-			}
+
 			if (Members != null)
-			{
 				Members.Clear();
-				Members = null;
-			}
-			
-			Filesystem = null;
+
+			Filesystem?.Dispose();
 		}
 
 		public string Handle_Get_Request(NetbootHttpContext request) => JsonConvert.SerializeObject(Members.Values);
@@ -166,29 +159,6 @@ namespace Netboot.Module.DHCPListener
 		public string Handle_Info_Request(NetbootHttpContext context)
 		{
 			throw new NotImplementedException();
-		}
-
-		public void Log(string type, string name, string logmessage)
-		{
-			var str = "\t" + DateTime.Now.ToString("dd.MM.yyyy : HH:mm:ss", CultureInfo.InvariantCulture)
-				+ "\tNetboot." + name + ": " + logmessage;
-
-			var key = Guid.NewGuid();
-			var num = DateTime.Now.AsUnixTimeStamp();
-
-			Members.Add(key, new Member()
-			{
-				Name = name,
-				Id = key,
-				Description = str,
-				Author = Guid.Empty,
-				Created = num,
-				Updated = num,
-				Provider = name,
-				Url = "-"
-			});
-
-			Console.WriteLine("[" + type + "]" + str);
 		}
 
 		public string Handle_Redirect_Request(bool loggedin, string redirectTo, string content = "")

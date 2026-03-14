@@ -42,7 +42,16 @@ namespace Netboot.Common
 			return tmp;
 		}
 
-		public static int Length(this IPAddress iPAddress)
+        public static void GetIPAddresses(List<ushort> ports, Action<IPEndPoint> @delegate)
+        {
+            foreach (var _port in ports)
+                foreach (var networkInterface in NetworkInterface.
+                    GetAllNetworkInterfaces().Where(adap => adap.GetIPProperties().GatewayAddresses.Count != 0))
+                    foreach (var unicastAddress in networkInterface.GetIPProperties().UnicastAddresses)
+                        @delegate(new IPEndPoint(unicastAddress.Address, _port));
+        }
+
+        public static int Length(this IPAddress iPAddress)
 			=> iPAddress.GetAddressBytes().Length;
 
 		public static void PrintMessage(string message)
