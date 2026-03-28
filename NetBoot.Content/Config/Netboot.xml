@@ -3,7 +3,7 @@
 	<Configuration>
 		<Services>
 			<Service type="DHCPListener" port="67,4011" behavior="1" SMBShare="RemInst"
-					 mcaddr="224.0.1.2" mccport="4001" mcsport="69" mcstartdelay="10" mctimeout="30" discovery="3" >
+					 mcaddr="224.0.1.2" mccport="4001" mcsport="69" mcstartdelay="10" mctimeout="30" discovery="0" >
 				<Bootfiles>
 					<Bootfile behavior="0">Boot/#arch#/bstrap.#layer#</Bootfile>
 					<Bootfile behavior="1">OSChooser\i386\startrom.n12</Bootfile>

@@ -4,6 +4,8 @@
 // MVID: CE4FCADF-C52D-4962-B4B8-C6D36FAB8FAE
 // Assembly location: C:\Users\LipkeGu\Desktop\Netboot___\Netboot.Common.dll
 
+using System.Xml;
+
 namespace Netboot.Common.Provider.Events
 {
 	public class ModuleLoadedEventArgs
@@ -12,8 +14,11 @@ namespace Netboot.Common.Provider.Events
 
 		public string Name { get; private set; }
 
-		public ModuleLoadedEventArgs(IProvider module, string name)
+		public XmlNodeList Xml { get; private set; }
+
+		public ModuleLoadedEventArgs(IProvider module, string name, XmlNodeList xml)
 		{
+			Xml = xml;
 			Name = name;
 			Module = module;
 		}

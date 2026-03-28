@@ -21,8 +21,6 @@ namespace Netboot.Common
 
 		public string NetbootDirectory { get; private set; } = string.Empty;
 
-		public string TFTPRoot { get; private set; } = string.Empty;
-
 		public string DirectorySeperatorChar { get; private set; } = string.Empty;
 
 		public OSPlatformId OSPlatform { get; private set; }
@@ -44,14 +42,8 @@ namespace Netboot.Common
 			else
 				return false;
 
-			Console.WriteLine("[I] Host Platform: {0}", OSPlatform);
-
 			NetbootDirectory = Path.Combine(Directory.GetCurrentDirectory());
-			TFTPRoot = Path.Combine(NetbootDirectory, "TFTPRoot");
 			ConfigDirectory = Path.Combine(NetbootDirectory, "Config");
-
-			Directory.CreateDirectory(Path.Combine(TFTPRoot,"Setup"));
-			Directory.CreateDirectory(Path.Combine(TFTPRoot, "tmp"));
 
 			switch (OSPlatform)
 			{

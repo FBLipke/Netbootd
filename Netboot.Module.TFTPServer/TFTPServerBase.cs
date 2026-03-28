@@ -32,7 +32,10 @@ namespace Netboot.Module.TFTPServer
 			Filesystem = filesystem;
 
             ListenerRequestReceived += (sender, e) => {
-                var endpoint = NetbootBase.NetworkManager.ServerManager.GetClientEndPoint(e.Server, e.Socket, e.Client);
+                if (!NetbootBase.NetworkManager.ServerManager.HasSocket(e.Server, e.Socket))
+                    return;
+
+				var endpoint = NetbootBase.NetworkManager.ServerManager.GetClientEndPoint(e.Server, e.Socket, e.Client);
                 var clientId = endpoint.Address.ToString();
 
                 if (!Clients.ContainsKey(clientId))
@@ -97,7 +100,7 @@ namespace Netboot.Module.TFTPServer
 
         public void Handle_Read_Request(string clientid)
         {
-            if (!Clients[clientid].Request.Options.ContainsKey("file"))
+			if (!Clients[clientid].Request.Options.ContainsKey("file"))
             {
                 Clients.Remove(clientid);
                 return;
@@ -105,22 +108,25 @@ namespace Netboot.Module.TFTPServer
 
             if (string.IsNullOrEmpty(Clients[clientid].Request.Options["file"]))
             {
-                Clients[clientid].Response = new TFTPPacket(TFTPOPCodes.ERR);
-                Clients[clientid].Response.ErrorCode = TFTPErrorCode.AccessViolation;
-                Clients[clientid].Response.ErrorMessage = Clients[clientid].FileName;
+				Clients[clientid].Response = new TFTPPacket(TFTPOPCodes.ERR)
+				{
+					ErrorCode = TFTPErrorCode.AccessViolation,
+					ErrorMessage = Clients[clientid].FileName
+				};
 
-                NetbootBase.NetworkManager.ServerManager.Servers[Clients[clientid].Server].Send(Clients[clientid].Socket, Clients[clientid].Client,
-                    Clients[clientid].Response.Data, false);
+				Clients[clientid].Response.CommitOptions();
 
-                Clients.Remove(clientid);
+				NetbootBase.NetworkManager.ServerManager.Send(Clients[clientid].Server, Clients[clientid].Socket, Clients[clientid].Client,
+					Clients[clientid].Response.Data, false);
+
+				Clients.Remove(clientid);
                 return;
             }
             
             Clients[clientid].CloseFile();
 
             Clients[clientid].PacketBacklog.Clear();
-            Clients[clientid].FileName = Functions.ReplaceSlashes(Path.Combine(Filesystem.Root,
-                Clients[clientid].Request.Options["file"]));
+            Clients[clientid].FileName = Filesystem.Resolve(Clients[clientid].Request.Options["file"]);
 
             var fileExists = Clients[clientid].OpenFile();
 
@@ -131,7 +137,7 @@ namespace Netboot.Module.TFTPServer
                 Clients[clientid].Response.ErrorCode = TFTPErrorCode.FileNotFound;
                 Clients[clientid].Response.ErrorMessage = Clients[clientid].FileName;
 
-                NetbootBase.Log("I", "TFTP", string.Format("File not found: {0}", Clients[clientid].FileName));
+                NetbootBase.Log("I", "TFTPServer", string.Format("File not found: {0}", Clients[clientid].FileName));
             }
             else
             {
@@ -157,12 +163,12 @@ namespace Netboot.Module.TFTPServer
 
                 if (Clients[clientid].Request.Options.ContainsKey("msftwindow"))
                    Clients[clientid].Response.Options.Add("msftwindow", string.Format("{0}", 27182));
-
-                Clients[clientid].Response.CommitOptions();
             }
 
-            NetbootBase.NetworkManager.ServerManager.Servers[Clients[clientid].Server].Send(Clients[clientid].Socket, Clients[clientid].Client,
-                Clients[clientid].Response.Data,false);
+			Clients[clientid].Response.CommitOptions();
+			
+            NetbootBase.NetworkManager.ServerManager.Send(Clients[clientid].Server, Clients[clientid].Socket, Clients[clientid].Client,
+                Clients[clientid].Response.Data, false);
         }
 
         public void Handle_ACK_Request(string clientid)
@@ -194,9 +200,9 @@ namespace Netboot.Module.TFTPServer
                         new(Clients[clientid].BytesRead, Clients[clientid].BytesToRead,
                             Clients[clientid].Response.Block)));
 
-                    NetbootBase.NetworkManager.ServerManager.Servers[Clients[clientid].Server]
-                        .Send(Clients[clientid].Socket, Clients[clientid].Client, Clients[clientid].Response.Data, false);
-                }
+					NetbootBase.NetworkManager.ServerManager.Send(Clients[clientid].Server, Clients[clientid].Socket, Clients[clientid].Client,
+						Clients[clientid].Response.Data, false);
+				}
 
                 if (Clients[clientid].BytesToRead == Clients[clientid].BytesRead)
                     break;
@@ -208,7 +214,7 @@ namespace Netboot.Module.TFTPServer
 
         public void Handle_Error_Request(string clientid)
         {
-            NetbootBase.Log("I", "TFTP", string.Format("({0}): {1}",
+            NetbootBase.Log("I", "TFTPServer", string.Format("({0}): {1}",
                 Clients[clientid].Request.ErrorCode, Clients[clientid].Request.ErrorMessage));
         }
     }

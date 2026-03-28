@@ -105,7 +105,7 @@ namespace Netboot.Module
 		public void Start()
 		{
 			Active = true;
-			NetbootBase.Log("I", FriendlyName, "Log messages will redirected to this Module!");
+			NetbootBase.Log("I", FriendlyName, Description);
 		}
 
 		public void Stop()

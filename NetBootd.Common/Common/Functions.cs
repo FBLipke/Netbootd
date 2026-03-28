@@ -111,10 +111,6 @@ namespace Netboot.Common
             return !string.IsNullOrEmpty(attribVal) ? byte.Parse(attribVal) : byte.MinValue;
         }
 
-
-        public static string ReplaceSlashes(string input)
-			=> input.Replace("/", NetbootBase.Platform.DirectorySeperatorChar);
-
 		public static void InvokeMethod(object obj, string name, object?[]? args)
 		{
 			try

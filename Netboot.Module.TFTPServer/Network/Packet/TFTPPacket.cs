@@ -277,9 +277,9 @@ namespace Netboot.Module.TFTPServer
                         if (parts[i] == "multicast")
                         {
                             if (!Options.ContainsKey(parts[i]))
-                                Options.Add(parts[i], parts[i + 1]);
+                                Options.Add(parts[i], "");
                             else
-                                Options[parts[i]] = parts[i + 1];
+                                Options[parts[i]] = "";
                         }
                     }
 					break;

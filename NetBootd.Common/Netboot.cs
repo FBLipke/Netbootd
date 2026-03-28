@@ -44,31 +44,20 @@ namespace Netboot.Common
 			Console.Title = title;
 
 			cmdArgs = args;
-
-			FileSystem = new Filesystem(Environment.CurrentDirectory);
-			FileSystem.CreateDirectory("Config");
-
-
+	
 			_heartBeatThread = new Thread(new ThreadStart(HeartBeat));
 
 			Providers = [];
-
-            #region "Read Config File"
-            #endregion
-
-            Provider.Provider.ModuleLoaded += (sender, e) =>
+			Provider.Provider.ModuleLoaded += (sender, e) =>
 			{
                 Log("I", "Common", string.Format("Loading Module \"{0}\"...", e.Module));
                 Providers.Add(e.Name, e.Module);
-                var xmlFile = new XmlDocument();
-                xmlFile.Load(Path.Combine(FileSystem.Root, "Config", "Netboot.xml"));
-                var services = xmlFile.SelectNodes("Netboot/Configuration/Services/Service");
 
-                foreach (XmlNode xmlnode in services)
-                    if (e.Name == xmlnode.Attributes.GetNamedItem("type").Value)
+				foreach (XmlNode xmlnode in e.Xml)
+					if (e.Name == xmlnode.Attributes.GetNamedItem("type").Value)
 						Providers[e.Name]?.Bootstrap(xmlnode);
 
-                var funcs = new List<string>
+				var funcs = new List<string>
                 {
                     "Install",
                     "Start",
@@ -78,145 +67,12 @@ namespace Netboot.Common
                 foreach (var item in funcs)
                 {
                     Log("I", "Common", string.Format("Sending \"{1}\" command  to \"{0}\"", e.Name, item));
-                    Provider.Provider.InvokeMethod<IProvider>(Providers[e.Name], item, new object[] {});
+                    Provider.Provider.InvokeMethod<IProvider>(Providers[e.Name], item, []);
                 }
 			};
-			Task.Run(() =>
-			{
-				Provider.Provider.LoadModule(Directory.GetCurrentDirectory());
-			});
 
 			NetworkManager = new NetworkManager();
 		}
-
-		/*
-		public static void LoadServices()
-		{
-			Add_Service(new BaseService("NONE", SocketProtocol.NONE));
-
-			#region "Load Service Modules"
-			var serviceModules = new DirectoryInfo(Platform.NetbootDirectory)
-				.GetFiles("Netboot.Service.*.dll", SearchOption.TopDirectoryOnly);
-
-			foreach (var module in serviceModules.ToList())
-			{
-				var ass = Assembly.LoadFrom(module.FullName);
-
-				foreach (var (t, serviceType) in from t in ass.GetTypes()
-					where (t.IsSubclassOf(typeof(IService)) || t.GetInterfaces()
-						.Contains(typeof(IService))) && t.IsAbstract == false
-							let serviceType = module.Name.Split('.')[2].Trim().ToUpper()
-								select (t, serviceType))
-				{
-					try
-					{
-						var b = t.InvokeMember(string.Empty, BindingFlags.CreateInstance,
-							null, null, new[] { serviceType }) as IService;
-
-						if (b == null)
-							continue;
-
-						Add_Service(b);
-
-					}
-					catch (MissingMethodException ex)
-					{
-						Console.WriteLine(ex.Message);
-					}
-				}
-			}
-
-			if (Services.Count == 0)
-			{
-				Console.WriteLine("[W] There is no service");
-			}
-			#endregion
-		}
-
-		
-		public static void Add_Service(IService service)
-		{
-			service.AddServer += (sender, e) => {
-				Add_Server(e.ServiceType, e.Protocol, e.Ports);
-			};
-
-			service.ServerSendPacket += (sender, e) => {
-				Servers[e.ServerId].Send(e.SocketId, e.Packet, e.Client);
-			};
-
-			service.PrintMessage += (sender, e) => {
-				Console.WriteLine(e.Message);
-			};
-
-			Services.Add(service.ServiceType, service);
-
-            Console.WriteLine($"[I] Added Service for '{service.ServiceType}'");
-		}
-
-		
-		public void Setup(XmlNode xmlConfigNode)
-		{
-			foreach (var service in Services.Values.ToList())
-				service.Setup(xmlConfigNode);
-		}
-
-		
-		public bool Initialize()
-		{
-
-
-
-			if (!Platform.Initialize())
-			{
-				Console.WriteLine("[E] Failed to initialize Platform.");
-				return false;
-			}
-
-			var ConfigFile = Path.Combine(Platform.ConfigDirectory, "Netboot.xml");
-
-			if (!File.Exists(ConfigFile))
-				throw new FileNotFoundException(ConfigFile);
-
-			LoadServices();
-
-
-
-			foreach (var server in Servers.Values.ToList())
-				server.Initialize();
-
-			return true;
-		}
-
-
-
-		public static void Add_Server(string serviceType, SocketProtocol protocol, IEnumerable<ushort> ports)
-		{
-			var serverId = Guid.NewGuid();
-			var server = new BaseServer(serverId, serviceType, protocol, ports);
-			server.DataSent += (sender, e) =>
-			{
-				Functions.InvokeMethod(Services[e.ServiceType], "Handle_DataSent",
-					[new[] { sender, e }]);
-			};
-
-			server.DataReceived += (sender, e) =>
-			{
-				try
-				{
-					var serviceType = e.Packet[0] > 2 && e.ServiceType == "DHCP" ? "BINL" : e.ServiceType;
-
-					// Microsoft BINL (RIS) uses also port 4011. So differentiate between BINL and BOOTP (/ DHCP)
-					Functions.InvokeMethod(Services[serviceType], "Handle_DataReceived", [sender, e]);
-				}
-				catch (KeyNotFoundException)
-				{
-					Console.WriteLine($"[E] Cant find Service for '{e.ServiceType}'");
-				}
-			};
-
-			Servers.Add(serverId, server);
-		}
-		*/
 
 		public void Start()
 		{
@@ -262,13 +118,26 @@ namespace Netboot.Common
 
 		public void Bootstrap(XmlNode xml)
 		{
-            NetworkManager.Bootstrap(xml);
+			if (!Platform.Initialize())
+			{
+				Log("E", "Netboot", "Failed to initialize Platform.");
+				return;
+			}
 
-            foreach (var provider in Providers)
-            {
-                Provider.Provider.InvokeMethod<IProvider>(provider.Value, "Bootstrap", new object[] { xml });
-                Log("I", provider.Key, "closed!");
-            }
+			FileSystem = new Filesystem(Platform.NetbootDirectory);
+			var ConfigFile = Path.Combine(Platform.ConfigDirectory, "Netboot.xml");
+
+			if (!File.Exists(ConfigFile))
+				throw new FileNotFoundException(ConfigFile);
+
+			var xmlFile = new XmlDocument();
+			xmlFile.Load(ConfigFile);
+			var services = xmlFile.SelectNodes("Netboot/Configuration/Services/Service");
+
+			
+			Provider.Provider.LoadModule(FileSystem.Root, services);
+
+			NetworkManager.Bootstrap(xml);
         }
 
 		public void Close()

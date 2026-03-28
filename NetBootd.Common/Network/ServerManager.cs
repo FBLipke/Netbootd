@@ -1,9 +1,9 @@
 ﻿using Netboot.Common.Network.Sockets;
 using Netboot.Common.Network.Sockets.Interfaces;
 using Netboot.Common.System;
-using System.Text;
 using System.Net;
-using System.Runtime.InteropServices;
+using System.Net.Http.Headers;
+using System.Text;
 using System.Xml;
 
 namespace Netboot.Common.Network
@@ -42,17 +42,57 @@ namespace Netboot.Common.Network
 
 		public void Send(Guid server, Guid socket, Guid client, byte[] data, bool keepalive)
 		{
+			if (!Servers.ContainsKey(server))
+				return;
+
+			if (!Servers[server].Sockets.ContainsKey(socket))
+				return;
+
 			Servers[server].Sockets[socket].Send(client, data, keepalive);
 		}
 
 		public void Send(Guid server, Guid socket, Guid client, MemoryStream data, bool keepalive)
 		{
+			if (!Servers.ContainsKey(server))
+				return;
+
+			if (!Servers[server].Sockets.ContainsKey(socket))
+				return;
+
 			Servers[server].Sockets[socket].Send(client, data, keepalive);
 		}
 
 		public void Send(Guid server, Guid socket, Guid client, string data, Encoding encoding, bool keepalive)
 		{
+			if (!Servers.ContainsKey(server))
+				return;
+
+			if (!Servers[server].Sockets.ContainsKey(socket))
+				return;
+
 			Servers[server].Sockets[socket].Send(client, data, encoding, keepalive);
+		}
+
+		public void Send(Guid server, Guid socket, Guid client, IPEndPoint endpoint, byte[] bytes)
+		{
+			if (!Servers.ContainsKey(server))
+				return;
+
+			if (!Servers[server].Sockets.ContainsKey(socket))
+				return;
+
+			Servers[server].Sockets[socket].Send(client, endpoint, bytes);
+		}
+
+		public bool HasSocket(Guid server, Guid Socket)
+		{
+			if (!Servers.ContainsKey(server))
+				return false;
+
+			if (!Servers[server].Sockets.ContainsKey(Socket))
+				return false;
+
+			return true;
 		}
 
 		public Guid Add(ProtoType protocolType, List<ushort> port, bool multicast = false)
@@ -83,7 +123,6 @@ namespace Netboot.Common.Network
 					NetbootBase.Log("I", "ServerManager",
 						string.Format("Server '{0}' added Socket '{1}'", e.Server, e.Socket));
 				};
-
 				
 				Servers[guid].ServerClosedSocket += (Sender, e) =>
 				{
@@ -112,7 +151,9 @@ namespace Netboot.Common.Network
 		}
 
 		public IPEndPoint GetEndPoint(Guid server, Guid socket)
-			=> Servers[server].GetEndPoint(socket);
+		{
+			return Servers[server].GetEndPoint(socket);
+		}
 
 		public IPEndPoint GetClient(Guid server, Guid socket, Guid client)
 			=> Servers[server].Sockets[socket].Clients[client].GetEndPoint();
@@ -151,9 +192,13 @@ namespace Netboot.Common.Network
 
 		public void JoinMulticastGroup(Guid server, IPAddress group)
 		{
-            foreach (var socket in Servers[server].Sockets.Values)
+			if (!Servers.ContainsKey(server))
+				return;
+
+			foreach (var socket in Servers[server].Sockets.Values)
             {
 				socket.JoinMulticastGroup(group);
+
                 NetbootBase.Log("I", "ServerManager",
 					string.Format("Socket {0} on Server '{1}' joined MulticastGroup {2} with interface address {3}.",
 						socket.Id, server, group, socket.GetEndPoint().Address));
@@ -162,11 +207,16 @@ namespace Netboot.Common.Network
 
 		public void LeaveMulticastGroup(Guid server, Guid socket, IPAddress group)
 		{
+			if (!Servers.ContainsKey(server))
+				return;
+
 			NetbootBase.Log("I", "ServerManager",
 				string.Format("Socket {0} on Server '{1}' left MulticastGroup {2}...", socket, server, group));
 
 			Servers[server].Sockets[socket].LeaveMulticastGroup(group);
 		}
+
+
 
 		public delegate void ReceivedDataEventHandler(object sender, ReceivedDataArgs e);
 	}

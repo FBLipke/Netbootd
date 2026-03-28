@@ -15,23 +15,23 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="TFTPRoot\Boot\x64\boot.wim" />
-    <None Remove="TFTPRoot\Boot\x64\bootmgr.exe" />
-    <None Remove="TFTPRoot\Boot\x64\pxeboot.n12" />
-    <None Remove="TFTPRoot\Boot\x64\wdsnbp.com" />
-    <None Remove="TFTPRoot\Boot\x86\boot.sdi" />
-    <None Remove="TFTPRoot\Boot\x86\pxeboot.n12" />
-    <None Remove="TFTPRoot\Boot\x86\wdsnbp.com" />
+    <None Remove="Providers\TFTPServer\Boot\x64\boot.wim" />
+    <None Remove="Providers\TFTPServer\Boot\x64\bootmgr.exe" />
+    <None Remove="Providers\TFTPServer\Boot\x64\pxeboot.n12" />
+    <None Remove="Providers\TFTPServer\Boot\x64\wdsnbp.com" />
+    <None Remove="Providers\TFTPServer\Boot\x86\boot.sdi" />
+    <None Remove="Providers\TFTPServer\Boot\x86\pxeboot.n12" />
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="TFTPRoot\Boot\Readme.txt">
+    <Content Include="Providers\TFTPServer\Boot\Readme.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="TFTPRoot\Netboot\NetbootSP0\10.6 Another Example.nbi\i386\" />
+    <Folder Include="Providers\TFTPServer\Netboot\NetbootSP0\10.6 Another Example.nbi\i386\" />
+    <Folder Include="TFTPRoot\" />
   </ItemGroup>
 
   <ItemGroup>
@@ -46,51 +46,34 @@
     <None Include="Providers\DHCPListener\install.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="TFTPRoot\Boot\x64\default.bcd">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="TFTPRoot\Boot\x86\apitest.0">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="TFTPRoot\Boot\x86\bisconfig.0">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="TFTPRoot\Boot\x86\default.bcd">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="TFTPRoot\Boot\x86\dosundi.0">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="TFTPRoot\Boot\x86\dosundi.1">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="TFTPRoot\Boot\x86\pxelinux.0">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="TFTPRoot\Boot\x86\startrom.n12">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="TFTPRoot\Netboot\NetbootSP0\10.6 Another Example.nbi\NBImageInfo.plist" />
-    <None Include="TFTPRoot\Netboot\NetbootSP0\10.6 Another Example.nbi\Netinstall.dmg" />
-    <None Include="TFTPRoot\OSChooser\i386\NTDETECT.COM">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="TFTPRoot\OSChooser\i386\NTLDR">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="TFTPRoot\OSChooser\i386\startrom.n12">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="TFTPRoot\OSChooser\i386\winnt.sif">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="TFTPRoot\OSChooser\welcome.osc">
+    <None Include="Providers\TFTPServer\Boot\x86\wdsnbp.com">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
 
   <ItemGroup>
     <None Update="Config\ris\ristndrd.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Providers\TFTPServer\Boot\x64\default.bcd">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Providers\TFTPServer\Boot\x86\bisconfig.0">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Providers\TFTPServer\Boot\x86\default.bcd">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Providers\TFTPServer\Boot\x86\dosundi.0">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Providers\TFTPServer\Boot\x86\dosundi.1">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Providers\TFTPServer\Boot\x86\pxelinux.0">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Providers\TFTPServer\Boot\x86\startrom.n12">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Providers\User\install.xml">
@@ -108,13 +91,13 @@
     <None Update="Providers\User\User.db">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="TFTPRoot\OSChooser\englisch\00004e28.osc">
+    <None Update="Providers\TFTPServer\OSChooser\englisch\00004e28.osc">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="TFTPRoot\OSChooser\englisch\login.osc">
+    <None Update="Providers\TFTPServer\OSChooser\englisch\login.osc">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="TFTPRoot\OSChooser\i386\ntldr_OSCHOICE">
+    <None Update="Providers\TFTPServer\OSChooser\i386\ntldr_OSCHOICE">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="WebSite\admin\styles\default\close.png">

@@ -152,12 +152,6 @@ namespace DHCPListener.BSvcMod.MSWDS
 
 			Handle_WDS_Request(clientid);
 
-			if (!Clients[clientid].ActionDone)
-			{
-                NetbootBase.Log("I", string.Format("DHCPListener[{0}]", ServerType),string.Format("Client \"{0}\" is waiting for approval.", clientid));
-                return;
-			}
-
 			var bcd = string.Empty;
 			var filename = string.Empty;
 
@@ -185,7 +179,7 @@ namespace DHCPListener.BSvcMod.MSWDS
                     break;
 			}
 
-			Clients[clientid].Response.FileName = Bootfile;
+			Clients[clientid].Response.FileName = filename;
             Clients[clientid].Response.AddOption(new((byte)DHCPOptions.VendorClassIdentifier, "PXEClient", Encoding.ASCII));
             Clients[clientid].Response.AddOption(Handle_WDS_Options(clientid));
             Clients[clientid].Response.AddOption(new((byte)252, bcd, Encoding.ASCII));
@@ -194,15 +188,8 @@ namespace DHCPListener.BSvcMod.MSWDS
 			
 			Clients[clientid].Response.CommitOptions();
 
-
-
-
-
-
-
 			var endpoint = NetbootBase.NetworkManager.ServerManager.GetClientEndPoint(Clients[clientid].Server, Clients[clientid].Socket, Clients[clientid].Client);
-			NetbootBase.NetworkManager.ServerManager.Servers[Clients[clientid].Server].Send(Clients[clientid].Socket, Clients[clientid].Client,
-				endpoint, bytes);
+			NetbootBase.NetworkManager.ServerManager.Send(Clients[clientid].Server, Clients[clientid].Socket, Clients[clientid].Client, endpoint, bytes);
 		}
 
 		void Handle_WDS_Request(Guid client)

@@ -20,7 +20,7 @@ namespace Netboot.Common.Provider
 		public static bool HasMethod(object obj, string name) => obj.GetType().GetMethod(name) != null;
 		public static bool HasInterFace(object obj, string name) => obj.GetType().GetInterface(name) != (MethodInfo)null;
 
-		public static void LoadModule(string rootPath, string prefixpattern = "Netboot.Module.*.dll")
+		public static void LoadModule(string rootPath, XmlNodeList xml, string prefixpattern = "Netboot.Module.*.dll")
 		{
 			#region "Load Service Modules"
 			var serviceModules = new DirectoryInfo(rootPath)
@@ -45,7 +45,7 @@ namespace Netboot.Common.Provider
 						if (b == null)
 							continue;
 
-						ModuleLoaded.Invoke(null, new ModuleLoadedEventArgs(b, name));
+						ModuleLoaded?.Invoke(null, new ModuleLoadedEventArgs(b, name, xml));
 					}
 					catch (MissingMethodException ex)
 					{

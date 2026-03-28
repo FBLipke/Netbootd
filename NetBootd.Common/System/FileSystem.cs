@@ -1,13 +1,4 @@
-﻿// Decompiled with JetBrains decompiler
-// Type: Netboot.Common.FileSystem
-// Assembly: Netboot.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: CE4FCADF-C52D-4962-B4B8-C6D36FAB8FAE
-// Assembly location: C:\Users\LipkeGu\Desktop\Netboot___\Netboot.Common.dll
-
-using System;
-using System.IO;
-
-namespace Netboot.Common.System
+﻿namespace Netboot.Common.System
 {
 	public class Filesystem : IDisposable
 	{
@@ -15,15 +6,10 @@ namespace Netboot.Common.System
 
 		public Filesystem(string path = "") => Root = CreateDirectory(path);
 
-		private string ReplaceSlashes(string path, string curSlash = "\\", string newSlash = "/")
-		{
-			while (path.Contains(curSlash))
-				path = path.Replace(curSlash, newSlash);
+		public static string ReplaceSlashes(string input)
+			=> input.Replace("/", NetbootBase.Platform.DirectorySeperatorChar);
 
-			return path;
-		}
-
-		private string Resolve(string path) => ReplaceSlashes(Path.Combine(Root, path.StartsWith("/") ? path.Substring(1) : path).ToLowerInvariant());
+		public string Resolve(string path) => Combine(Root, path.StartsWith("/") ? path.Substring(1) : path).ToLowerInvariant();
 
 		public void Read(out byte[] dest, string path) => dest = Read(path);
 
@@ -44,12 +30,13 @@ namespace Netboot.Common.System
 
 				fileStream.Close();
 			}
+
 			return array;
 		}
 
 		public void Read(Stream target, string srcFile)
 		{
-			using (var fileStream = new BufferedStream(File.Open(Path.Combine(Root, srcFile),
+			using (var fileStream = new BufferedStream(File.Open(Resolve(srcFile),
 				FileMode.Open, FileAccess.Read, FileShare.Read)))
 			{
 				fileStream.CopyToAsync(target);
@@ -59,7 +46,7 @@ namespace Netboot.Common.System
 
 		public void Write(string path, in byte[] buffer, int start = 0)
 		{
-			using (var fileStream = new BufferedStream(File.Create(Path.Combine(Root, path))))
+			using (var fileStream = new BufferedStream(File.Create(Resolve(path))))
 			{
 				fileStream.Write(buffer, start, buffer.Length);
 				fileStream.Close();
@@ -70,7 +57,7 @@ namespace Netboot.Common.System
 		{
 			using (src)
 			{
-				using (var destination = new BufferedStream(File.Create(Path.Combine(Root, outputfile))))
+				using (var destination = new BufferedStream(File.Create(Resolve(outputfile))))
 				{
 					src.CopyTo(destination);
 					destination.Close();
@@ -81,13 +68,12 @@ namespace Netboot.Common.System
 			}
 		}
 
-		public string Combine(string path1, string path2)
-			=> ReplaceSlashes(Path.Combine(path1, path2));
+		public string Combine(params string[] paths)
+			=> ReplaceSlashes(Path.Combine(paths));
 
 		public string CreateDirectory(string path)
-			=> ReplaceSlashes(Directory.CreateDirectory(!string.IsNullOrEmpty(Root)
-				? ReplaceSlashes(Path.Combine(Root, path))
-					: ReplaceSlashes(Path.Combine(Directory.GetCurrentDirectory(), path))).FullName);
+			=> Directory.CreateDirectory(!string.IsNullOrEmpty(Root)
+				? Combine(Root, path) : Combine(Directory.GetCurrentDirectory(), path)).FullName;
 
 		public void Dispose() => Root = null;
 	}

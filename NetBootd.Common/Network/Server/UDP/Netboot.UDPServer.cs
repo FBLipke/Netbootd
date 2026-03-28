@@ -50,7 +50,12 @@ namespace Netboot.Common.Network.Sockets
             var guid = Guid.NewGuid();
             var socket = new NetbootUdpSocket(guid, endpoint);
             socket.SocketAddedClient += (sender, e) => { };
-            socket.SocketFailedToStart += (sender, e) => Remove(e.Socket);
+            socket.SocketFailedToStart += (sender, e) =>
+            {
+                NetbootBase.Log("E", this.GetType().ToString(), e.Exception.Message);
+                Remove(e.Socket);
+            };
+
             socket.SocketClosedClient += (sender, e) =>
             {
                 Remove(e.Socket);
@@ -74,8 +79,8 @@ namespace Netboot.Common.Network.Sockets
 
             Sockets.Remove(socket);
 
-            ServerClosedSocket?.Invoke(this, new(Id, socket));
-        }
+			ServerClosedSocket?.Invoke(this, new(Id, socket));
+		}
 
         public void Start()
         {
@@ -100,13 +105,44 @@ namespace Netboot.Common.Network.Sockets
         }
 
         public void Send(Guid socket, Guid client, string data, Encoding encoding, bool keepAlive)
-            => Sockets[socket].Send(client, data, encoding, keepAlive);
+        {
+			if (!Sockets.ContainsKey(socket))
+				return;
+
+			Sockets[socket].Send(client, data, encoding, keepAlive);
+        }
 
         public void Send(Guid socket, Guid client, MemoryStream data, bool keepAlive)
-            => Sockets[socket].Send(client, data, keepAlive);
+        {
+			if (!Sockets.ContainsKey(socket))
+				return;
 
-        public void Send(Guid socket, Guid client, byte[] data, bool keepAlive)
-            => Sockets[socket].Send(client, data, keepAlive);
+			Sockets[socket].Send(client, data, keepAlive);
+        }
+
+		public void Send(Guid socket, Guid client, IPEndPoint remoteendpoint, MemoryStream data)
+		{
+			if (!Sockets.ContainsKey(socket))
+				return;
+
+			Sockets[socket].Send(client, remoteendpoint, data);
+		}
+
+		public void Send(Guid socket, Guid client, IPEndPoint remoteendpoint, byte[] data)
+		{
+			if (!Sockets.ContainsKey(socket))
+				return;
+
+			Sockets[socket].Send(client, remoteendpoint, data);
+		}
+
+		public void Send(Guid socket, Guid client, byte[] data, bool keepAlive)
+        {
+            if (!Sockets.ContainsKey(socket))
+                return;
+            
+            Sockets[socket].Send(client, data, keepAlive);
+		}    
 
         public void Stop()
         {
@@ -140,15 +176,7 @@ namespace Netboot.Common.Network.Sockets
             return Sockets[socket].GetEndPoint();
         }
 
-        public void Send(Guid socket, Guid client, IPEndPoint remoteendpoint, MemoryStream data)
-        {
-            Sockets[socket].Send(client, remoteendpoint, data);
-        }
 
-        public void Send(Guid socket, Guid client, IPEndPoint remoteendpoint, byte[] data)
-        {
-            Sockets[socket].Send(client, remoteendpoint, data);
-        }
 
         public IPEndPoint GetClientEndPoint(Guid server, Guid socket, Guid client)
         {
@@ -157,12 +185,18 @@ namespace Netboot.Common.Network.Sockets
 
         public void JoinMulticastGroup(Guid server, Guid socket, IPAddress group)
         {
-            Sockets[socket].JoinMulticastGroup(group);
+			if (!Sockets.ContainsKey(socket))
+				return;
+
+			Sockets[socket].JoinMulticastGroup(group);
         }
 
         public void LeaveMulticastGroup(Guid server, Guid socket, IPAddress group)
         {
-            Sockets[socket].LeaveMulticastGroup(group);
+			if (!Sockets.ContainsKey(socket))
+				return;
+
+			Sockets[socket].LeaveMulticastGroup(group);
         }
 
         public delegate void ServerReceivedDataEventHandler(

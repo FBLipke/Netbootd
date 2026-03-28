@@ -13,7 +13,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace Netboot.Module.TFTPServer
 {
-	public enum TFTPOPCodes
+	public enum TFTPOPCodes : ushort
 	{
 		RRQ = 1,
 		WRQ = 2,
@@ -30,9 +30,9 @@ namespace Netboot.Module.TFTPServer
 		NetASCII
 	}
 
-	public enum TFTPErrorCode
+	public enum TFTPErrorCode : ushort
 	{
-		Unknown,
+		Unknown = 0,
 		FileNotFound,
 		AccessViolation,
 		DiskFull,

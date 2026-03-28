@@ -57,7 +57,6 @@ namespace Netboot.Module.TFTPServer
 
         public TFTPPacket Response { get; set; }
 
-
         public bool OpenFile()
 		{
 			if (isOpen)
@@ -65,7 +64,7 @@ namespace Netboot.Module.TFTPServer
 
 			try
 			{
-				var fil = new FileInfo(Functions.ReplaceSlashes(FileName));
+				var fil = new FileInfo(FileName);
 				if (fil.Exists)
 				{
 					FileStream = new FileStream(fil.FullName, FileMode.Open, FileAccess.Read, FileShare.Read, 2 << 64);
