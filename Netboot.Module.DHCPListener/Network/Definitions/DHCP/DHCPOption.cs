@@ -93,15 +93,9 @@ namespace Netboot.Module.DHCPListener
             DHCPOptionFunc(option, list);
         }
 
-        public DHCPOption(T option, List<DHCPOption<DHCPOptions>> list)
-        {
-            DHCPOptionFunc(option, list);
-        }
+        public DHCPOption(T option, List<DHCPOption<DHCPOptions>> list) => DHCPOptionFunc(option, list);
 
-        public DHCPOption(T option, List<DHCPOption<PXEVendorEncOptions>> list)
-        {
-            DHCPOptionFunc(option, list);
-        }
+        public DHCPOption(T option, List<DHCPOption<PXEVendorEncOptions>> list) => DHCPOptionFunc(option, list);
 
         public DHCPOption(T option, short data)
         {
@@ -118,6 +112,13 @@ namespace Netboot.Module.DHCPListener
         }
 
         public DHCPOption(T option, int data)
+        {
+            Option = Convert.ToByte(option);
+            Data = BitConverter.GetBytes(data);
+            Length = Convert.ToByte(Data.Length);
+        }
+
+        public DHCPOption(T option, bool data)
         {
             Option = Convert.ToByte(option);
             Data = BitConverter.GetBytes(data);

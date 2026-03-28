@@ -15,7 +15,7 @@ namespace Netboot.Common.Network.Sockets.Interfaces
 
 		byte MulticastTTL { get; set; }
 
-		void Start();
+		void Start(bool joinMulticastGroup);
 
 		void Send(Guid client, byte[] data);
 		void Send(Guid client, MemoryStream data, bool keepAlive);

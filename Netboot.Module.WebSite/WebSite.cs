@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Reflection;
 using System.Text;
+using System.Xml;
 
 namespace Netboot.Module
 {
@@ -47,7 +48,7 @@ namespace Netboot.Module
 			Filesystem = new Filesystem("WebSite");
 		}
 
-		public void Bootstrap()
+		public void Bootstrap(XmlNode xml)
 		{
 			NetbootBase.NetworkManager.ServerManager
 				.Add(ProtoType.Tcp, new List<ushort>(90));

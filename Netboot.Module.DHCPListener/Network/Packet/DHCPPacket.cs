@@ -20,528 +20,524 @@ using System.Text;
 
 namespace Netboot.Module.DHCPListener
 {
-	public class DHCPPacket : BasePacket
-	{
-		/// <summary>
-		/// The offset (DHCP_OPTIONS_START_OFFSET) after the magic cookie, that we can use to parse the dhcp options...
-		/// </summary>
-		public const byte DHCP_OPTIONS_START_OFFSET = 240;
+    public class DHCPPacket : BasePacket
+    {
+        /// <summary>
+        /// The offset (DHCP_OPTIONS_START_OFFSET) after the magic cookie, that we can use to parse the dhcp options...
+        /// </summary>
+        public const byte DHCP_OPTIONS_START_OFFSET = 240;
 
-		public Dictionary<byte, DHCPOption<byte>> Options { get; } = [];
+        public Dictionary<byte, DHCPOption<byte>> Options { get; } = [];
 
-		public DHCPPacket() : base()
-			=> ParsePacket();
+        public DHCPPacket() : base()
+            => ParsePacket();
 
-		public DHCPPacket(byte[] data)
-			: base(data) => ParsePacket();
+        public DHCPPacket(byte[] data)
+            : base(data) => ParsePacket();
 
-		public DHCPPacket(int length)
-			: base(length) => ParsePacket();
+        public DHCPPacket(int length)
+            : base(length) => ParsePacket();
 
-		public DHCPPacket(MemoryStream datastream)
-	:		base(datastream) => ParsePacket();
-		
-		/// <summary>
-		/// Indicates that the packet was relayed
-		/// </summary>
-		public bool IsRelayed { get => GatewayIP != IPAddress.Parse("0.0.0.0"); }
+        public DHCPPacket(MemoryStream datastream)
+    : base(datastream) => ParsePacket();
 
-		public BOOTPOPCode BootpOPCode
-		{
-			get => (BOOTPOPCode)Read_UINT8();
-			set => Write_UINT8(Convert.ToByte(value));
-		}
+        /// <summary>
+        /// Indicates that the packet was relayed
+        /// </summary>
+        public bool IsRelayed { get => GatewayIP != IPAddress.Parse("0.0.0.0"); }
 
-		public Dictionary<byte, DHCPOption<byte>> GetEncOptions(byte opt)
-		{
-			var dict = new Dictionary<byte, DHCPOption<byte>>();
-			if (!HasOption(opt))
-				return dict;
+        public BOOTPOPCode BootpOPCode
+        {
+            get => (BOOTPOPCode)Read_UINT8();
+            set => Write_UINT8(Convert.ToByte(value));
+        }
 
-			var optionData = GetOption(opt)?.Data;
-			if (optionData == null)
-				return [];
+        public Dictionary<byte, DHCPOption<byte>> GetEncOptions(byte opt)
+        {
+            var dict = new Dictionary<byte, DHCPOption<byte>>();
+            if (!HasOption(opt))
+                return dict;
 
-			for (var i = 0; i < optionData.Length;)
-			{
-				var o = Convert.ToByte(optionData[i]);
+            var optionData = GetOption(opt)?.Data;
+            if (optionData == null)
+                return [];
 
-				if (o == byte.MaxValue)
-				{
-					dict.Add(o, new(o));
-					break;
-				}
-				else
-				{
-					var len = optionData[i + 1];
-					var data = new byte[len];
+            for (var i = 0; i < optionData.Length;)
+            {
+                var o = Convert.ToByte(optionData[i]);
 
-					Array.Copy(optionData, i + 2, data, 0, len);
-					dict.Add(o, new(o, data));
-					i += 2 + len;
-				}
-			}
+                if (o == byte.MaxValue)
+                {
+                    dict.Add(o, new(o));
+                    break;
+                }
+                else
+                {
+                    var len = optionData[i + 1];
+                    var data = new byte[len];
 
-			return dict;
-		}
+                    Array.Copy(optionData, i + 2, data, 0, len);
+                    dict.Add(o, new(o, data));
+                    i += 2 + len;
+                }
+            }
 
-		public DHCPVendorID GetVendorIdent
-		{
-			get
-			{
-				var vendorId = DHCPVendorID.None;
+            return dict;
+        }
 
-				if (HasOption((byte)DHCPOptions.VendorClassIdentifier))
-				{
-					var option = GetOption((byte)DHCPOptions.VendorClassIdentifier);
+        public DHCPVendorID GetVendorIdent
+        {
+            get
+            {
+                var vendorId = DHCPVendorID.None;
 
-					if (option == null)
-						return vendorId;
+                if (!HasOption((byte)DHCPOptions.VendorClassIdentifier))
+                    return vendorId;
 
-					var identStr = option.Data.GetString(Encoding.ASCII);
+                var option = GetOption((byte)DHCPOptions.VendorClassIdentifier);
+                var identStr = option.Data.GetString(Encoding.ASCII);
 
-					if (identStr.Contains("PXEClient"))
-						vendorId = DHCPVendorID.PXEClient;
-					else if (identStr.Contains("PXEServer"))
-						vendorId = DHCPVendorID.PXEServer;
-					else if (identStr.Contains("AAPLBSDPC"))
-						vendorId = DHCPVendorID.AAPLBSDPC;
-					else if (identStr.Contains("HTTPClient"))
-						vendorId = DHCPVendorID.HTTPClient;
-					else
-					{
-						var delim = new char[] { identStr.Contains(':') ? ':' :
-							identStr.Contains(' ') ? ' ' : '/' };
-						
-						var ident = identStr.Split(delim).FirstOrDefault();
+                if (identStr.Contains("PXEClient"))
+                    vendorId = DHCPVendorID.PXEClient;
+                else if (identStr.Contains("PXEServer"))
+                    vendorId = DHCPVendorID.PXEServer;
+                else if (identStr.Contains("AAPLBSDPC"))
+                    vendorId = DHCPVendorID.AAPLBSDPC;
+                else if (identStr.Contains("HTTPClient"))
+                    vendorId = DHCPVendorID.HTTPClient;
+                else
+                {
+                    var delim = new char[] { identStr.Contains(':') ? ':' :
+                            identStr.Contains(' ') ? ' ' : '/' };
 
-						if (!string.IsNullOrEmpty(ident))
-                            _ = Enum.TryParse(ident, out vendorId);
-					}
-				}
+                    var ident = identStr.Split(delim).FirstOrDefault();
 
-				return vendorId;
-			}
-		}
+                    if (!string.IsNullOrEmpty(ident))
+                        _ = Enum.TryParse(ident, out vendorId);
+                }
 
-		public DHCPHardwareType HardwareType
-		{
-			get => (DHCPHardwareType)Read_UINT8(1);
-			set => Write_UINT8(Convert.ToByte(value), 1);
-		}
+                return vendorId;
+            }
+        }
 
-		public byte HardwareLength
-		{
-			get => Read_UINT8(2);
-			set => Write_UINT8(value, 2);
-		}
+        public DHCPHardwareType HardwareType
+        {
+            get => (DHCPHardwareType)Read_UINT8(1);
+            set => Write_UINT8(Convert.ToByte(value), 1);
+        }
 
-		public byte Hop
-		{
-			get => Read_UINT8(3);
-			set => Write_UINT8(value, 3);
-		}
+        public byte HardwareLength
+        {
+            get => Read_UINT8(2);
+            set => Write_UINT8(value, 2);
+        }
 
-		public uint TransactionId
-		{
-			get
-			{
-				SetPosition(4);
-				var result = Read_UINT32();
-				RestorePosition();
-				
-				return result;
-			}
-			set
-			{
-				SetPosition(4);
-				Write_UINT32(value);
-				RestorePosition();
-			}
-		}
+        public byte Hop
+        {
+            get => Read_UINT8(3);
+            set => Write_UINT8(value, 3);
+        }
 
-		public ushort Seconds
-		{
-			get
-			{
-				SetPosition(8);
-				var result = Read_UINT16();
-				RestorePosition();
+        public uint TransactionId
+        {
+            get
+            {
+                SetPosition(4);
+                var result = Read_UINT32();
+                RestorePosition();
 
-				return result;
-			}
-			set
-			{
-				SetPosition(8);
-				Write_UINT16(value);
-				RestorePosition();
-			}
-		}
+                return result;
+            }
+            set
+            {
+                SetPosition(4);
+                Write_UINT32(value);
+                RestorePosition();
+            }
+        }
 
-		public BootpFlags Flags
-		{
-			get
-			{
-				SetPosition(10);
-				var result = Read_UINT16();
-				RestorePosition();
+        public ushort Seconds
+        {
+            get
+            {
+                SetPosition(8);
+                var result = Read_UINT16();
+                RestorePosition();
 
-				return (BootpFlags)result;
-			}
-			set
-			{
-				var val = new byte[sizeof(ushort)];
+                return result;
+            }
+            set
+            {
+                SetPosition(8);
+                Write_UINT16(value);
+                RestorePosition();
+            }
+        }
 
-				BinaryPrimitives.WriteUInt16BigEndian(val, (ushort)value);
-				SetPosition(10);
-				Write_Bytes(val);
-				RestorePosition();
-			}
-		}
+        public BootpFlags Flags
+        {
+            get
+            {
+                SetPosition(10);
+                var result = Read_UINT16();
+                RestorePosition();
 
-		public IPAddress ClientIP
-		{
-			get
-			{
-				SetPosition(12);
-				var result = Read_IPAddress();
-				RestorePosition();
+                return (BootpFlags)result;
+            }
+            set
+            {
+                var val = new byte[sizeof(ushort)];
 
-				return result;
-			}
-			set
-			{
-				SetPosition(12);
-				Write_IPAddress(value);
-				RestorePosition();
-			}
-		}
+                BinaryPrimitives.WriteUInt16BigEndian(val, (ushort)value);
+                SetPosition(10);
+                Write_Bytes(val);
+                RestorePosition();
+            }
+        }
 
-		public IPAddress YourIP
-		{
-			get
-			{
-				SetPosition(16);
-				var result = Read_IPAddress();
-				RestorePosition();
+        public IPAddress ClientIP
+        {
+            get
+            {
+                SetPosition(12);
+                var result = Read_IPAddress();
+                RestorePosition();
 
-				return result;
-			}
-			set
-			{
-				SetPosition(16);
-				Write_IPAddress(value);
-				RestorePosition();
-			}
-		}
+                return result;
+            }
+            set
+            {
+                SetPosition(12);
+                Write_IPAddress(value);
+                RestorePosition();
+            }
+        }
 
-		public IPAddress ServerIP
-		{
-			get
-			{
-				SetPosition(20);
-				var result = Read_IPAddress();
-				RestorePosition();
+        public IPAddress YourIP
+        {
+            get
+            {
+                SetPosition(16);
+                var result = Read_IPAddress();
+                RestorePosition();
 
-				return result;
-			}
-			set
-			{
-				SetPosition(20);
-				Write_IPAddress(value);
-				RestorePosition();
-			}
-		}
+                return result;
+            }
+            set
+            {
+                SetPosition(16);
+                Write_IPAddress(value);
+                RestorePosition();
+            }
+        }
 
-		public IPAddress GatewayIP
-		{
-			get
-			{
-				SetPosition(24);
-				var result = Read_IPAddress();
-				RestorePosition();
+        public IPAddress ServerIP
+        {
+            get
+            {
+                SetPosition(20);
+                var result = Read_IPAddress();
+                RestorePosition();
 
-				return result;
-			}
-			set
-			{
-				SetPosition(24);
-				Write_IPAddress(value);
-				RestorePosition();
-			}
-		}
+                return result;
+            }
+            set
+            {
+                SetPosition(20);
+                Write_IPAddress(value);
+                RestorePosition();
+            }
+        }
 
-		public HWAddress HardwareAddress
-		{
-			get
-			{
-				SetPosition(28);
-				var mac = new HWAddress(Read_Bytes(HardwareLength));
-				RestorePosition();
+        public IPAddress GatewayIP
+        {
+            get
+            {
+                SetPosition(24);
+                var result = Read_IPAddress();
+                RestorePosition();
 
-				return mac;
-			}
-			set
-			{
-				var mac = new byte[16];
-				Array.Copy(value.Address, 0, mac, 0, value.Length);
+                return result;
+            }
+            set
+            {
+                SetPosition(24);
+                Write_IPAddress(value);
+                RestorePosition();
+            }
+        }
 
-				SetPosition(28);
-				Write_Bytes(mac);
-				RestorePosition();
-			}
-		}
+        public HWAddress HardwareAddress
+        {
+            get
+            {
+                SetPosition(28);
+                var mac = new HWAddress(Read_Bytes(HardwareLength));
+                RestorePosition();
 
-		public string ServerName
-		{
-			get
-			{
-				SetPosition(44);
-				var result = Encoding.ASCII.GetString(Read_Bytes(64));
-				RestorePosition();
+                return mac;
+            }
+            set
+            {
+                var mac = new byte[16];
+                Array.Copy(value.Address, 0, mac, 0, value.Length);
 
-				return result;
-			}
-			set
-			{
+                SetPosition(28);
+                Write_Bytes(mac);
+                RestorePosition();
+            }
+        }
 
-				var serverName = Encoding.ASCII.GetBytes(value);
-				var bytes = new byte[64];
-				Array.Copy(serverName, 0, bytes, 0, serverName.Length);
+        public string ServerName
+        {
+            get
+            {
+                SetPosition(44);
+                var result = Encoding.ASCII.GetString(Read_Bytes(64));
+                RestorePosition();
 
-				SetPosition(44);
-				Write_Bytes(bytes);
-				RestorePosition();
+                return result;
+            }
+            set
+            {
 
-				AddOption(new DHCPOption<byte>((byte)DHCPOptions.TftpServerName, serverName));
-			}
-		}
+                var serverName = Encoding.ASCII.GetBytes(value);
+                var bytes = new byte[64];
+                Array.Copy(serverName, 0, bytes, 0, serverName.Length);
 
-		public string FileName
-		{
-			get
-			{
-				SetPosition(108);
-				var result = Encoding.ASCII.GetString(Read_Bytes(128));
-				RestorePosition();
+                SetPosition(44);
+                Write_Bytes(bytes);
+                RestorePosition();
 
-				return result;
-			}
-			set
-			{
+                AddOption(new DHCPOption<byte>((byte)DHCPOptions.TftpServerName, serverName));
+            }
+        }
 
-				var fileName = Encoding.ASCII.GetBytes(value);
-				var bytes = new byte[128];
-				Array.Copy(fileName, 0, bytes, 0, fileName.Length);
+        public string FileName
+        {
+            get
+            {
+                SetPosition(108);
+                var result = Encoding.ASCII.GetString(Read_Bytes(128));
+                RestorePosition();
 
-				SetPosition(108);
-				Write_Bytes(fileName);
-				RestorePosition();
+                return result;
+            }
+            set
+            {
 
-				AddOption(new DHCPOption<byte>((byte)DHCPOptions.BootfileName, fileName));
-			}
-		}
+                var fileName = Encoding.ASCII.GetBytes(value);
+                var bytes = new byte[128];
+                Array.Copy(fileName, 0, bytes, 0, fileName.Length);
 
-		public MagicCookie MagicCookie
-		{
-			get
-			{
-				SetPosition(236);
-				var cookie = (MagicCookie)BitConverter.ToUInt32(Read_Bytes(4));
-				RestorePosition();
+                SetPosition(108);
+                Write_Bytes(fileName);
+                RestorePosition();
 
-				return cookie;
-			}
-			set
-			{
-				SetPosition(236);
-				Write_Bytes(BitConverter.GetBytes(Convert.ToUInt32(value)));
-				RestorePosition();
-			}
-		}
+                AddOption(new DHCPOption<byte>((byte)DHCPOptions.BootfileName, fileName));
+            }
+        }
 
-		public void AddOption(DHCPOption<byte> dhcpoption)
-		{
-			if (dhcpoption == null)
-				return;
-			
-			if (!Options.TryAdd(dhcpoption.Option, dhcpoption))
-				Options[dhcpoption.Option] = dhcpoption;
-		}
+        public MagicCookie MagicCookie
+        {
+            get
+            {
+                SetPosition(236);
+                var cookie = (MagicCookie)BitConverter.ToUInt32(Read_Bytes(4));
+                RestorePosition();
 
-		public DHCPOption<byte> GetOption(byte opt)
-		{
-			return Options[opt];
-		}
+                return cookie;
+            }
+            set
+            {
+                SetPosition(236);
+                Write_Bytes(BitConverter.GetBytes(Convert.ToUInt32(value)));
+                RestorePosition();
+            }
+        }
 
-		
-		public bool HasOption(byte opt)
-			=> Options.ContainsKey(opt);
+        public void AddOption(DHCPOption<byte> dhcpoption)
+        {
+            if (dhcpoption == null)
+                return;
 
-		public bool HasOption(DHCPOptions opt)
-			=> HasOption((byte)opt);
+            if (!Options.TryAdd(dhcpoption.Option, dhcpoption))
+                Options[dhcpoption.Option] = dhcpoption;
+        }
 
-		void ParsePacket()
-		{
-			if (Buffer == null)
-				return;
+        public DHCPOption<byte> GetOption(byte opt)
+        {
+            return Options[opt];
+        }
 
-			var curPos = Buffer.Position;
 
-			if (Options == null)
-				return;
-			
-			Options.Clear();
+        public bool HasOption(byte opt)
+            => Options.ContainsKey(opt);
 
-			Buffer.Seek(DHCP_OPTIONS_START_OFFSET, SeekOrigin.Begin);
-			
-			while (Buffer.Position < Buffer.Length)
-			{
-				#region "Parse DHCP Option"
-				
-				// Option
-				var opt = (byte)Buffer.ReadByte();
+        public bool HasOption(DHCPOptions opt)
+            => HasOption((byte)opt);
 
-				if (opt != byte.MaxValue)
-				{
-					if (opt == byte.MinValue)
-						break;
-					
-					// Length
-					var len = Buffer.ReadByte();
+        void ParsePacket()
+        {
+            if (Buffer == null)
+                return;
 
-					// Data					
-					var data = new byte[len];
-					
-					Buffer.Read(data, 0, data.Length);
-					AddOption(new(opt, data));
-				}
-				else
-					AddOption(new(opt));
-				#endregion
-			}
+            var curPos = Buffer.Position;
+
+            if (Options == null)
+                return;
+
+            Options.Clear();
+
+            Buffer.Seek(DHCP_OPTIONS_START_OFFSET, SeekOrigin.Begin);
+
+            while (Buffer.Position < Buffer.Length)
+            {
+                #region "Parse DHCP Option"
+
+                // Option
+                var opt = (byte)Buffer.ReadByte();
+
+                if (opt != byte.MaxValue)
+                {
+                    if (opt == byte.MinValue)
+                        break;
+
+                    // Length
+                    var len = Buffer.ReadByte();
+
+                    // Data					
+                    var data = new byte[len];
+
+                    Buffer.Read(data, 0, data.Length);
+                    AddOption(new(opt, data));
+                }
+                else
+                    AddOption(new(opt));
+                #endregion
+            }
 
 
             Options.OrderBy(key => key.Key);
-			Buffer.Position = curPos;
-		}
+            Buffer.Position = curPos;
+        }
 
-		public DHCPPacket CreateResponse(IPAddress serverIP)
-		{
-			DHCPPacket? packet = null;
+        public DHCPPacket CreateResponse(IPAddress serverIP)
+        {
+            DHCPPacket? packet = null;
 
-			var msgType = GetMessageType();
+            var msgType = GetMessageType();
 
-			var expectedLength = HasOption((byte)DHCPOptions.MaximumDhcpMessageSize) ? BinaryPrimitives.ReadUInt16LittleEndian
-				(GetOption((byte)DHCPOptions.MaximumDhcpMessageSize).Data) : 1024;
-			
-			switch (BootpOPCode)
-			{
-				default:
-				case BOOTPOPCode.BootRequest:
-					packet = new(1024);
-					packet.ServerName = Environment.MachineName;
-					packet.HardwareType = this.HardwareType;
-					packet.HardwareLength = this.HardwareLength;
-					packet.Hop = this.Hop;
-					packet.TransactionId = this.TransactionId;
-					packet.Seconds = this.Seconds;
-					packet.Flags = this.Flags;
-					packet.ClientIP = this.ClientIP;
-					packet.YourIP = this.YourIP;
-					packet.ServerIP = serverIP;
-					packet.GatewayIP = this.GatewayIP;
-					packet.MagicCookie = this.MagicCookie;
-					packet.BootpOPCode = BOOTPOPCode.BootReply;
-					packet.HardwareAddress = this.HardwareAddress;
-					
-					packet.AddOption(new((byte)DHCPOptions.ServerIdentifier, packet.ServerIP));
+            var expectedLength = HasOption((byte)DHCPOptions.MaximumDhcpMessageSize) ? BinaryPrimitives.ReadUInt16LittleEndian
+                (GetOption((byte)DHCPOptions.MaximumDhcpMessageSize).Data) : 1024;
 
-					// Can we skip this? :/
-
-					switch (GetVendorIdent)
-					{
-						case DHCPVendorID.PXEClient:
-							packet.AddOption(new((byte)DHCPOptions.VendorClassIdentifier, "PXEClient", Encoding.ASCII));
-							break;
-						case DHCPVendorID.PXEServer:
-							packet.AddOption(new((byte)DHCPOptions.VendorClassIdentifier, "PXEServer", Encoding.ASCII));
-							break;
-						case DHCPVendorID.AAPLBSDPC:
-							packet.AddOption(new((byte)DHCPOptions.VendorClassIdentifier, "APPLBSDPC", Encoding.ASCII));
-							break;
-						case DHCPVendorID.AppleMacintosh:
-							packet.AddOption(new((byte)DHCPOptions.VendorClassIdentifier, "AppleMacintosh", Encoding.ASCII));
-
-							break;
-						default:
-							break;
-					}
-
-					switch (msgType)
-					{
-						case DHCPMessageType.Discover:
-                            packet.SetMessageType(DHCPMessageType.Offer);
-							break;
-						case DHCPMessageType.Request:
-						case DHCPMessageType.Inform:
-                            packet.SetMessageType(DHCPMessageType.Ack);
-
-							if (Options.ContainsKey(43))
-								packet.Options.Add(43, Options[43]);
-							break;
-						default:
-							break;
-					}
-
-					var opt97 = GetOption((byte)DHCPOptions.UuidGuidBasedClientIdentifier);
-					if (opt97 != null)
-						packet.AddOption(opt97);
-
-					break;
-				case BOOTPOPCode.BootReply:
-					packet = new DHCPPacket();
-					packet.HardwareType = DHCPHardwareType.Ethernet;
+            switch (BootpOPCode)
+            {
+                default:
+                case BOOTPOPCode.BootRequest:
+                    packet = new(1024);
+                    packet.ServerName = Environment.MachineName;
+                    packet.HardwareType = this.HardwareType;
+                    packet.HardwareLength = this.HardwareLength;
                     packet.Hop = this.Hop;
                     packet.TransactionId = this.TransactionId;
                     packet.Seconds = this.Seconds;
                     packet.Flags = this.Flags;
-					packet.ClientIP = Netboot.Common.Functions.DNSLookup(Environment.MachineName).AddressList.FirstOrDefault();
+                    packet.ClientIP = this.ClientIP;
+                    packet.YourIP = this.YourIP;
+                    packet.ServerIP = serverIP;
+                    packet.GatewayIP = this.GatewayIP;
+                    packet.MagicCookie = this.MagicCookie;
+                    packet.BootpOPCode = BOOTPOPCode.BootReply;
+                    packet.HardwareAddress = this.HardwareAddress;
+
+                    packet.AddOption(new((byte)DHCPOptions.ServerIdentifier, packet.ServerIP));
+
+                    // Can we skip this? :/
+
+                    switch (GetVendorIdent)
+                    {
+                        case DHCPVendorID.PXEClient:
+                            packet.AddOption(new((byte)DHCPOptions.VendorClassIdentifier, "PXEClient", Encoding.ASCII));
+                            break;
+                        case DHCPVendorID.PXEServer:
+                            packet.AddOption(new((byte)DHCPOptions.VendorClassIdentifier, "PXEServer", Encoding.ASCII));
+                            break;
+                        case DHCPVendorID.AAPLBSDPC:
+                            packet.AddOption(new((byte)DHCPOptions.VendorClassIdentifier, "APPLBSDPC", Encoding.ASCII));
+                            break;
+                        case DHCPVendorID.AppleMacintosh:
+                            packet.AddOption(new((byte)DHCPOptions.VendorClassIdentifier, "AppleMacintosh", Encoding.ASCII));
+
+                            break;
+                        default:
+                            break;
+                    }
+
+                    switch (msgType)
+                    {
+                        case DHCPMessageType.Discover:
+                            packet.SetMessageType(DHCPMessageType.Offer);
+                            break;
+                        case DHCPMessageType.Request:
+                        case DHCPMessageType.Inform:
+                            packet.SetMessageType(DHCPMessageType.Ack);
+
+                            if (Options.ContainsKey(43))
+                                packet.Options.Add(43, Options[43]);
+                            break;
+                        default:
+                            break;
+                    }
+
+                    var opt97 = GetOption((byte)DHCPOptions.UuidGuidBasedClientIdentifier);
+                    if (opt97 != null)
+                        packet.AddOption(opt97);
+
+                    break;
+                case BOOTPOPCode.BootReply:
+                    packet = new DHCPPacket();
+                    packet.HardwareType = DHCPHardwareType.Ethernet;
+                    packet.Hop = this.Hop;
+                    packet.TransactionId = this.TransactionId;
+                    packet.Seconds = this.Seconds;
+                    packet.Flags = this.Flags;
+                    packet.ClientIP = Netboot.Common.Functions.DNSLookup(Environment.MachineName).AddressList.FirstOrDefault();
                     packet.YourIP = IPAddress.None;
                     packet.ServerIP = IPAddress.None;
                     packet.GatewayIP = IPAddress.None;
-					packet.MagicCookie = MagicCookie.DHCP;
+                    packet.MagicCookie = MagicCookie.DHCP;
                     packet.BootpOPCode = BOOTPOPCode.BootReply;
-					packet.HardwareAddress = new HWAddress(Netboot.Common.Functions.GetMacAddress().GetAddressBytes());
+                    packet.HardwareAddress = new HWAddress(Netboot.Common.Functions.GetMacAddress().GetAddressBytes());
                     packet.HardwareLength = (byte)packet.HardwareAddress.Length;
 
                     switch (msgType)
-					{
-						case DHCPMessageType.Offer:
+                    {
+                        case DHCPMessageType.Offer:
                             packet.SetMessageType(DHCPMessageType.Request);
                             break;
-						case DHCPMessageType.Ack:
-							break;
-						default:
-							break;
-					}
-					break;
-			}
+                        case DHCPMessageType.Ack:
+                            break;
+                        default:
+                            break;
+                    }
+                    break;
+            }
 
-			return packet;
-		}
+            return packet;
+        }
 
-		public DHCPMessageType GetMessageType() => (DHCPMessageType)GetOption
-				((byte)DHCPOptions.MessageType).Data.First();
+        public DHCPMessageType GetMessageType() => (DHCPMessageType)GetOption
+                ((byte)DHCPOptions.MessageType).Data.First();
 
-		public void SetMessageType(DHCPMessageType msgType)
-		{
-			AddOption(new DHCPOption<byte>
-				((byte)DHCPOptions.MessageType, (byte)msgType));
-		}
+        public void SetMessageType(DHCPMessageType msgType)
+        {
+            AddOption(new DHCPOption<byte>
+                ((byte)DHCPOptions.MessageType, (byte)msgType));
+        }
 
-		public static DHCPPacket CreateRequest(IPAddress server)
-		{
+        public static DHCPPacket CreateRequest(IPAddress server)
+        {
             var packet = new DHCPPacket();
             packet.HardwareType = DHCPHardwareType.Ethernet;
             packet.Hop = 0;
@@ -557,9 +553,9 @@ namespace Netboot.Module.DHCPListener
             packet.HardwareAddress = new HWAddress(Netboot.Common.Functions.GetMacAddress().GetAddressBytes());
             packet.HardwareLength = (byte)packet.HardwareAddress.Length;
 
-			packet.SetMessageType(DHCPMessageType.Request);
+            packet.SetMessageType(DHCPMessageType.Request);
 
-			packet.AddOption(new DHCPOption<byte>(60, "PXEClient", Encoding.ASCII));
+            packet.AddOption(new DHCPOption<byte>(60, "PXEClient", Encoding.ASCII));
             packet.AddOption(new DHCPOption<byte>(93, (uint)Architecture.X86PC));
             packet.AddOption(new DHCPOption<byte>(97, ClientIdentType.UUID, Guid.NewGuid()));
             packet.AddOption(new((byte)DHCPOptions.ServerIdentifier, server));
@@ -567,51 +563,51 @@ namespace Netboot.Module.DHCPListener
             return packet;
         }
 
-		public void CommitOptions()
-		{
-			Options.OrderBy(key => key.Key);
+        public void CommitOptions()
+        {
+            Options.OrderBy(key => key.Key);
 
-			// add End Option (if needed)
-			if (!Options.ContainsKey(byte.MaxValue))
-				AddOption(new(byte.MaxValue));
+            // add End Option (if needed)
+            if (!Options.ContainsKey(byte.MaxValue))
+                AddOption(new(byte.MaxValue));
 
-			var curPosition = Buffer.Position;
-			var offset = 240;
+            var curPosition = Buffer.Position;
+            var offset = 240;
 
-			Buffer.Position = offset;
-			foreach (var option in Options.Values.ToList())
-			{
-				#region "DHCP Option Number"
-				offset += Write_UINT8(Convert.ToByte(option.Option), offset);
-				Buffer.Position = offset;
+            Buffer.Position = offset;
+            foreach (var option in Options.Values.ToList())
+            {
+                #region "DHCP Option Number"
+                offset += Write_UINT8(Convert.ToByte(option.Option), offset);
+                Buffer.Position = offset;
 
-				if (option.Option == byte.MaxValue)
-					break;
-				#endregion
+                if (option.Option == byte.MaxValue)
+                    break;
+                #endregion
 
-				#region "DHCP Option Length"
-				// Write Option length
-				offset += Write_UINT8(option.Length, offset);
-				Buffer.Position = offset;
-				#endregion
+                #region "DHCP Option Length"
+                // Write Option length
+                offset += Write_UINT8(option.Length, offset);
+                Buffer.Position = offset;
+                #endregion
 
-				#region "DHCP Option Data"
-				// Write Option data
-				if (option.Length != 1)
-				{
-					Buffer.Write(option.Data);
-					offset += option.Length;
-				}
-				else
-					offset += Write_UINT8(Convert.ToByte(option.Data.First()), offset);
+                #region "DHCP Option Data"
+                // Write Option data
+                if (option.Length != 1)
+                {
+                    Buffer.Write(option.Data);
+                    offset += option.Length;
+                }
+                else
+                    offset += Write_UINT8(Convert.ToByte(option.Data.First()), offset);
 
-				Buffer.Position = offset;
-				#endregion
-			}
+                Buffer.Position = offset;
+                #endregion
+            }
 
-			Buffer.SetLength(offset);
-			Buffer.Capacity = offset;
-			Buffer.Position = curPosition;
-		}
-	}
+            Buffer.SetLength(offset);
+            Buffer.Capacity = offset;
+            Buffer.Position = curPosition;
+        }
+    }
 }

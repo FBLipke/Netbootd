@@ -4,6 +4,7 @@ using Netboot.Common.System;
 using Netboot.Module.DHCPListener.Event;
 using System.Net;
 using System.Reflection;
+using System.Xml;
 
 namespace Netboot.Module.DHCPListener
 {
@@ -83,7 +84,7 @@ namespace Netboot.Module.DHCPListener
 					bs.HeartBeat();
 		}
 
-		public void Bootstrap()
+		public void Bootstrap(XmlNode xml)
 		{
 			#region "Load Service Modules"
 			var serviceModules = new DirectoryInfo(Directory.GetCurrentDirectory())
@@ -103,8 +104,8 @@ namespace Netboot.Module.DHCPListener
 				{
 					try
 					{
-						var b = t.InvokeMember(string.Empty, BindingFlags.CreateInstance,
-							null, null, null) as IBootService;
+                        var b = t.InvokeMember(string.Empty, BindingFlags.CreateInstance,
+							null, null, new object[] { xml }) as IBootService;
 
 						if (b == null)
 							continue;
@@ -115,8 +116,6 @@ namespace Netboot.Module.DHCPListener
 							Bootservices.Add(bsType, [b]);
 						else
 							Bootservices[bsType].Add(b);
-
-						NetbootBase.Log("I", "DHCPListener", string.Format("Registered BsModule {0}", bsType));
 					}
 					catch (MissingMethodException ex)
 					{
@@ -134,13 +133,6 @@ namespace Netboot.Module.DHCPListener
 		public void Dispose()
 		{
 		}
-
-		/*
-
-
-
-		*/
-
 		public void Handle_Listener_Request(Guid server, Guid socket, Guid client, MemoryStream memoryStream)
 		{
 			ListenerRequestReceived?.Invoke(this, new ListenerRequestReceivedEventArgs(memoryStream, server, socket, client));

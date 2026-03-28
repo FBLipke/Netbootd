@@ -20,6 +20,7 @@ namespace Netboot
 	{
 		static NetbootBase? NetbootBase;
 
+		[STAThread]
 		static void Main(string[] args)
 		{
 			var currentProcess = Process.GetCurrentProcess();
@@ -28,7 +29,7 @@ namespace Netboot
 			AppDomain.CurrentDomain.DomainUnload += CurrentDomain_ProcessExit;
 
 			NetbootBase = new NetbootBase(args);
-			NetbootBase.Bootstrap();
+			NetbootBase.Bootstrap(null);
 			NetbootBase.Start();
 
 			#region "keep program alive"

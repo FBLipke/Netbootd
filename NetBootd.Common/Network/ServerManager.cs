@@ -4,6 +4,7 @@ using Netboot.Common.System;
 using System.Text;
 using System.Net;
 using System.Runtime.InteropServices;
+using System.Xml;
 
 namespace Netboot.Common.Network
 {
@@ -54,7 +55,7 @@ namespace Netboot.Common.Network
 			Servers[server].Sockets[socket].Send(client, data, encoding, keepalive);
 		}
 
-		public Guid Add(ProtoType protocolType, List<ushort> port)
+		public Guid Add(ProtoType protocolType, List<ushort> port, bool multicast = false)
 		{
 			var guid = Guid.NewGuid();
 
@@ -62,11 +63,11 @@ namespace Netboot.Common.Network
 			switch (protocolType)
 			{
 				case ProtoType.Tcp:
-					server = new NetbootTcpServer(protocolType, guid, port);
+					server = new NetbootTcpServer(protocolType, guid, port, false);
 					break;
 				case ProtoType.Raw:
 				case ProtoType.Udp:
-					server = new NetbootUdpServer(protocolType, guid, port);
+					server = new NetbootUdpServer(protocolType, guid, port, false);
 					break;
 				default:
 					throw new InvalidOperationException(string.Format("Invalid Protocoltype: {0}", protocolType));
@@ -77,7 +78,7 @@ namespace Netboot.Common.Network
 				Servers.Add(guid, server);
 				Servers[guid].ServerAddedSocket += (sender, e) =>
 				{
-					Servers[e.Server].Sockets[e.Socket].Start();
+					Servers[e.Server].Sockets[e.Socket].Start(false);
 
 					NetbootBase.Log("I", "ServerManager",
 						string.Format("Server '{0}' added Socket '{1}'", e.Server, e.Socket));
@@ -142,18 +143,21 @@ namespace Netboot.Common.Network
 				NetbootServer.HeartBeat();
 		}
 
-		public void Bootstrap()
+		public void Bootstrap(XmlNode xml)
 		{
 			foreach (var NetbootServer in Servers.Values.ToList())
-				NetbootServer.Bootstrap();
+				NetbootServer.Bootstrap(xml);
 		}
 
-		public void JoinMulticastGroup(Guid server, Guid socket, IPAddress group)
+		public void JoinMulticastGroup(Guid server, IPAddress group)
 		{
-			Servers[server].Sockets[socket].JoinMulticastGroup(group);
-			NetbootBase.Log("I", "ServerManager",
-					string.Format("Socket {0} on Server '{1}' joined MulticastGroup {2} with interface Address...", socket, server, group));
-
+            foreach (var socket in Servers[server].Sockets.Values)
+            {
+				socket.JoinMulticastGroup(group);
+                NetbootBase.Log("I", "ServerManager",
+					string.Format("Socket {0} on Server '{1}' joined MulticastGroup {2} with interface address {3}.",
+						socket.Id, server, group, socket.GetEndPoint().Address));
+            }
 		}
 
 		public void LeaveMulticastGroup(Guid server, Guid socket, IPAddress group)

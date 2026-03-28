@@ -2272,11 +2272,10 @@ namespace Netboot.Common.Network.HTTP
 
         public HttpResponse(HttpRequest httpRequest)
         {
-            if (httpRequest is null)
-                throw new ArgumentNullException(nameof(httpRequest));
+            ArgumentNullException.ThrowIfNull(httpRequest);
 
-            Headers = new Dictionary<string, string>();
-            Cookies = new List<HttpCookie>();
+            Headers = [];
+            Cookies = [];
         }
 
         public void SetCookie(HttpRequest request, string name)
@@ -2289,8 +2288,7 @@ namespace Netboot.Common.Network.HTTP
 
         public void SetCookie(HttpRequest request, HttpCookie cookie)
         {
-            if (request is null)
-                throw new ArgumentNullException(nameof(request));
+            ArgumentNullException.ThrowIfNull(request);
 
             Cookies.Add(cookie);
         }
@@ -2391,7 +2389,6 @@ namespace Netboot.Common.Network.HTTP
         {
             Content.Close();
             Content.Dispose();
-            Content = null;
         }
     }
 }

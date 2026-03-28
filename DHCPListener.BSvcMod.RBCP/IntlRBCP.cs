@@ -3,6 +3,7 @@ using Netboot.Module.DHCPListener;
 using Netboot.Module.DHCPListener.Interfaces;
 using System.Net;
 using System.Text;
+using System.Xml;
 
 namespace DHCPListener.BSvcMod.RBCP
 {
@@ -14,9 +15,29 @@ namespace DHCPListener.BSvcMod.RBCP
 
 		public BootServerType ServerType { get; set; } = BootServerType.PXEBootstrapServer;
 
-		public PxeRBCP()
+		public byte DiscoveryControl { get; private set; } = 3;
+
+        public byte MulticastDelay { get; private set; } = 4;
+
+        public byte MulticastTimeout { get; private set; } = 10;
+
+        public ushort MulticastCPort { get; private set; } = 4001;
+
+        public ushort MulticastSPort { get; private set; } = 69;
+
+        public IPAddress MulticastDiscoveryAddress { get; private set; } = IPAddress.Any;
+
+		public PxeRBCP(XmlNode xml)
 		{
-			DHCPListenerBase.BootServiceRequest += (sender, e) =>
+            DiscoveryControl = byte.Parse(xml.Attributes.GetNamedItem("discovery").Value);
+            MulticastDelay = byte.Parse(xml.Attributes.GetNamedItem("mcstartdelay").Value);
+            MulticastTimeout = byte.Parse(xml.Attributes.GetNamedItem("mctimeout").Value);
+            MulticastDiscoveryAddress = IPAddress.Parse(xml.Attributes.GetNamedItem("mcaddr").Value);
+
+			MulticastSPort = ushort.Parse(xml.Attributes.GetNamedItem("mcsport").Value);
+            MulticastCPort = ushort.Parse(xml.Attributes.GetNamedItem("mccport").Value);
+
+            DHCPListenerBase.BootServiceRequest += (sender, e) =>
 			{
 				Handle_Listener_Request(e.Server, e.Socket, e.Client, e.Request);
 			};
@@ -52,8 +73,8 @@ namespace DHCPListener.BSvcMod.RBCP
 							if (requestPacket.GetMessageType() != DHCPMessageType.Discover)
 								return;
 
-                            #region Get the UUID (GUID) of the Client and add him
-                            var clientId = requestPacket.HardwareAddress.ToGuid();
+							#region Get the UUID (GUID) of the Client and add him
+							var clientId = Guid.Empty;
                             Clients[clientId] = new RBCPClient(false, clientId, requestPacket, server, socket, client);
 
                             var idBytes = new byte[Guid.NewGuid().ToByteArray().Length];
@@ -65,7 +86,7 @@ namespace DHCPListener.BSvcMod.RBCP
 									idBytes[0] = opt;
 									clientId = Netboot.Module.DHCPListener.Functions.AsLittleEndianGuid(idBytes);
 
-                                    NetbootBase.Log("D", this.GetType().ToString(), string.Format("%s", clientId.ToString()));
+                                    NetbootBase.Log("D", GetType().ToString(), string.Format("%s", clientId.ToString()));
                                     break;
 								default:
 									break;
@@ -77,14 +98,12 @@ namespace DHCPListener.BSvcMod.RBCP
 								if (enCapOpts.ContainsKey(71))
 								{
 									var bsType = enCapOpts[71].AsUInt16();
-									NetbootBase.Log("D", this.GetType().ToString(), string.Format("%S", bsType));
+                                    NetbootBase.Log("D", GetType().ToString(), string.Format("%s", bsType));
 									return;
 								}
 							}
 
-
-
-                            var serverIP = NetbootBase.NetworkManager.ServerManager.GetEndPoint(server, socket);
+							var serverIP = NetbootBase.NetworkManager.ServerManager.GetEndPoint(server, socket);
 							Clients[clientId].Response = Clients[clientId].Request.CreateResponse(serverIP.Address);
 
 							#endregion
@@ -139,13 +158,15 @@ namespace DHCPListener.BSvcMod.RBCP
 
 			var EncVendorOptions = new List<DHCPOption<PXEVendorEncOptions>>
 			{
-				new(PXEVendorEncOptions.MulticastTFTPDelay,Clients[clientid].MulticastDelay),
-				new(PXEVendorEncOptions.DiscoveryMulticastAddress, Clients[clientid].McastDiscoveryAddress),
+				new(PXEVendorEncOptions.MulticastTFTPDelay, MulticastDelay),
+                new(PXEVendorEncOptions.MulticastTFTPTimeout, MulticastTimeout),
+                new(PXEVendorEncOptions.DiscoveryMulticastAddress, MulticastDiscoveryAddress),
 				GenerateBootServersList(bootServers),
 				GenerateBootMenuePrompt(),
 				GenerateBootMenue(bootServers),
-				new(PXEVendorEncOptions.DiscoveryControl,
-					Clients[clientid].DiscoveryControl),
+				new(PXEVendorEncOptions.MulticastServerPort, MulticastSPort),
+                new(PXEVendorEncOptions.MulticastClientPort, MulticastCPort),
+                new(PXEVendorEncOptions.DiscoveryControl, DiscoveryControl),
 				new(PXEVendorEncOptions.End)
 			};
 
@@ -160,8 +181,8 @@ namespace DHCPListener.BSvcMod.RBCP
 			if (endpoint.Address.Equals(IPAddress.Parse("0.0.0.0")))
 				endpoint.Address = IPAddress.Broadcast;
 
-			NetbootBase.NetworkManager.ServerManager.Servers[Clients[clientid].Server].Send(Clients[clientid].Socket, Clients[clientid].Client,
-				endpoint, bytes);
+			NetbootBase.NetworkManager.ServerManager.Servers[Clients[clientid].Server]
+				.Send(Clients[clientid].Socket, Clients[clientid].Client, endpoint, bytes);
 		}
 
 		public void Handle_DHCP_Request(Guid clientid, DHCPPacket request)

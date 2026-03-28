@@ -1,24 +1,25 @@
 ﻿using Netboot.Common.Network.HTTP;
 using Netboot.Common.Network.Sockets;
-using Netboot.Common.System;
 using Netboot.Common.Network.Sockets.Interfaces;
+using Netboot.Common.System;
+using System.Xml;
 
 namespace Netboot.Common.Network
 {
 	public class ClientManager : IManager
 	{
-		public event ClientManagerReceivedDataEventHandler ClientManagerReceivedData;
+		public event ClientManagerReceivedDataEventHandler? ClientManagerReceivedData;
 
-		public event ClientManagerClosedConnectionEventHandler ClientManagerClosedConnection;
+		public event ClientManagerClosedConnectionEventHandler? ClientManagerClosedConnection;
 
 		public Dictionary<Guid, INetbootClient> Clients { get; }
 
-		public Filesystem FileSystem { get; set; }
+		public Filesystem? FileSystem { get; set; }
 
 		public ClientManager()
 		{
 			Clients = [];
-			HttpRequest httpRequest = new()
+			var httpRequest = new HttpRequest()
 			{
 				Method = "POST",
 				Path = "/api",
@@ -40,6 +41,7 @@ namespace Netboot.Common.Network
 			{
                 ClientManagerReceivedData?.Invoke(this, new ClientManagerReceivedDataArgs(e.Client, e.Data));
 			};
+
 			client.ClientError += (sender, e) =>
 			{
 				if (!Clients.ContainsKey(e.Client))
@@ -97,7 +99,9 @@ namespace Netboot.Common.Network
 				NetbootTcpClient.Disconnect();
 		}
 
-		public void Bootstrap() => throw new NotImplementedException();
+		public void Bootstrap(XmlNode xml)
+		{
+        }
 
 		public delegate void ClientManagerReceivedDataEventHandler(
 		  IManager sender,

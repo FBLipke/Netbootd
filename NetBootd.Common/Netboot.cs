@@ -11,11 +11,13 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Netboot.Common.Network;
-using Netboot.Common.System;
 using Netboot.Common.Common;
+using Netboot.Common.Network;
+using Netboot.Common.Provider;
 using Netboot.Common.Provider.Events;
+using Netboot.Common.System;
 using System.Reflection;
+using System.Xml;
 
 namespace Netboot.Common
 {
@@ -24,6 +26,7 @@ namespace Netboot.Common
 		private Thread _heartBeatThread;
 
 		public static NetworkManager NetworkManager { get; private set; }
+
 		public static Dictionary<string, IProvider>? Providers { get; private set; }
 
 		public Filesystem FileSystem { get; set; }
@@ -38,7 +41,6 @@ namespace Netboot.Common
 		{
 			var appVersion = Assembly.GetExecutingAssembly().GetName().Version;
 			var title = string.Format("NetBoot {0}.{1}", appVersion.Major, appVersion.Minor);
-			Console.WriteLine(title);
 			Console.Title = title;
 
 			cmdArgs = args;
@@ -46,22 +48,38 @@ namespace Netboot.Common
 			FileSystem = new Filesystem(Environment.CurrentDirectory);
 			FileSystem.CreateDirectory("Config");
 
+
 			_heartBeatThread = new Thread(new ThreadStart(HeartBeat));
 
 			Providers = [];
-			Provider.Provider.ModuleLoaded += (sender, e) =>
+
+            #region "Read Config File"
+            #endregion
+
+            Provider.Provider.ModuleLoaded += (sender, e) =>
 			{
-				Providers.Add(e.Name, e.Module);
-				Log("I", "Common", string.Format("Loading Module \"{0}\"...", e.Module));
+                Log("I", "Common", string.Format("Loading Module \"{0}\"...", e.Module));
+                Providers.Add(e.Name, e.Module);
+                var xmlFile = new XmlDocument();
+                xmlFile.Load(Path.Combine(FileSystem.Root, "Config", "Netboot.xml"));
+                var services = xmlFile.SelectNodes("Netboot/Configuration/Services/Service");
 
-				Log("I", "Common", string.Format("Bootstrapping Module \"{0}\"...", e.Name));
-				Provider.Provider.InvokeMethod<IProvider>(Providers[e.Name], "Bootstrap");
+                foreach (XmlNode xmlnode in services)
+                    if (e.Name == xmlnode.Attributes.GetNamedItem("type").Value)
+						Providers[e.Name]?.Bootstrap(xmlnode);
 
-				Log("I", "Common", string.Format("Sending \"Install\" command  to \"{0}\"", e.Name));
-				Provider.Provider.InvokeMethod<IProvider>(Providers[e.Name], "Install");
+                var funcs = new List<string>
+                {
+                    "Install",
+                    "Start",
+                    "HeartBeat"
+                };
 
-				Log("I", "Common", string.Format("Sending \"Start\" command  to \"{0}\"", e.Name));
-				Provider.Provider.InvokeMethod<IProvider>(Providers[e.Name], "Start");
+                foreach (var item in funcs)
+                {
+                    Log("I", "Common", string.Format("Sending \"{1}\" command  to \"{0}\"", e.Name, item));
+                    Provider.Provider.InvokeMethod<IProvider>(Providers[e.Name], item, new object[] {});
+                }
 			};
 			Task.Run(() =>
 			{
@@ -161,24 +179,7 @@ namespace Netboot.Common
 
 			LoadServices();
 
-			#region "Read Config File"
-			var xmlFile = new XmlDocument();
-			xmlFile.Load(ConfigFile);
 
-			var services = xmlFile.SelectNodes("Netboot/Configuration/Services/Service");
-			foreach (var service in Services.Values.ToList())
-			{
-				foreach (XmlNode xmlnode in services)
-				{
-					if (xmlnode.Attributes.GetNamedItem("type").Value
-						!= service.ServiceType.ToLower())
-						continue;
-					service.Setup(xmlnode);
-					service.Initialize(xmlnode);
-				}
-			}
-
-			#endregion
 
 			foreach (var server in Servers.Values.ToList())
 				server.Initialize();
@@ -221,7 +222,7 @@ namespace Netboot.Common
 		{
 			NetworkManager.Start();
 
-			Running = Providers.Any();
+			Running = Providers.Count != 0;
 			_heartBeatThread.Start();
 		}
 
@@ -259,9 +260,16 @@ namespace Netboot.Common
 
 		}
 
-		public void Bootstrap()
+		public void Bootstrap(XmlNode xml)
 		{
-		}
+            NetworkManager.Bootstrap(xml);
+
+            foreach (var provider in Providers)
+            {
+                Provider.Provider.InvokeMethod<IProvider>(provider.Value, "Bootstrap", new object[] { xml });
+                Log("I", provider.Key, "closed!");
+            }
+        }
 
 		public void Close()
 		{
@@ -276,8 +284,8 @@ namespace Netboot.Common
 
 		public void HeartBeat()
 		{
-			Thread.Sleep(60000);
-			NetworkManager.HeartBeat();
+            Thread.Sleep(30000);
+            NetworkManager.HeartBeat();
 
 			foreach (var provider in Providers)
 				Provider.Provider.InvokeMethod<IProvider>(provider.Value, "HeartBeat");

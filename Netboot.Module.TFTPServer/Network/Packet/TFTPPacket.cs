@@ -22,12 +22,17 @@ namespace Netboot.Module.TFTPServer
 	{
 		public readonly Dictionary<string, string> Options = [];
 
-		public TFTPPacket(byte[] bufffer) : base(bufffer)
+		public TFTPPacket(byte[] buffer) : base(buffer)
 		{
 			ParsePacket();
 		}
 
-		public TFTPPacket(TFTPOPCodes opCode) : base()
+        public TFTPPacket(MemoryStream buffer) : base(buffer)
+        {
+            ParsePacket();
+        }
+
+        public TFTPPacket(TFTPOPCodes opCode) : base()
 		{
 			ParsePacket();
 			TFTPOPCode = opCode;

@@ -3,13 +3,14 @@ using Netboot.Common.Database.Interfaces;
 using Netboot.Common.System;
 using Netboot.Module.TFTPServer.Event;
 using System.Net;
-using System.Reflection;
+using System.Xml;
+
 
 namespace Netboot.Module.TFTPServer
 {
 	public class TFTPServerBase : IManager
 	{
-		private Dictionary<Guid, ITFTPClient> Clients { get; set; } = [];
+		private Dictionary<string, ITFTPClient> Clients { get; set; } = [];
 
 		private Filesystem Filesystem { get; set; }
 
@@ -31,6 +32,33 @@ namespace Netboot.Module.TFTPServer
 			Filesystem = filesystem;
 
             ListenerRequestReceived += (sender, e) => {
+                var endpoint = NetbootBase.NetworkManager.ServerManager.GetClientEndPoint(e.Server, e.Socket, e.Client);
+                var clientId = endpoint.Address.ToString();
+
+                if (!Clients.ContainsKey(clientId))
+                    Clients.Add(clientId, new TFTPClient(false, clientId, e.Server, e.Socket, new TFTPPacket(e.Request)));
+                else
+                {
+                    Clients[clientId].Server = e.Server;
+                    Clients[clientId].Socket = e.Socket;
+                    Clients[clientId].Client = e.Client;
+                    Clients[clientId].Request = new TFTPPacket(e.Request);
+                }
+
+                switch (Clients[clientId].Request.TFTPOPCode)
+                {
+                    case TFTPOPCodes.RRQ:
+                        Handle_Read_Request(clientId);
+                        break;
+                    case TFTPOPCodes.ACK:
+                        Handle_ACK_Request(clientId);
+                        break;
+                    case TFTPOPCodes.ERR:
+                        Handle_Error_Request(clientId);
+                        break;
+                    default:
+                        return;
+                }
 
             };
         }
@@ -45,122 +73,143 @@ namespace Netboot.Module.TFTPServer
 
 		public void HeartBeat()
 		{
-		}
+        }
 
-		public void Bootstrap()
-		{
-		}
+        public void Bootstrap(XmlNode xml)
+        {
 
-		public void Close()
+        }
+
+
+        public void Close()
 		{
 		}
 
 		public void Dispose()
 		{
+            Clients.Clear();
 		}
 
 		public void Handle_Listener_Request(Guid server, Guid socket, Guid client, MemoryStream memoryStream)
 		{
-			ListenerRequestReceived?.Invoke(this, new ListenerRequestReceivedEventArgs(memoryStream, server, socket, client));
+			ListenerRequestReceived?.Invoke(this, new(memoryStream, server, socket, client));
 		}
 
-        public void Handle_Read_Request(Guid server, Guid socket, Guid client, TFTPPacket packet)
+        public void Handle_Read_Request(string clientid)
         {
-            if (!packet.Options.ContainsKey("file"))
+            if (!Clients[clientid].Request.Options.ContainsKey("file"))
             {
-                Clients.Remove(client);
+                Clients.Remove(clientid);
                 return;
             }
 
-            Clients[client].CloseFile();
+            if (string.IsNullOrEmpty(Clients[clientid].Request.Options["file"]))
+            {
+                Clients[clientid].Response = new TFTPPacket(TFTPOPCodes.ERR);
+                Clients[clientid].Response.ErrorCode = TFTPErrorCode.AccessViolation;
+                Clients[clientid].Response.ErrorMessage = Clients[clientid].FileName;
 
-            Clients[client].PacketBacklog.Clear();
-            Clients[client].FileName = Functions.ReplaceSlashes(Path.Combine(Filesystem.Root, packet.Options["file"]));
+                NetbootBase.NetworkManager.ServerManager.Servers[Clients[clientid].Server].Send(Clients[clientid].Socket, Clients[clientid].Client,
+                    Clients[clientid].Response.Data, false);
 
-            var fileExists = Clients[client].OpenFile();
+                Clients.Remove(clientid);
+                return;
+            }
+            
+            Clients[clientid].CloseFile();
 
-            var response = new TFTPPacket(!fileExists ? TFTPOPCodes.ERR : TFTPOPCodes.OCK);
+            Clients[clientid].PacketBacklog.Clear();
+            Clients[clientid].FileName = Functions.ReplaceSlashes(Path.Combine(Filesystem.Root,
+                Clients[clientid].Request.Options["file"]));
+
+            var fileExists = Clients[clientid].OpenFile();
+
+            Clients[clientid].Response = new TFTPPacket(!fileExists ? TFTPOPCodes.ERR : TFTPOPCodes.OCK);
 
             if (!fileExists)
             {
-                response.ErrorCode = TFTPErrorCode.FileNotFound;
-                response.ErrorMessage = Clients[client].FileName;
+                Clients[clientid].Response.ErrorCode = TFTPErrorCode.FileNotFound;
+                Clients[clientid].Response.ErrorMessage = Clients[clientid].FileName;
 
-                Console.WriteLine("[E] TFTP: File not found: {0}", Clients[client].FileName);
+                NetbootBase.Log("I", "TFTP", string.Format("File not found: {0}", Clients[clientid].FileName));
             }
             else
             {
-                if (packet.Options.ContainsKey("blksize"))
-                    Clients[client].BlockSize = ushort.Parse(packet.Options["blksize"]);
+                if (Clients[clientid].Request.Options.ContainsKey("blksize"))
+                    Clients[clientid].BlockSize = ushort.Parse(Clients[clientid].Request.Options["blksize"]);
 
-                if (packet.Options.ContainsKey("windowsize"))
-                    Clients[client].WindowSize = byte.Parse(packet.Options["windowsize"]);
+                if (Clients[clientid].Request.Options.ContainsKey("windowsize"))
+                    Clients[clientid].WindowSize = byte.Parse(Clients[clientid].Request.Options["windowsize"]);
 
-                if (packet.Options.ContainsKey("msftwindow"))
-                    Clients[client].MSFTWindow = ushort.Parse(packet.Options["msftwindow"]);
+                if (Clients[clientid].Request.Options.ContainsKey("msftwindow"))
+                    Clients[clientid].MSFTWindow = ushort.Parse(Clients[clientid].Request.Options["msftwindow"]);
 
-                Clients[client].CurrentBlock = 0;
+                Clients[clientid].CurrentBlock = 0;
 
-                if (packet.Options.ContainsKey("tsize"))
-                    response.Options.Add("tsize", string.Format("{0}", Clients[client].BytesToRead));
+                if (Clients[clientid].Request.Options.ContainsKey("tsize"))
+                    Clients[clientid].Response.Options.Add("tsize", string.Format("{0}", Clients[clientid].BytesToRead));
 
-                if (packet.Options.ContainsKey("blksize"))
-                    response.Options.Add("blksize", string.Format("{0}", Clients[client].BlockSize));
+                if (Clients[clientid].Request.Options.ContainsKey("blksize"))
+                    Clients[clientid].Response.Options.Add("blksize", string.Format("{0}", Clients[clientid].BlockSize));
 
-                if (packet.Options.ContainsKey("windowsize"))
-                    response.Options.Add("windowsize", string.Format("{0}", Clients[client].WindowSize));
+                if (Clients[clientid].Request.Options.ContainsKey("windowsize"))
+                    Clients[clientid].Response.Options.Add("windowsize", string.Format("{0}", Clients[clientid].WindowSize));
 
-                if (packet.Options.ContainsKey("msftwindow"))
-                    response.Options.Add("msftwindow", string.Format("{0}", 27182));
+                if (Clients[clientid].Request.Options.ContainsKey("msftwindow"))
+                   Clients[clientid].Response.Options.Add("msftwindow", string.Format("{0}", 27182));
 
-                response.CommitOptions();
+                Clients[clientid].Response.CommitOptions();
             }
 
-            //ServerSendPacket?.Invoke(this, new(server, socket, response, Clients[client]));
+            NetbootBase.NetworkManager.ServerManager.Servers[Clients[clientid].Server].Send(Clients[clientid].Socket, Clients[clientid].Client,
+                Clients[clientid].Response.Data,false);
         }
 
-        public void Handle_ACK_Request(Guid server, Guid socket, Guid client, TFTPPacket packet)
+        public void Handle_ACK_Request(string clientid)
         {
-            if (!Clients.ContainsKey(client))
+            if (!Clients.ContainsKey(clientid))
                 return;
 
-            if (packet.Block != Clients[client].CurrentBlock)
-                Clients[client].ResetState(packet.Block);
+            if (Clients[clientid].Request.Block != Clients[clientid].CurrentBlock)
+                Clients[clientid].ResetState(Clients[clientid].Request.Block);
 
-            if (packet.Options.ContainsKey("NextWindow"))
-                Clients[client].WindowSize = packet.NextWindow;
+            if (Clients[clientid].Request.Options.ContainsKey("NextWindow"))
+                Clients[clientid].WindowSize = Clients[clientid].Request.NextWindow;
 
-            Clients[client].OpenFile();
+            Clients[clientid].OpenFile();
 
-            for (var i = 0; i < Clients[client].WindowSize; i++)
+            for (var i = 0; i < Clients[clientid].WindowSize; i++)
             {
-                var data = Clients[client].ReadChunk();
+                var data = Clients[clientid].ReadChunk();
 
-                using (var response = new TFTPPacket(TFTPOPCodes.DAT))
+                using (Clients[clientid].Response = new TFTPPacket(TFTPOPCodes.DAT))
                 {
-                    Clients[client].CurrentBlock++;
+                    Clients[clientid].CurrentBlock++;
 
-                    response.Block = Clients[client].CurrentBlock;
-                    response.Data = data;
-                    response.CommitOptions();
+                    Clients[clientid].Response.Block = Clients[clientid].CurrentBlock;
+                    Clients[clientid].Response.Data = data;
+                    Clients[clientid].Response.CommitOptions();
 
-                    AddEntryToPacketBacklog?.Invoke(this, new(client,
-                        new(Clients[client].BytesRead, Clients[client].BytesToRead, response.Block)));
+                    AddEntryToPacketBacklog?.Invoke(this, new(clientid,
+                        new(Clients[clientid].BytesRead, Clients[clientid].BytesToRead,
+                            Clients[clientid].Response.Block)));
 
-                   // ServerSendPacket?.Invoke(this, new(server, socket, response, Clients[client]));
+                    NetbootBase.NetworkManager.ServerManager.Servers[Clients[clientid].Server]
+                        .Send(Clients[clientid].Socket, Clients[clientid].Client, Clients[clientid].Response.Data, false);
                 }
 
-                if (Clients[client].BytesToRead == Clients[client].BytesRead)
+                if (Clients[clientid].BytesToRead == Clients[clientid].BytesRead)
                     break;
             }
 
-            if (Clients[client].BytesToRead == Clients[client].BytesRead)
-                Clients.Remove(client);
+            if (Clients[clientid].BytesToRead == Clients[clientid].BytesRead)
+                Clients.Remove(clientid);
         }
 
-        public void Handle_Error_Request(Guid server, Guid socket, string client, TFTPPacket packet)
+        public void Handle_Error_Request(string clientid)
         {
-            Console.WriteLine("[E] TFTP: ({0}): {1}!", packet.ErrorCode, packet.ErrorMessage);
+            NetbootBase.Log("I", "TFTP", string.Format("({0}): {1}",
+                Clients[clientid].Request.ErrorCode, Clients[clientid].Request.ErrorMessage));
         }
     }
 }

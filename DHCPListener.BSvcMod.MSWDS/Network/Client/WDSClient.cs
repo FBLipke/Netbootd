@@ -20,10 +20,6 @@ namespace DHCPListener.BSvcMod.MSWDS
 {
 	public class WDSClient : IWDSClient
 	{
-		public ushort PollInterval { get; set; } = 4;
-
-		public ushort RetryCount { get; set; } = 10;
-
 		public PXEPromptOptionValues PXEPromptDone { get; set; }
 
 		public PXEPromptOptionValues PXEPromptAction { get; set; } = PXEPromptOptionValues.OptIn;
@@ -44,17 +40,17 @@ namespace DHCPListener.BSvcMod.MSWDS
 
 		public NBPVersionValues ServerVersion { get; set; }
 
-		public IPAddress ReferralServer { get; set; }
+		public IPAddress ReferralServer { get; set; } = IPAddress.Any;
 		
 		public NBPVersionValues NBPVersion { get; set; }
-		
+
 		public Guid Id { get; set; }
 		
 		public Architecture Architecture {get; set; }
 		
-		public DHCPPacket Response {get; set; }
+		public DHCPPacket? Response { get; set; }
 		
-		public DHCPPacket Request {get; set; }
+		public DHCPPacket? Request { get; set; }
 		
 		public DHCPVendorID VendorId {get; set; }
 		

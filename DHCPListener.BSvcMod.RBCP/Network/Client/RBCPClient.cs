@@ -22,18 +22,6 @@ namespace DHCPListener.BSvcMod.RBCP
 
 		public ushort Item { get; set; }
 
-		public IPAddress McastDiscoveryAddress {get; set; }
-		
-		public ushort McastClientPort {get; set; }
-		
-		public ushort McastServerPort {get; set; }
-		
-		public byte DiscoveryControl {get; set; }
-		
-		public byte MulticastTimeout {get; set; }
-		
-		public byte MulticastDelay {get; set; }
-		
 		public Architecture Architecture {get; set; }
 		
 		public DHCPPacket Response {get; set; }
@@ -61,12 +49,6 @@ namespace DHCPListener.BSvcMod.RBCP
 			Layer = 0;
 			Item = 0;
 
-			DiscoveryControl = 0;
-			McastDiscoveryAddress = IPAddress.Parse("224.0.1.2");
-			McastServerPort = 69;
-			McastClientPort = 4001;
-			MulticastDelay = 4;
-			MulticastTimeout = 4;
 			Architecture = (Netboot.Module.DHCPListener.Architecture)
 				Request.GetOption((byte)DHCPOptions.SystemArchitectureType).AsUInt16();
 

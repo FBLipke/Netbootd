@@ -8,6 +8,7 @@ using Netboot.Common.Provider;
 using Netboot.Common.Provider.Events;
 using Netboot.Common.System;
 using Newtonsoft.Json;
+using System.Xml;
 
 namespace Netboot.Module.TFTPServer
 {
@@ -52,20 +53,19 @@ namespace Netboot.Module.TFTPServer
             Base = new TFTPServerBase(Filesystem, Database);
         }
 
-        public void Bootstrap()
+        public void Bootstrap(XmlNode xml)
         {
             Server = NetbootBase.NetworkManager.ServerManager.Add(ProtoType.Udp, [69, 1758]);
-
             NetbootBase.NetworkManager.UDPRequestReceived += (sender, e) => {
                 Base.Handle_Listener_Request(e.Server, e.Socket, e.Client, e.Data);
             };
 
-            Base.Bootstrap();
+            Base.Bootstrap(xml);
 
             if (VolativeModule)
                 return;
 
-            Database?.Bootstrap();
+            Database?.Bootstrap(xml);
         }
 
         public void Close()
@@ -82,11 +82,9 @@ namespace Netboot.Module.TFTPServer
 
         public void Dispose()
         {
-            if (Database != null)
-                Database.Dispose();
+            Database?.Dispose();
 
-            if (Members != null)
-                Members.Clear();
+            Members?.Clear();
 
             Base.Dispose();
         }

@@ -2,6 +2,7 @@
 using Netboot.Common.System;
 using System.Net;
 using System.Net.NetworkInformation;
+using System.Xml;
 
 namespace Netboot.Common.Network
 {
@@ -69,6 +70,9 @@ namespace Netboot.Common.Network
 			ServerManager.HeartBeat();
 		}
 
-		public void Bootstrap() => throw new NotImplementedException();
+		public void Bootstrap(XmlNode xml)
+		{
+            ServerManager.Bootstrap(xml);
+        }
 	}
 }

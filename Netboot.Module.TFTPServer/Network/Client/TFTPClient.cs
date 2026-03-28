@@ -12,14 +12,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 using Netboot.Common;
-using Netboot.Module.TFTPServer;
-using System.Net;
 
 namespace Netboot.Module.TFTPServer
 {
 	public class TFTPClient : ITFTPClient
 	{
-		public TFTPClient(bool testClient, string clientId, string serviceType, IPEndPoint remoteEndpoint, Guid serverid, Guid socketId, TFTPPacket request)
+		public TFTPClient(bool testClient, string clientId, Guid serverid, Guid socketId, TFTPPacket request)
 		{ 
 			BytesRead = 0;
 			Request = request;

@@ -45,12 +45,12 @@ namespace Netboot.Common.Provider
 						if (b == null)
 							continue;
 
-						ModuleLoaded.DynamicInvoke(null, new ModuleLoadedEventArgs(b, name));
+						ModuleLoaded.Invoke(null, new ModuleLoadedEventArgs(b, name));
 					}
 					catch (MissingMethodException ex)
 					{
-						Console.WriteLine(ex.Message);
-					}
+                        NetbootBase.Log("I", "Netbootd", "Installation completed...");
+                    }
 				}
 			}
 			#endregion
@@ -62,13 +62,15 @@ namespace Netboot.Common.Provider
 
 		public static bool HasEvent(object obj, string name) => obj.GetType().GetEvent(name) != null;
 
-		public static TY GetPropertyValue<TY>(object member, string propertyName)
-			=> AsType<TY>(member.GetType()
-					   .GetProperties()
-					   .Single(pi => pi.Name == propertyName)
-					   .GetValue(member, null));
+        public static TY GetPropertyValue<TY>(object member, string propertyName)
+        {
+            return AsType<TY>(member.GetType()
+                               .GetProperties()
+                               .Single(pi => pi.Name == propertyName)
+                               .GetValue(member, null));
+        }
 
-		public static void SetPropertyValue<TS>(object obj, string name, TS value, bool append = false, string delimeter = ";")
+        public static void SetPropertyValue<TS>(object obj, string name, TS value, bool append = false, string delimeter = ";")
 		{
 			if (value == null)
 				throw new ArgumentNullException(nameof(value));
@@ -115,10 +117,13 @@ namespace Netboot.Common.Provider
 			}
 		}
 
-		public static TS InvokeMethod<TS>(object obj, string name, object[] parameters = null)
-			=> AsType<TS>(obj.GetType().GetMethod(name).Invoke(obj, parameters));
+        public static TS InvokeMethod<TS>(object obj, string name, object[] parameters = null)
+        {
+			var method = obj.GetType().GetMethod(name);
+            return AsType<TS>(method.Invoke(obj, parameters));
+        }
 
-		public static void InvokeMethod(object obj, string name, object[] parameters = null)
+        public static void InvokeMethod(object obj, string name, object[] parameters = null)
 			=> obj.GetType().GetMethod(name).Invoke(obj, parameters);
 
 		public static Dictionary<Guid, IMember> LoadFromDataBase(
@@ -501,7 +506,7 @@ namespace Netboot.Common.Provider
 			}
 		}
 
-		public static T AsType<T>(object obj) => (T)Convert.ChangeType(obj, typeof(T));
+		public static T AsType<T>(object? obj) => (T)Convert.ChangeType(obj, typeof(T));
 
 		public delegate void ModuleLoadedEventHandler(object sender, ModuleLoadedEventArgs e);
 	}

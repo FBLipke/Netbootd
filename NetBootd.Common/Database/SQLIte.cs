@@ -16,12 +16,13 @@ using Netboot.Common.Database.Interfaces;
 using System.Collections.Specialized;
 using System.Data;
 using System.Data.SQLite;
+using System.Xml;
 
 namespace Netboot.Common.Database
 {
 	public class SqlDatabase : IDisposable, IManager, IDatabase
 	{
-		private readonly SQLiteConnection _sqlConn;
+		private readonly SQLiteConnection? _sqlConn;
 
 		public Filesystem FileSystem
 		{
@@ -35,12 +36,11 @@ namespace Netboot.Common.Database
 				return;
 
 			_sqlConn = new SQLiteConnection(string.Format("Data Source={0};Version=3;", Path.Combine(fs.Root, database)));
-			_sqlConn.Open();
+			_sqlConn?.Open();
 		}
 
 		public int Count<TS>(string table, string condition, TS value)
 		{
-			{
 				try
 				{
 					var num = 0;
@@ -52,12 +52,11 @@ namespace Netboot.Common.Database
 
 					return num;
 				}
-				catch (SQLiteException ex)
+				catch (SQLiteException)
 				{
 					//Console.WriteLine(ex);
 					return 0;
 				}
-			}
 		}
 
 		public Dictionary<int, NameValueCollection> Query(string sql)
@@ -148,7 +147,7 @@ namespace Netboot.Common.Database
 
 		public void Dispose() => _sqlConn.Dispose();
 
-		public void Bootstrap()
+		public void Bootstrap(XmlNode xml)
 		{
 		}
 	}

@@ -40,6 +40,8 @@ namespace Netboot.Module.TFTPServer
 
         bool OpenFile();
 
+        public TFTPPacket Request { get; set; }
+        public TFTPPacket Response { get; set; }
 
         void ResetState(ushort block);
 

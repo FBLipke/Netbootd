@@ -14,6 +14,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 using System.Diagnostics;
 using System.Net;
 using System.Net.NetworkInformation;
+using System.Xml;
 
 namespace Netboot.Common
 {
@@ -97,7 +98,21 @@ namespace Netboot.Common
 			return challenge;
 		}
 
-		public static string ReplaceSlashes(string input)
+
+		public static ushort ValueAsUint16(this XmlNode node, string attribute)
+		{
+			var attribVal = node.Attributes?.GetNamedItem(attribute).Value;
+            return !string.IsNullOrEmpty(attribVal) ? ushort.Parse(attribVal) : ushort.MinValue;
+        }
+
+        public static byte ValueAsByte(this XmlNode node, string attribute)
+        {
+            var attribVal = node.Attributes?.GetNamedItem(attribute).Value;
+            return !string.IsNullOrEmpty(attribVal) ? byte.Parse(attribVal) : byte.MinValue;
+        }
+
+
+        public static string ReplaceSlashes(string input)
 			=> input.Replace("/", NetbootBase.Platform.DirectorySeperatorChar);
 
 		public static void InvokeMethod(object obj, string name, object?[]? args)

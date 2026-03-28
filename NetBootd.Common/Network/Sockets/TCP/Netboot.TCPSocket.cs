@@ -45,7 +45,7 @@ namespace Netboot.Common.Network.Sockets
 			};
 		}
 
-		public void Start()
+		public void Start(bool joinMulticastGroup)
 		{
 			try
 			{

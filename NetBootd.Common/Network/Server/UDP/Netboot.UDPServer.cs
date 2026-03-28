@@ -2,6 +2,7 @@
 using Netboot.Common.System;
 using System.Net;
 using System.Text;
+using System.Xml;
 
 namespace Netboot.Common.Network.Sockets
 {
@@ -15,16 +16,23 @@ namespace Netboot.Common.Network.Sockets
 
         public Filesystem FileSystem { get; set; }
 
+        public bool Multicast{ get; private set; }
+
         Action<IPEndPoint> YieldFunc => (endp) =>
         {
+            if (endp.AddressFamily != global::System.Net.Sockets.AddressFamily.InterNetwork)
+                return;
+
             Add(endp);
         };
 
-        public NetbootUdpServer(ProtoType protocolType, Guid id, List<ushort> ports)
+        public NetbootUdpServer(ProtoType protocolType, Guid id, List<ushort> ports, bool multicast)
         {
             Id = id;
             ProtocolType = protocolType;
             Sockets = [];
+            
+            Multicast = multicast;
 
             Functions.GetIPAddresses(ports, YieldFunc);
         }
@@ -45,7 +53,7 @@ namespace Netboot.Common.Network.Sockets
             socket.SocketFailedToStart += (sender, e) => Remove(e.Socket);
             socket.SocketClosedClient += (sender, e) =>
             {
-                ServerClosedSocket?.Invoke(this, new (Id, e.Socket));
+                Remove(e.Socket);
                 ServerClosedClientConnection?.Invoke(this, new(Id, e.Socket, e.Client));
             };
 
@@ -56,8 +64,7 @@ namespace Netboot.Common.Network.Sockets
             };
 
             Sockets.Add(guid, socket);
-
-            ServerAddedSocket?.Invoke(this, new(Id, guid));
+            ServerAddedSocket?.Invoke(this, new(Id, socket.Id));
         }
 
         public void Remove(Guid socket)
@@ -73,7 +80,9 @@ namespace Netboot.Common.Network.Sockets
         public void Start()
         {
             foreach (var NetbootUdpSocket in Sockets.Values.ToList())
-                NetbootUdpSocket.Start();
+            {
+                NetbootUdpSocket.Start(Multicast);
+            }
         }
 
         public void Close()
@@ -120,7 +129,11 @@ namespace Netboot.Common.Network.Sockets
             Remove(socket);
         }
 
-        public void Bootstrap() => throw new NotImplementedException();
+        public void Bootstrap(XmlNode xml)
+        {
+
+        }
+
 
         public IPEndPoint GetEndPoint(Guid socket)
         {

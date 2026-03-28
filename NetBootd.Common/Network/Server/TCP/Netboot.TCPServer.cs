@@ -1,7 +1,8 @@
-﻿using Netboot.Common.System;
-using Netboot.Common.Network.Sockets.Interfaces;
+﻿using Netboot.Common.Network.Sockets.Interfaces;
+using Netboot.Common.System;
 using System.Net;
 using System.Text;
+using System.Xml;
 
 namespace Netboot.Common.Network.Sockets
 {
@@ -20,7 +21,7 @@ namespace Netboot.Common.Network.Sockets
             Add(endp);
         };
 
-        public NetbootTcpServer(ProtoType protocolType, Guid id, List<ushort> ports)
+        public NetbootTcpServer(ProtoType protocolType, Guid id, List<ushort> ports, bool multicast)
         {
             Id = id;
             ProtocolType = protocolType;
@@ -71,7 +72,7 @@ namespace Netboot.Common.Network.Sockets
         public void Start()
         {
             foreach (var NetbootTcpSocket in Sockets.Values.ToList())
-                NetbootTcpSocket.Start();
+                NetbootTcpSocket.Start(false);
         }
 
         public void Close()
@@ -120,7 +121,11 @@ namespace Netboot.Common.Network.Sockets
         public IPEndPoint GetEndPoint(Guid socket)
             => Sockets[socket].GetEndPoint();
 
-        public void Bootstrap() => throw new NotImplementedException();
+        public void Bootstrap(XmlNode xml)
+        {
+
+        }
+
 
         public void Send(Guid socket, Guid client, IPEndPoint remoteendpoint, MemoryStream data)
         {

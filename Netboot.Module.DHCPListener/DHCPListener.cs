@@ -8,6 +8,8 @@ using Netboot.Common.Provider;
 using Netboot.Common.Provider.Events;
 using Netboot.Common.System;
 using Newtonsoft.Json;
+using System.Net;
+using System.Xml;
 
 namespace Netboot.Module.DHCPListener
 {
@@ -53,20 +55,27 @@ namespace Netboot.Module.DHCPListener
 		}
 
 
-		public void Bootstrap()
+		public void Bootstrap(XmlNode xml)
 		{
-			Server = NetbootBase.NetworkManager.ServerManager.Add(ProtoType.Udp, [67, 68, 4011]);
+			var _ports = new List<ushort>();
 
-			NetbootBase.NetworkManager.UDPRequestReceived += (sender, e) => {
-				Base.Handle_Listener_Request(e.Server, e.Socket, e.Client,e.Data);
+            var ports = xml.Attributes.GetNamedItem("port").Value.Split(',').ToList();
+            if (ports.Count > 0)
+                _ports.AddRange(from port in ports select ushort.Parse(port.Trim()));
+
+            Server = NetbootBase.NetworkManager.ServerManager.Add(ProtoType.Udp, _ports);
+			NetbootBase.NetworkManager.ServerManager.JoinMulticastGroup(Server, IPAddress.Parse("224.0.1.2"));
+
+            NetbootBase.NetworkManager.UDPRequestReceived += (sender, e) => {
+				Base.Handle_Listener_Request(e.Server, e.Socket, e.Client, e.Data);
 			};
 			
-			Base.Bootstrap();
+			Base.Bootstrap(xml);
 
 			if (VolativeModule)
 				return;
 
-			Database?.Bootstrap();
+			Database?.Bootstrap(xml);
 		}
 
 		public void Close()

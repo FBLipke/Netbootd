@@ -8,9 +8,10 @@ namespace Netboot.Common.Network.HTTP
 	{
 		public HttpRequest()
 		{
-			Headers = new Dictionary<string, string>();
-			Cookies = new List<HttpCookie>();
-			Parameters = new Dictionary<string, string>();
+			Headers = [];
+			Cookies = [];
+			Parameters = [];
+			RemEndpoint = new IPEndPoint(IPAddress.Any, 0);
 		}
 
 		public string Create()
@@ -29,7 +30,7 @@ namespace Netboot.Common.Network.HTTP
 
 		public void SetCookie(HttpCookie cookie) => Cookies.Add(cookie);
 
-		public HttpCookie Get_Cookie(string name) => Cookies.Where(c => c.Name == name).FirstOrDefault();
+		public HttpCookie? Get_Cookie(string name) => Cookies?.FirstOrDefault(c => c.Name == name);
 
 		public Dictionary<string, string> Headers { get; set; }
 
@@ -52,13 +53,11 @@ namespace Netboot.Common.Network.HTTP
 		public void Dispose()
 		{
 			Headers.Clear();
-			Headers = null;
 			Cookies.Clear();
-			Cookies = null;
 			if (Content == null)
 				return;
+
 			Content.Dispose();
-			Content = null;
 		}
 
 		public new string ToString()

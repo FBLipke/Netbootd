@@ -17,6 +17,7 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Xml;
 
 namespace Netboot.Module
 {
@@ -24,7 +25,7 @@ namespace Netboot.Module
 	{
 		public Filesystem Filesystem { get; set; }
 
-		public IDatabase Database { get; set; }
+		public IDatabase? Database { get; set; }
 
 		public Dictionary<Guid, IMember> Members { get; set; }
 
@@ -52,21 +53,18 @@ namespace Netboot.Module
 			CanRemove = false;
 			Members = new Dictionary<Guid, IMember>();
 			Filesystem = new Filesystem("Providers\\Eventlog");
+
 			if (VolativeModule)
 				return;
 			Database = new SqlDatabase(Filesystem, "Eventlog.db");
 		}
 
-		public void Bootstrap()
+		public void Bootstrap(XmlNode xml)
 		{
-			// NetbootBase.NetworkManager.ServerManager.Add(Netboot.Common.Network.sockets.ProtoType.Tcp, Netboot.Common.Network.sockets.ServerMode.Http, 90);
-
-			// NetbootBase.NetworkManager.HTTPRequestReceived += (sender, e) => {};
-
 			if (VolativeModule)
 				return;
 			
-			Database?.Bootstrap();
+			Database?.Bootstrap(xml);
 		}
 
 		public void Close()
@@ -80,17 +78,8 @@ namespace Netboot.Module
 
 		public void Dispose()
 		{
-			if (Database != null)
-			{
-				Database.Dispose();
-				Database = null;
-			}
-			if (Members != null)
-			{
-				Members.Clear();
-				Members = null;
-			}
-			Filesystem = null;
+			Database?.Dispose();
+			Members?.Clear();
 		}
 
 		public string Handle_Get_Request(NetbootHttpContext request) => JsonConvert.SerializeObject(Members.Values);
@@ -99,7 +88,7 @@ namespace Netboot.Module
 		{
 		}
 
-		public IMember Get_Member(Guid id) => Members.ContainsKey(id) ? Members[id] : null;
+		public IMember? Get_Member(Guid id) => Members.TryGetValue(id, out IMember? value) ? value : null;
 
 		public void HeartBeat()
 		{
@@ -116,7 +105,7 @@ namespace Netboot.Module
 		public void Start()
 		{
 			Active = true;
-			NetbootBase.Log("I", FriendlyName, " Following messages from Console \"" + Console.Title + "\" will redirected to this Module!");
+			NetbootBase.Log("I", FriendlyName, "Log messages will redirected to this Module!");
 		}
 
 		public void Stop()

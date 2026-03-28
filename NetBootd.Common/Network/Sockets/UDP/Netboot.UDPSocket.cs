@@ -53,7 +53,7 @@ namespace Netboot.Common.Network.Sockets
             };
         }
 
-        public void Start()
+        public void Start(bool joinMulticastGroup)
         {
             try
             {
@@ -64,7 +64,9 @@ namespace Netboot.Common.Network.Sockets
 
                 _sock.Bind(LocalEndpoint);
 
-                JoinMulticastGroup(IPAddress.Parse("224.0.1.2"));
+                if (joinMulticastGroup)
+                    JoinMulticastGroup(MulticastGroup);
+
                 _sock.BeginReceiveFrom(state.Buffer, 0, state.Buffer.Length, 0, ref LocalEndpoint,
                     new AsyncCallback(Received), state);
 
@@ -78,9 +80,10 @@ namespace Netboot.Common.Network.Sockets
 
         public void JoinMulticastGroup(IPAddress group)
         {
+            if (LocalEndpoint.AddressFamily != AddressFamily.InterNetwork)
+                return;
+            
             MulticastGroup = group;
-            _sock.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastTimeToLive,
-                MulticastTTL);
 
             _sock.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership,
                 new MulticastOption(MulticastGroup, ((IPEndPoint)LocalEndpoint).Address));
@@ -89,6 +92,9 @@ namespace Netboot.Common.Network.Sockets
 
         public void LeaveMulticastGroup(IPAddress group)
         {
+            if (LocalEndpoint.AddressFamily != AddressFamily.InterNetwork)
+                return;
+
             _sock.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.DropMembership,
                 new MulticastOption(group, ((IPEndPoint)LocalEndpoint).Address));
 
@@ -130,10 +136,10 @@ namespace Netboot.Common.Network.Sockets
 
         public void Close(Guid client)
         {
-            if (!Clients.ContainsKey(client))
+            if (!Clients.TryGetValue(client, out INetbootClient? value))
                 return;
 
-            Clients[client].Close();
+            value.Close();
             Remove(client);
         }
 
@@ -152,11 +158,10 @@ namespace Netboot.Common.Network.Sockets
         {
             Listening = false;
             foreach (var NetbootClient in Clients.Values.ToList())
-                if (NetbootClient != null)
-                    NetbootClient.Close();
+                NetbootClient?.Close();
 
 
-            LeaveMulticastGroup(IPAddress.Parse("224.0.1.2"));
+            LeaveMulticastGroup(MulticastGroup);
 
             _sock.Close();
         }

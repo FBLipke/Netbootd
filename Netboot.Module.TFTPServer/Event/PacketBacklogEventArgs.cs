@@ -18,9 +18,9 @@ namespace Netboot.Module.TFTPServer
     {
         public TFTPPacketBacklogEntry TFTPPacketBacklogEntry { get; private set; }
 
-        public Guid Client { get; private set; }
+        public string Client { get; private set; }
 
-        public PacketBacklogEventArgs(Guid client, TFTPPacketBacklogEntry packetBacklogEntry)
+        public PacketBacklogEventArgs(string client, TFTPPacketBacklogEntry packetBacklogEntry)
         {
             TFTPPacketBacklogEntry = packetBacklogEntry;
             Client = client;

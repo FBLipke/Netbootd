@@ -2,8 +2,8 @@
 <Netboot>
 	<Configuration>
 		<Services>
-			<Service type="dhcp" port="67,4011" behavior="1" timeout="30" delay="10" SMBShare="RemInst">
-				<Multicast addr="224.0.1.2" cport="40001" sport="69" startdelay="10" timeout="10" discovery="3" />
+			<Service type="DHCPListener" port="67,4011" behavior="1" SMBShare="RemInst"
+					 mcaddr="224.0.1.2" mccport="4001" mcsport="69" mcstartdelay="10" mctimeout="30" discovery="3" >
 				<Bootfiles>
 					<Bootfile behavior="0">Boot/#arch#/bstrap.#layer#</Bootfile>
 					<Bootfile behavior="1">OSChooser\i386\startrom.n12</Bootfile>
@@ -19,8 +19,8 @@
 					<Bootfile behavior="65535">Boot/#arch#/apitest.#layer#</Bootfile>
 				</Bootfiles>
 				<DHCP behavior="1" OSChooser="0">
-					<Option id ="251" type="string">OSChooser\i386\NTLDR</Option>
-					<Option id ="254" type="string">OSChooser\i386\boot.ini</Option>
+					<Option id ="251" type="string">OSChooser\#arch#\NTLDR</Option>
+					<Option id ="254" type="string">OSChooser\#arch#\boot.ini</Option>
 				</DHCP>
 				<DHCP behavior="65531">
 					<Option id ="17" type="string">http://#SERVERNAME#/</Option>
@@ -28,12 +28,13 @@
 				<DHCP behavior="65532">
 					<Option id ="210" type="string">/linux</Option>
 				</DHCP>
+				<DHCP behavior="65534" PollInterval ="5" RetryCount ="5" PromptAction="1" ServerSelection="1">
+					<Option id ="252" type="string">Boot\#arch#\default.bcd</Option>
+				</DHCP>
 			</Service>
-			<Service type="binl" port="44776" SMBShare="RemInst" rootdir="TFTPRoot" oscfile="welcome.osc" osclang="englisch"/>
-			<Service type="tftp" port="69" max_blksize="16384">
-			</Service>
-			<Service type="biss" port="1638">
-			</Service>
+			<Service type="BINLServer" port="44776" SMBShare="RemInst" rootdir="TFTPRoot" oscfile="welcome.osc" osclang="englisch"/>
+			<Service type="TFTPServer" port="69" max_blksize="16384" />
+			<Service type="BISServer" port="1638" />
 		</Services>
 	</Configuration>
 </Netboot>

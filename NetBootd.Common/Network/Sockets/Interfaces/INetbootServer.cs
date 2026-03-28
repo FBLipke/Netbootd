@@ -1,6 +1,7 @@
 ﻿using Netboot.Common.System;
 using System.Net;
 using System.Text;
+using System.Xml;
 
 namespace Netboot.Common.Network.Sockets.Interfaces
 {
@@ -44,6 +45,6 @@ namespace Netboot.Common.Network.Sockets.Interfaces
 
 		void HeartBeat();
 		void Stop();
-		void Bootstrap();
+		void Bootstrap(XmlNode xml);
 	}
 }
