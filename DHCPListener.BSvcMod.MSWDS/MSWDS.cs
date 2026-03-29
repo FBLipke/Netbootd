@@ -2,8 +2,6 @@
 using Netboot.Module.DHCPListener;
 using Netboot.Module.DHCPListener.Interfaces;
 using System.Buffers.Binary;
-using System.Net;
-using System.Runtime.Intrinsics.X86;
 using System.Text;
 using System.Xml;
 
@@ -108,7 +106,7 @@ namespace DHCPListener.BSvcMod.MSWDS
 								if (bsType != ServerType)
 									return;
 							}
-							
+
 							var opt = requestPacket.GetOption((byte)DHCPOptions.UuidGuidBasedClientIdentifier).Data;
 							switch ((ClientIdentType)opt.First())
 							{

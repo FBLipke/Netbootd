@@ -16,6 +16,7 @@ using Netboot.Common.Network;
 using Netboot.Common.Provider;
 using Netboot.Common.Provider.Events;
 using Netboot.Common.System;
+using System.Globalization;
 using System.Reflection;
 using System.Xml;
 
@@ -162,12 +163,10 @@ namespace Netboot.Common
 
 		public static void Log(string type, string name, string logmessage)
 		{
-			if (!Provider.Provider.CanDo("Log").Any())
-				Console.WriteLine(logmessage);
-			else
-				Provider.Provider.InvokeMethod(Provider.Provider.CanDo("Log").First(), "Log",
-					[type, name, logmessage]);
+			var str = "\t" + DateTime.Now.ToString("dd.MM.yyyy : HH:mm:ss", CultureInfo.InvariantCulture)
+				+ "\tNetboot." + name + ": " + logmessage;
 
+			Console.WriteLine("[{0}] {1}",type , str);
 		}
 	}
 }

@@ -1,7 +1,9 @@
 ﻿using Netboot.Common;
+using Netboot.Common.Network.Interfaces;
 using Netboot.Module.DHCPListener;
 using Netboot.Module.DHCPListener.Interfaces;
 using System.Net;
+using System.Net.Sockets;
 using System.Text;
 using System.Xml;
 
@@ -11,7 +13,7 @@ namespace DHCPListener.BSvcMod.BSDP
     {
 		Dictionary<Guid, IBSDPClient> Clients = [];
 
-		public BootServerType ServerType { get; set; } = BootServerType.Apple;
+		public BootServerType ServerType { get; set; } = BootServerType.AppleBootServer;
 
 		public AppleBSDP(XmlNode xml)
 		{
@@ -50,11 +52,13 @@ namespace DHCPListener.BSvcMod.BSDP
                     switch (requestPacket.GetVendorIdent)
 					{
 						case DHCPVendorID.AAPLBSDPC:
-							#region Get the UUID (GUID) of the Client and add him
-							var clientId = Guid.Empty;
+							NetbootBase.Log("I", string.Format("DHCPListener[{0}]", ServerType),
+								string.Format("Got {0} ({1}) from Client: {1}", requestPacket.GetMessageType(),
+								requestPacket.GetVendorIdent, client));
+							#region Get the UUID (GUID) of the Client and add...
+							var clientId = requestPacket.HardwareAddress.ToGuid();
 
-
-                            var idBytes = new byte[Guid.NewGuid().ToByteArray().Length];
+							var idBytes = new byte[Guid.NewGuid().ToByteArray().Length];
 
 							var opt = requestPacket.GetOption((byte)DHCPOptions.UuidGuidBasedClientIdentifier).AsByte();
 							switch ((ClientIdentType)opt)
@@ -87,9 +91,6 @@ namespace DHCPListener.BSvcMod.BSDP
 							Handle_BootService_Request(clientId, Clients[clientId].Request);
 							break;
 						default:
-                            NetbootBase.Log("I", string.Format("DHCPListener[{0}]", ServerType),
-								string.Format("Got {0} ({1}) request from Client: {2}", requestPacket.GetMessageType(),
-								requestPacket.GetVendorIdent, client));
                             return;
 					}
 
@@ -106,16 +107,13 @@ namespace DHCPListener.BSvcMod.BSDP
 
 		public void Handle_BootService_Request(Guid client, DHCPPacket requestPacket)
 		{
-			NetbootBase.Log("I", string.Format("DHCPListener[{0}]", ServerType),
-				string.Format("Got {0} request from Client: {1}", requestPacket.GetMessageType(),
-					client));
-
 			switch (requestPacket.GetMessageType())
 			{
 				case DHCPMessageType.Discover:
-					Handle_DHCP_Discover(client, requestPacket);
+					//Handle_DHCP_Discover(client, requestPacket);
 					break;
 				case DHCPMessageType.Inform:
+					Handle_DHCP_Inform(client, requestPacket);
 					break;
 				case DHCPMessageType.Request:
 					Handle_DHCP_Request(client, requestPacket);
@@ -136,16 +134,68 @@ namespace DHCPListener.BSvcMod.BSDP
 			var endpoint = NetbootBase.NetworkManager.ServerManager.GetClientEndPoint(Clients[clientid].Server, Clients[clientid].Socket, Clients[clientid].Client);
 			if (endpoint.Address.Equals(IPAddress.Parse("0.0.0.0")))
 				endpoint.Address = IPAddress.Broadcast;
-
-			NetbootBase.NetworkManager.ServerManager.Send(Clients[clientid].Server,
-				Clients[clientid].Socket, Clients[clientid].Client, endpoint, bytes);
 		}
 
 		public void Handle_DHCP_Request(Guid clientid, DHCPPacket request)
 		{
 		}
 
-        public void HeartBeat()
+		public void Handle_DHCP_Inform(Guid clientid, DHCPPacket request)
+		{
+			var encaps = request.GetEncOptions((byte)DHCPOptions.VendorSpecificInformation);
+			
+			foreach (var option in encaps)
+			{
+				switch ((BSDPVendorEncOptions)option.Value.Option)
+				{
+					case BSDPVendorEncOptions.MessageType:
+						switch ((BSDPMsgType)option.Value.AsByte())
+						{
+							case BSDPMsgType.List:
+								Handle_BSDP_List_Request(clientid, request);
+								break;
+							case BSDPMsgType.Select:
+								Handle_BSDP_Select_Request(clientid, request);
+								break;
+							case BSDPMsgType.Failed:
+								Handle_BSDP_Failed_Request(clientid, request);
+								break;
+							default:
+								return;
+						}
+						break;
+					default:
+						break;
+				}
+			}
+		}
+
+		private void Handle_BSDP_Failed_Request(Guid clientid, DHCPPacket request)
+		{
+			NetbootBase.Log("I", string.Format("DHCPListener[{0}]", ServerType),
+				string.Format("Got {0}[Failed] from Client: {1}", request.GetMessageType(), clientid));
+		}
+
+		private void Handle_BSDP_Select_Request(Guid clientid, DHCPPacket request)
+		{
+			var serverIP = NetbootBase.NetworkManager.ServerManager.GetEndPoint(Clients[clientid].Server, Clients[clientid].Socket);
+			var encaps = request.GetEncOptions((byte)DHCPOptions.VendorSpecificInformation);
+			if (!encaps[(byte)BSDPVendorEncOptions.ServerIdentifier].AsIPAddress().Equals(serverIP))
+				return;
+
+			NetbootBase.Log("I", string.Format("DHCPListener[{0}]", ServerType),
+				string.Format("Got {0}[Select] from Client: {1}", request.GetMessageType(), clientid));
+
+			// NetbootBase.NetworkManager.ServerManager.Send(Clients[clientid].Server,	Clients[clientid].Socket, Clients[clientid].Client, bytes);
+		}
+
+		public void Handle_BSDP_List_Request(Guid clientid, DHCPPacket request)
+		{
+			NetbootBase.Log("I", string.Format("DHCPListener[{0}]", ServerType),
+				string.Format("Got {0}[List] from Client: {1}", request.GetMessageType(), clientid));
+		}
+
+		public void HeartBeat()
         {
         }
     }

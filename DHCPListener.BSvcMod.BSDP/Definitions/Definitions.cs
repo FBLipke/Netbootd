@@ -11,26 +11,31 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-namespace Netboot.Module.DHCPListener
+namespace DHCPListener.BSvcMod.BSDP
 {
-	public enum BootServerType : ushort
+	public enum BSDPMsgType : byte
 	{
-		PXEBootstrapServer = 0,
-		MicrosoftWindowsNT = 1,
-		IntelLCM = 2,
-		DOSUNDI = 3,
-		NECESMPRO = 4,
-		IBMWSoD = 5,
-		IBMLCCM = 6,
-		CAUnicenterTNG = 7,
-		HPOpenView = 8,
-		Reserved = 9,
-		Vendor = 32768,
-		AppleLegacy = ushort.MaxValue - 5,
-		AppleBootServer = ushort.MaxValue - 4,
-		Linux = ushort.MaxValue - 3,
-		BISConfig = ushort.MaxValue - 2,
-		WindowsDeploymentServer = ushort.MaxValue - 1,
-		ApiTest = ushort.MaxValue
+		List = 1,
+		Select = 2,
+		Failed = 3
+	}
+
+	public enum BSDPVendorEncOptions : byte
+	{
+		MessageType = 1,
+		Version = 2,
+		ServerIdentifier = 3,
+		ServerPriority = 4,
+		ReplyPort = 5,
+		/// <summary>
+		/// Not Used
+		/// </summary>
+		BootImageListPath = 6,
+		DefaultBootImage = 7,
+		SelectedBootImage = 8,
+		BootImageList = 9,
+		Netboot10Firmware = 10,
+		AttributesFilterList = 11,
+		MaxMessageSize = 12,
 	}
 }

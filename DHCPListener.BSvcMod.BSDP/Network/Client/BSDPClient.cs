@@ -39,10 +39,57 @@ namespace DHCPListener.BSvcMod.BSDP
 
         public NicSpecType NicSpecType { get; set; }
 
-        private void _ctorFunc()
+		public BSDPMsgType BSDPMsgType { get; set; }
+
+		public Version BSDPVersion { get; set; }
+
+		private void _ctorFunc()
 		{
 			VendorId = Request.GetVendorIdent;
 			Response = new DHCPPacket();
+
+			var encaps = Request.GetEncOptions((byte)43).Values;
+			foreach (var option in encaps)
+			{
+				switch ((BSDPVendorEncOptions)option.Option)
+				{
+					case BSDPVendorEncOptions.MessageType:
+						BSDPMsgType = (BSDPMsgType)option.AsByte();
+						break;
+					case BSDPVendorEncOptions.Version:
+						BSDPVersion = new Version(option.Data.First(), option.Data.Last());
+						break;
+					case BSDPVendorEncOptions.ServerIdentifier:
+
+						break;
+					case BSDPVendorEncOptions.ServerPriority:
+						break;
+					case BSDPVendorEncOptions.ReplyPort:
+						break;
+					case BSDPVendorEncOptions.BootImageListPath:
+						break;
+					case BSDPVendorEncOptions.DefaultBootImage:
+						break;
+					case BSDPVendorEncOptions.SelectedBootImage:
+						break;
+					case BSDPVendorEncOptions.BootImageList:
+						break;
+					case BSDPVendorEncOptions.Netboot10Firmware:
+						break;
+					case BSDPVendorEncOptions.AttributesFilterList:
+						break;
+					case BSDPVendorEncOptions.MaxMessageSize:
+						break;
+					default:
+						break;
+				}
+			}
+
+
+
+
+
+
 		}
 
 		public BSDPClient(bool testClient, Guid id, DHCPPacket request, Guid server, Guid socket, Guid client)

@@ -11,6 +11,7 @@
 
 	<ItemGroup>
 	  <Compile Include="AppleBSDP.cs" />
+	  <Compile Include="Definitions\Definitions.cs" />
 	  <Compile Include="Network\Client\BSDPClient.cs" />
 	  <Compile Include="Network\Interfaces\IBSDPClient.cs" />
 	</ItemGroup>
