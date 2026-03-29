@@ -24,26 +24,18 @@ namespace Netboot.Common.Network.Sockets
 
 		public Guid Client { get; private set; }
 
-		public Origin Source { get; private set; }
-
-		public Origin Target { get; private set; }
-
 		public T Data { get; private set; }
 
 		public NetworkDataReceivedEventArgs(
 		  Guid server,
 		  Guid socket,
 		  Guid client,
-		  Origin src,
-		  Origin dest,
 		  T data)
 		{
 			Data = data;
 			Server = server;
 			Socket = socket;
 			Client = client;
-			Source = src;
-			Target = dest;
 		}
 	}
 }

@@ -22,7 +22,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\NetBoot.Content\NetBoot.Content.csproj" />
+	  <ProjectReference Include="..\NetBoot.Content\Netboot.Content.csproj" />
 	  <ProjectReference Include="..\NetBootd.Common\Netboot.Common.csproj" />
 	</ItemGroup>
 

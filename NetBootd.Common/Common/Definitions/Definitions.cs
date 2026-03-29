@@ -31,7 +31,7 @@ namespace Netboot.Common.Common.Definitions
 		ChannelBindings = 10
 	}
 
-	public enum ntlmssp_message_type
+	public enum ntlmssp_message_type : uint
 	{
 		Negotiate = 1,
 		Challenge = 2,
@@ -163,7 +163,7 @@ namespace Netboot.Common.Common.Definitions
 		KEY56 = 2147483648
 	}
 
-	public enum OSPlatformId
+	public enum OSPlatformId : byte
 	{
 		Windows = 0,
 		Linux = 1,
@@ -173,7 +173,7 @@ namespace Netboot.Common.Common.Definitions
 		FreeBSD	= 5
 	}
 
-	public enum EndianessBehavier
+	public enum EndianessBehavier : byte
 	{
 		LittleEndian,
 		BigEndian

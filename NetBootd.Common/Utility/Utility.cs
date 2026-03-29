@@ -11,7 +11,6 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Netboot.Common.Common;
 using Netboot.Common.Utility.Commands;
 
 namespace Netboot.Common.Utility
@@ -94,9 +93,6 @@ namespace Netboot.Common.Utility
 						case "dhcpc":
 
 							break;
-
-
-
 
 					}
 

@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<BaseOutputPath>..\</BaseOutputPath>
+		<EnableDynamicLoading>true</EnableDynamicLoading>
+		<EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+	</PropertyGroup>
+
+	<ItemGroup>
+	  <Compile Include="AppleBSDP.cs" />
+	  <Compile Include="Network\Client\BSDPClient.cs" />
+	  <Compile Include="Network\Interfaces\IBSDPClient.cs" />
+	</ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\NetBoot.Content\Netboot.Content.csproj" />
+    <ProjectReference Include="..\Netboot.Module.DHCPListener\Netboot.Module.DHCPListener.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -55,7 +55,7 @@ namespace Netboot.Module.DHCPListener
 
             ListenerRequestReceived += (sender, e) => {
                 Thread.Sleep(1);
-                BootServiceRequest?.Invoke(this, new BootServiceRequestEventArgs(e.Request, e.Server, e.Socket, e.Client));
+                BootServiceRequest?.Invoke(this, new(e.Request, e.Server, e.Socket, e.Client));
             };
 
             _RegisterBootService = (sender, e) => {

@@ -6,7 +6,7 @@
 		</Servers>
 		<Install provider="User">
 			<Entries>
-				<Entry Name="admin" Created="*" Password="admin123456" EMail ="Info@fblipke.de" Level="255" Provider="User" Description="Created from Installation script." />
+				<Entry Name="admin" Created="*" Password="password" EMail ="admin@local.lan" Level="255" Provider="User" Description="Created from Installation script." />
 			</Entries>
 		</Install>
 	</Module>

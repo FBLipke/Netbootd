@@ -10,11 +10,16 @@
 
   <ItemGroup>
     <Compile Remove="Config\NewFolder\**" />
+    <Compile Remove="TFTPRoot\**" />
     <EmbeddedResource Remove="Config\NewFolder\**" />
+    <EmbeddedResource Remove="TFTPRoot\**" />
     <None Remove="Config\NewFolder\**" />
+    <None Remove="TFTPRoot\**" />
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="davenport ntlm.pdf" />
+    <None Remove="NTLM.pdf" />
     <None Remove="Providers\TFTPServer\Boot\x64\boot.wim" />
     <None Remove="Providers\TFTPServer\Boot\x64\bootmgr.exe" />
     <None Remove="Providers\TFTPServer\Boot\x64\pxeboot.n12" />
@@ -31,7 +36,6 @@
 
   <ItemGroup>
     <Folder Include="Providers\TFTPServer\Netboot\NetbootSP0\10.6 Another Example.nbi\i386\" />
-    <Folder Include="TFTPRoot\" />
   </ItemGroup>
 
   <ItemGroup>
@@ -47,6 +51,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="Providers\TFTPServer\Boot\x86\wdsnbp.com">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Providers\WebSite\scripts\netboot.js">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
@@ -88,9 +95,6 @@
     <None Update="Providers\User\template\User_Login_Form.tpl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Providers\User\User.db">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
     <None Update="Providers\TFTPServer\OSChooser\englisch\00004e28.osc">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -100,58 +104,55 @@
     <None Update="Providers\TFTPServer\OSChooser\i386\ntldr_OSCHOICE">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="WebSite\admin\styles\default\close.png">
+    <None Update="Providers\WebSite\admin\styles\default\close.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="WebSite\admin\styles\default\offline.png">
+    <None Update="Providers\WebSite\admin\styles\default\offline.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="WebSite\admin\styles\default\online.png">
+    <None Update="Providers\WebSite\admin\styles\default\online.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="WebSite\admin\styles\default\style.css">
+    <None Update="Providers\WebSite\admin\styles\default\style.css">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="WebSite\admin\styles\default\unknown.png">
+    <None Update="Providers\WebSite\admin\styles\default\unknown.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="WebSite\favicon.ico">
+    <None Update="Providers\WebSite\favicon.ico">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="WebSite\public\styles\default\fonts\Roboto-Medium.ttf">
+    <None Update="Providers\WebSite\public\styles\default\fonts\Roboto-Medium.ttf">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="WebSite\public\styles\default\fonts\RobotoSlab-Regular.ttf">
+    <None Update="Providers\WebSite\public\styles\default\fonts\RobotoSlab-Regular.ttf">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="WebSite\public\styles\default\images\avatar.png">
+    <None Update="Providers\WebSite\public\styles\default\images\avatar.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="WebSite\public\styles\default\images\back.jpg">
+    <None Update="Providers\WebSite\public\styles\default\images\back.jpg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="WebSite\public\styles\default\images\disk.png">
+    <None Update="Providers\WebSite\public\styles\default\images\disk.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="WebSite\public\styles\default\images\nav-icon.png">
+    <None Update="Providers\WebSite\public\styles\default\images\nav-icon.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="WebSite\public\styles\default\images\pfeil.png">
+    <None Update="Providers\WebSite\public\styles\default\images\pfeil.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="WebSite\public\styles\default\style.css">
+    <None Update="Providers\WebSite\public\styles\default\style.css">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="WebSite\scripts\dropdown.js">
+    <None Update="Providers\WebSite\scripts\dropdown.js">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="WebSite\scripts\jquery-1.12.4.min.js">
+    <None Update="Providers\WebSite\scripts\jquery-1.12.4.min.js">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="WebSite\scripts\namiono.js">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="WebSite\template\site_footer.tpl">
+    <None Update="Providers\WebSite\template\site_footer.tpl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>

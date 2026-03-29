@@ -6,10 +6,7 @@ using Netboot.Common.Network.Sockets;
 using Netboot.Common.Provider;
 using Netboot.Common.Provider.Events;
 using Netboot.Common.System;
-using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Reflection;
 using System.Text;
 using System.Xml;
 
@@ -23,7 +20,7 @@ namespace Netboot.Module
 
 		public bool CanEdit { get; set; }
 
-		public string FriendlyName { get; set; } = "Icy Relay";
+		public string FriendlyName { get; set; } = "WebSite";
 
 		public string Description { get; set; } = "Stellt einen rudimentären ICY Media Stream bereit.";
 
@@ -45,7 +42,7 @@ namespace Netboot.Module
 		{
 			Members = [];
 			WebSiteSettings = new SiteSettings();
-			Filesystem = new Filesystem("WebSite");
+			Filesystem = new Filesystem("Providers\\WebSite");
 		}
 
 		public void Bootstrap(XmlNode xml)
@@ -151,7 +148,7 @@ namespace Netboot.Module
 			stringBuilder.Append("</body>\n");
 			stringBuilder.Append("<script type=\"text/javascript\" src=\"/scripts/jquery-1.12.4.min.js\"></script>\n");
 			stringBuilder.Append("<script type=\"text/javascript\" src=\"/scripts/dropdown.js\"></script>\n");
-			stringBuilder.Append("<script type=\"text/javascript\" src=\"/scripts/namiono.js\"></script>\n");
+			stringBuilder.Append("<script type=\"text/javascript\" src=\"/scripts/netboot.js\"></script>\n");
 			stringBuilder.Append("</html>\n");
 			return stringBuilder.ToString();
 		}
@@ -173,7 +170,7 @@ namespace Netboot.Module
 				switch (context.Request.Path)
 				{
 					case "/login/":
-						data = Handle_Redirect_Request(Provider.InvokeMethod<Member>(Provider.CanDo("Login").FirstOrDefault(), "Handle_Login_Request",
+                        data = Handle_Redirect_Request(Provider.InvokeMethod<Member>(Provider.CanDo("Login").FirstOrDefault(), "Handle_Login_Request",
 						[
 			  context
 						]) != null, "/").GetBytes_UTF8();
@@ -214,7 +211,7 @@ namespace Netboot.Module
 			response.GenerateResponseHeader(ref data, context.Request);
 
 
-			NetbootBase.NetworkManager.ServerManager.Servers[server].Send(socket, client, response.Content, response.KeepAlive);
+			NetbootBase.NetworkManager.ServerManager.Send(server, socket, client, response.Content, response.KeepAlive);
 			response.Dispose();
 		}
 
@@ -397,7 +394,7 @@ namespace Netboot.Module
 
 			public string SiteSlogan { get; set; } = "Entwickler Version (Server & Socket - Test)";
 
-			public int RefreshInterval { get; } = 2;
+			public int RefreshInterval { get; } = 5;
 
 			public string DefaultDesign { get; } = "default";
 		}
