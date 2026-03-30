@@ -12,15 +12,22 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 using Netboot.Common;
+using System.Net;
 
 namespace Netboot.Module.TFTPServer
 {
 	public class TFTPClient : ITFTPClient
 	{
-		public TFTPClient(bool testClient, string clientId, Guid serverid, Guid socketId, TFTPPacket request)
+		public TFTPClient(bool testClient, string clientId, Guid client, Guid server, Guid socket, TFTPPacket request, IPEndPoint endpoint)
 		{ 
 			BytesRead = 0;
 			Request = request;
+			RemoteEndpoint = endpoint;
+			Id = Client;
+
+			Socket = socket;
+			Server = server;
+			Client = client;
 		}
 
 		public Dictionary<ushort, TFTPPacketBacklogEntry> PacketBacklog { get; set; } = [];
@@ -38,6 +45,8 @@ namespace Netboot.Module.TFTPServer
 		public  bool isOpen { get; set; } = false;
 
 		public byte WindowSize { get; set; } = 1;
+
+		public IPEndPoint RemoteEndpoint { get; set; }
 
 		public ushort MSFTWindow { get; set; } = 31416;
 
@@ -74,7 +83,7 @@ namespace Netboot.Module.TFTPServer
 					isOpen = true;
 				}
 				else
-					return false;
+					isOpen = false;
 
 				return isOpen;
 			}
@@ -106,7 +115,7 @@ namespace Netboot.Module.TFTPServer
 
 			var buffer = new byte[chunksize];
 
-			if (FileStream != null)
+			if (FileStream != null && isOpen)
 			{
 				FileStream.Seek(BytesRead, SeekOrigin.Begin);
 				var readedBytes = FileStream.Read(buffer, 0, buffer.Length);

@@ -36,7 +36,7 @@ namespace DHCPListener.BSvcMod.MSRIS
 		public Guid Server { get; set; }
 		
 		public Guid Client { get; set; }
-        public Architecture Architecture { get; set; }
+        public Architecture Architecture { get; set; } = Architecture.X86PC;
 
         private void _ctorFunc()
 		{

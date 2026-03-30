@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -26,7 +27,9 @@ namespace Netboot.Module.TFTPServer
 
         public ushort MSFTWindow { get; set; }
 
-        public string FileName { get; set; }
+		public IPEndPoint RemoteEndpoint { get; set; }
+
+		public string FileName { get; set; }
 
         public FileStream FileStream { get; set; }
 
@@ -41,6 +44,7 @@ namespace Netboot.Module.TFTPServer
         bool OpenFile();
 
         public TFTPPacket Request { get; set; }
+
         public TFTPPacket Response { get; set; }
 
         void ResetState(ushort block);

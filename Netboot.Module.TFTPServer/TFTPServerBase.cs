@@ -35,23 +35,19 @@ namespace Netboot.Module.TFTPServer
                 if (!NetbootBase.NetworkManager.ServerManager.HasSocket(e.Server, e.Socket))
                     return;
 
+				var requestPacket = new TFTPPacket(e.Request);
 				var endpoint = NetbootBase.NetworkManager.ServerManager.GetClientEndPoint(e.Server, e.Socket, e.Client);
-                var clientId = endpoint.Address.ToString();
+				var clientId = endpoint.Address.ToString();
 
-                if (!Clients.ContainsKey(clientId))
-                    Clients.Add(clientId, new TFTPClient(false, clientId, e.Server, e.Socket, new TFTPPacket(e.Request)));
-                else
-                {
-                    Clients[clientId].Server = e.Server;
-                    Clients[clientId].Socket = e.Socket;
-                    Clients[clientId].Client = e.Client;
-                    Clients[clientId].Request = new TFTPPacket(e.Request);
-                }
-
-                switch (Clients[clientId].Request.TFTPOPCode)
+				switch (requestPacket.TFTPOPCode)
                 {
                     case TFTPOPCodes.RRQ:
-                        Handle_Read_Request(clientId);
+						if (Clients.ContainsKey(clientId))
+                            Clients.Remove(clientId); 
+
+						Clients.Add(clientId, new TFTPClient(false, clientId, e.Client, e.Server, e.Socket, requestPacket, endpoint));
+						
+						Handle_Read_Request(clientId);
                         break;
                     case TFTPOPCodes.ACK:
                         Handle_ACK_Request(clientId);
@@ -100,7 +96,10 @@ namespace Netboot.Module.TFTPServer
 
         public void Handle_Read_Request(string clientid)
         {
-			if (!Clients[clientid].Request.Options.ContainsKey("file"))
+			NetbootBase.Log("I", "TFTPServer", string.Format("Got RRQ-Request from client: {0} (Options: {1})",
+                Clients[clientid].RemoteEndpoint, string.Join(',', Clients[clientid].Request.Options.Keys.ToList())));
+			
+            if (!Clients[clientid].Request.Options.ContainsKey("file"))
             {
                 Clients.Remove(clientid);
                 return;
@@ -117,7 +116,7 @@ namespace Netboot.Module.TFTPServer
 				Clients[clientid].Response.CommitOptions();
 
 				NetbootBase.NetworkManager.ServerManager.Send(Clients[clientid].Server, Clients[clientid].Socket,
-                    Clients[clientid].Client, Clients[clientid].Response.Data, false);
+					Clients[clientid].Client, Clients[clientid].RemoteEndpoint, Clients[clientid].Response.Buffer.GetBuffer());
 
 				Clients.Remove(clientid);
                 return;
@@ -166,10 +165,10 @@ namespace Netboot.Module.TFTPServer
             }
 
 			Clients[clientid].Response.CommitOptions();
-			
-            NetbootBase.NetworkManager.ServerManager.Send(Clients[clientid].Server, Clients[clientid].Socket, Clients[clientid].Client,
-                Clients[clientid].Response.Data, false);
-        }
+
+			NetbootBase.NetworkManager.ServerManager.Send(Clients[clientid].Server, Clients[clientid].Socket,
+				Clients[clientid].Client, Clients[clientid].RemoteEndpoint, Clients[clientid].Response.Buffer.GetBuffer());
+		}
 
         public void Handle_ACK_Request(string clientid)
         {
@@ -186,20 +185,21 @@ namespace Netboot.Module.TFTPServer
 
             for (var i = 0; i < Clients[clientid].WindowSize; i++)
             {
-                using (Clients[clientid].Response = new TFTPPacket(TFTPOPCodes.DAT))
+                var chunk = Clients[clientid].ReadChunk();
+				using (Clients[clientid].Response = new TFTPPacket(TFTPOPCodes.DAT))
                 {
                     Clients[clientid].CurrentBlock++;
 
                     Clients[clientid].Response.Block = Clients[clientid].CurrentBlock;
-                    Clients[clientid].Response.Data = Clients[clientid].ReadChunk();
+                    Clients[clientid].Response.Data = chunk;
                     Clients[clientid].Response.CommitOptions();
 
                     AddEntryToPacketBacklog?.Invoke(this, new(clientid,
                         new(Clients[clientid].BytesRead, Clients[clientid].BytesToRead,
                             Clients[clientid].Response.Block)));
 
-					NetbootBase.NetworkManager.ServerManager.Send(Clients[clientid].Server,
-                        Clients[clientid].Socket, Clients[clientid].Client, Clients[clientid].Response.Data, false);
+					NetbootBase.NetworkManager.ServerManager.Send(Clients[clientid].Server, Clients[clientid].Socket,
+						Clients[clientid].Client, Clients[clientid].RemoteEndpoint, Clients[clientid].Response.Buffer.GetBuffer());
 				}
 
                 if (Clients[clientid].BytesToRead == Clients[clientid].BytesRead)

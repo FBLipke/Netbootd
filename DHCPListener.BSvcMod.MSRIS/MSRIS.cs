@@ -127,8 +127,29 @@ namespace DHCPListener.BSvcMod.MSRIS
             NetbootBase.Log("I", string.Format("DHCPListener[{0}]", ServerType),
                 string.Format("Got RIS {0} request from RIS Client: {1}", request.GetMessageType(), clientid));
 
-            Clients[clientid].Response.FileName = "Boot\\x86\\startrom.n12";
-            Clients[clientid].Response.AddOption(new((byte)DHCPOptions.VendorClassIdentifier, "PXEClient", Encoding.ASCII));
+			var filename = string.Empty;
+
+			switch (Clients[clientid].Architecture)
+			{
+				case Netboot.Module.DHCPListener.Architecture.X86PC:
+					filename = Bootfile.Replace("#arch#", "x86");
+					break;
+				case Netboot.Module.DHCPListener.Architecture.EFI_IA32:
+					filename = Bootfile.Replace("#arch#", "efi");
+					break;
+				case Netboot.Module.DHCPListener.Architecture.EFIByteCode:
+					filename = Bootfile.Replace("#arch#", "efi");
+					break;
+				case Netboot.Module.DHCPListener.Architecture.EFI_x8664:
+					filename = Bootfile.Replace("#arch#", "x64");
+					break;
+				default:
+					filename = Bootfile.Replace("#arch#", "x86");
+					break;
+			}
+
+			Clients[clientid].Response.FileName = filename;
+			Clients[clientid].Response.AddOption(new((byte)DHCPOptions.VendorClassIdentifier, "PXEClient", Encoding.ASCII));
 
             var bytes = Clients[clientid].Response.Buffer.GetBuffer();
 

@@ -162,7 +162,7 @@ namespace Netboot.Common.Network.Sockets
 			Clients.Remove(client);
 			var socketClosedClient = SocketClosedClient;
 
-			socketClosedClient?.Invoke(this, new SocketClosedClientEventArgs(client, Id));
+			socketClosedClient?.Invoke(this, new(client, Id));
 		}
 
 		public void Close()
