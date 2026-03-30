@@ -4,6 +4,7 @@ using Netboot.Module.DHCPListener.Interfaces;
 using System.Net;
 using System.Text;
 using System.Xml;
+using static DHCPListener.BSvcMod.RBCP.Definitions.Definitions;
 
 namespace DHCPListener.BSvcMod.RBCP
 {
@@ -162,23 +163,23 @@ namespace DHCPListener.BSvcMod.RBCP
 		{
 			Clients[clientid].Response.Flags = BootpFlags.Broadcast;
 
-			var EncVendorOptions = new List<DHCPOption<PXEVendorEncOptions>>
+			var EncVendorOptions = new List<DHCPOption<byte>>
 			{
-				new(PXEVendorEncOptions.MulticastTFTPDelay, MulticastDelay),
-                new(PXEVendorEncOptions.MulticastTFTPTimeout, MulticastTimeout),
-                new(PXEVendorEncOptions.DiscoveryMulticastAddress, MulticastDiscoveryAddress),
-				GenerateBootServersList(bootServers),
+				new((byte)PXEOptions.MulticastTFTPDelay, MulticastDelay),
+                new((byte)PXEOptions.MulticastTFTPTimeout, MulticastTimeout),
+                new((byte)PXEOptions.DiscoveryMulticastAddress, MulticastDiscoveryAddress),
+                GenerateBootServersList(bootServers),
 				GenerateBootMenuePrompt(),
 				GenerateBootMenue(bootServers),
-				new(PXEVendorEncOptions.MulticastServerPort, MulticastSPort),
-                new(PXEVendorEncOptions.MulticastClientPort, MulticastCPort),
-                new(PXEVendorEncOptions.DiscoveryControl, DiscoveryControl),
-				new(PXEVendorEncOptions.End)
+				new((byte)PXEOptions.MulticastServerPort, MulticastSPort),
+                new((byte)PXEOptions.MulticastClientPort, MulticastCPort),
+                new((byte)PXEOptions.DiscoveryControl, DiscoveryControl),
+				new((byte)PXEOptions.End)
 			};
 
 
-			Clients[clientid].Response.AddOption(new DHCPOption<byte>((byte)DHCPOptions.VendorClassIdentifier, "PXEClient", Encoding.ASCII));
-			Clients[clientid].Response.AddOption(new DHCPOption<byte>((byte)DHCPOptions.VendorSpecificInformation, EncVendorOptions));
+			Clients[clientid].Response.AddOption(new ((byte)DHCPOptions.VendorClassIdentifier, "PXEClient", Encoding.ASCII));
+			Clients[clientid].Response.AddOption(new ((byte)DHCPOptions.VendorSpecificInformation, EncVendorOptions));
 
 			var bytes = Clients[clientid].Response.Buffer.GetBuffer();
 			Clients[clientid].Response.CommitOptions();
@@ -195,7 +196,7 @@ namespace DHCPListener.BSvcMod.RBCP
 		{
 		}
 
-		public static DHCPOption<PXEVendorEncOptions> GenerateBootServersList(Dictionary<string, BootServer> serverlist)
+		public static DHCPOption<byte> GenerateBootServersList(Dictionary<string, BootServer> serverlist)
 		{
 			var serverlistBlock = new byte[byte.MaxValue];
 			var sbIndex = 0;
@@ -212,10 +213,10 @@ namespace DHCPListener.BSvcMod.RBCP
 
 			Array.Resize(ref serverlistBlock, sbIndex);
 
-			return new DHCPOption<PXEVendorEncOptions>(PXEVendorEncOptions.BootServer, serverlistBlock);
+			return new DHCPOption<byte>((byte)PXEOptions.BootServer, serverlistBlock);
 		}
 
-		public static DHCPOption<PXEVendorEncOptions> GenerateBootMenue(Dictionary<string, BootServer> servers)
+		public static DHCPOption<byte> GenerateBootMenue(Dictionary<string, BootServer> servers)
 		{
 			#region Setup the Menue itself...
 			var menubuffer = new byte[byte.MaxValue];
@@ -252,7 +253,7 @@ namespace DHCPListener.BSvcMod.RBCP
 			}
 
 			Array.Resize(ref menubuffer, mbIndex);
-			return new DHCPOption<PXEVendorEncOptions>(PXEVendorEncOptions.BootMenue, menubuffer);
+			return new DHCPOption<byte>((byte)PXEOptions.BootMenue, menubuffer);
 		}
 
 		public void HeartBeat()
@@ -269,7 +270,7 @@ namespace DHCPListener.BSvcMod.RBCP
 			}
 		}
 
-		public static DHCPOption<PXEVendorEncOptions> GenerateBootMenuePrompt(byte timeout = byte.MaxValue)
+		public static DHCPOption<byte> GenerateBootMenuePrompt(byte timeout = byte.MaxValue)
 		{
 			var prompt = Encoding.ASCII.GetBytes(timeout == byte.MaxValue ? "Select Server..." :
 				"Press [F8] to boot from Network or [esc] to cancel...");
@@ -286,7 +287,7 @@ namespace DHCPListener.BSvcMod.RBCP
 			Array.Copy(prompt, 0, promptbuffer, offset, prompt.Length);
 			#endregion
 
-			return new DHCPOption<PXEVendorEncOptions>(PXEVendorEncOptions.MenuPrompt, promptbuffer);
+			return new DHCPOption<byte>((byte)PXEOptions.MenuPrompt, promptbuffer);
 		}
     }
 }

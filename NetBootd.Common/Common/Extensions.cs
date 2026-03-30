@@ -1,6 +1,4 @@
-﻿using System;
-using System.Linq;
-using System.Net;
+﻿using System.Net;
 using System.Text;
 
 namespace Netboot.Common
@@ -21,11 +19,11 @@ namespace Netboot.Common
 			return flag;
 		}
 
-		public static string FromBase64(this string input) => Encoding.UTF8.GetString(Convert.FromBase64String(input));
+        public static double AsUnixTimeStamp(this DateTime dt)
+			=> DateTime.Now.Subtract(new DateTime(1970, 1, 1)).TotalSeconds;
 
-		public static double AsUnixTimeStamp(this DateTime dt) => DateTime.Now.Subtract(new DateTime(1970, 1, 1)).TotalSeconds;
-
-		public static string Append(this string str, string seperator, string appending) => string.Join(seperator,
+		public static string Append(this string str, string seperator, string appending)
+			=> string.Join(seperator,
 		[
 			str,
 			appending

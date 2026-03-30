@@ -83,11 +83,6 @@ namespace Netboot.Module.DHCPListener
 
         }
 
-        public DHCPOption(T option, List<DHCPOption<BSDPVendorEncOptions>> list)
-        {
-            DHCPOptionFunc(option, list);
-        }
-
         public DHCPOption(T option, List<DHCPOption<byte>> list)
         {
             DHCPOptionFunc(option, list);
@@ -95,7 +90,6 @@ namespace Netboot.Module.DHCPListener
 
         public DHCPOption(T option, List<DHCPOption<DHCPOptions>> list) => DHCPOptionFunc(option, list);
 
-        public DHCPOption(T option, List<DHCPOption<PXEVendorEncOptions>> list) => DHCPOptionFunc(option, list);
 
         public DHCPOption(T option, short data)
         {

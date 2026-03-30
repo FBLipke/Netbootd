@@ -10,6 +10,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <Compile Include="Definitions\BootMenueEntry.cs" />
 	  <Compile Include="Definitions\Definitions.cs" />
 	  <Compile Include="Definitions\PXEBootItem.cs" />
 	  <Compile Include="IntlRBCP.cs" />

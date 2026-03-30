@@ -10,20 +10,18 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <Compile Include="Events\ListenerRequestReceivedEventArgs.cs" />
-	  <Compile Include="Events\PacketBacklogEventArgs.cs" />
-	  <Compile Include="Network\Client\TFTPClient.cs" />
-	  <Compile Include="Network\Interfaces\ITFTPClient.cs" />
-	  <Compile Include="Network\Definitions\Definitions.cs" />
-	  <Compile Include="Network\Definitions\TFTPPacketBacklogEntry.cs" />
-	  <Compile Include="Network\Packet\TFTPPacket.cs" />
-	  <Compile Include="TFTPServerBase.cs" />
-	  <Compile Include="TFTPServer.cs" />
+	  <Compile Include="BINLServer.cs" />
+	  <Compile Include="BINLServerBase.cs" />
+	  <Compile Include="Network\Interfaces\IBinlService.cs" />
 	</ItemGroup>
 
 	<ItemGroup>
 	  <ProjectReference Include="..\NetBoot.Content\Netboot.Content.csproj" />
 	  <ProjectReference Include="..\NetBootd.Common\Netboot.Common.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="Network\Client\" />
 	</ItemGroup>
 
 </Project>

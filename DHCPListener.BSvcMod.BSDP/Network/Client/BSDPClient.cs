@@ -84,12 +84,6 @@ namespace DHCPListener.BSvcMod.BSDP
 						break;
 				}
 			}
-
-
-
-
-
-
 		}
 
 		public BSDPClient(bool testClient, Guid id, DHCPPacket request, Guid server, Guid socket, Guid client)

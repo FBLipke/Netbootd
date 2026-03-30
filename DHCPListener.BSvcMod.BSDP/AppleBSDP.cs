@@ -126,7 +126,7 @@ namespace DHCPListener.BSvcMod.BSDP
 		public void Handle_DHCP_Discover(Guid clientid, DHCPPacket request)
 		{
 			Clients[clientid].Response.Flags = BootpFlags.Broadcast;
-			Clients[clientid].Response.AddOption(new DHCPOption<byte>((byte)DHCPOptions.VendorClassIdentifier, "AAPLBSDPC", Encoding.ASCII));
+			Clients[clientid].Response.AddOption(new((byte)DHCPOptions.VendorClassIdentifier, "AAPLBSDPC", Encoding.ASCII));
 
 			var bytes = Clients[clientid].Response.Buffer.GetBuffer();
 			Clients[clientid].Response.CommitOptions();

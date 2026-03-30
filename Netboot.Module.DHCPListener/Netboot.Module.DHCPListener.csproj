@@ -10,27 +10,21 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <Compile Include="Event\BootServiceRequestEventArgs.cs" />
-	  <Compile Include="Event\ListenerRequestReceivedEventArgs.cs" />
+	  <Compile Include="Events\BootServiceRequestEventArgs.cs" />
+	  <Compile Include="Events\ListenerRequestReceivedEventArgs.cs" />
 	  <Compile Include="DHCPListener.cs" />
 	  <Compile Include="DHCPListenerBase.cs" />
-	  <Compile Include="Interfaces\IBootService.cs" />
-	  <Compile Include="Interfaces\IDHCPListener.cs" />
-	  <Compile Include="Network\Client\BSDP\BSDPClient.cs" />
+	  <Compile Include="Network\Interfaces\IBootService.cs" />
+	  <Compile Include="Network\Interfaces\IDHCPListener.cs" />
 	  <Compile Include="Network\Client\DHCPClient.cs" />
 	  <Compile Include="Network\Client\Interfaces\IDHCPClient.cs" />
-	  <Compile Include="Network\Client\WDS\WDSClient.cs" />
-	  <Compile Include="Network\Definitions\BSDP\Definitions.cs" />
-	  <Compile Include="Network\Definitions\Definitions.cs" />
-	  <Compile Include="Network\Definitions\DHCP\DHCPOption.cs" />
-	  <Compile Include="Network\Definitions\Functions.cs" />
-	  <Compile Include="Network\Definitions\HWAddress.cs" />
-	  <Compile Include="Network\Definitions\RBCP\BootMenueEntry.cs" />
-	  <Compile Include="Network\Definitions\RBCP\BootServer.cs" />
-	  <Compile Include="Network\Definitions\RBCP\Definitions.cs" />
-	  <Compile Include="Network\Definitions\WDS\Definitions.cs" />
+	  <Compile Include="Definitions\Definitions.cs" />
+	  <Compile Include="Definitions\DHCPOption.cs" />
+	  <Compile Include="Definitions\Functions.cs" />
+	  <Compile Include="Definitions\HWAddress.cs" />
+	  <Compile Include="Definitions\BootServer.cs" />
 	  <Compile Include="Network\Packet\DHCPPacket.cs" />
-	  <Compile Include="Event\RegisterBootServicetEventArgs.cs" />
+	  <Compile Include="Events\RegisterBootServicetEventArgs.cs" />
 	</ItemGroup>
 
   <ItemGroup>

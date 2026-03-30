@@ -80,10 +80,10 @@ namespace Netboot.Common.Parser
 							value = parts.LastOrDefault();
 						}
 
-						if (!Sections[sectionName].ContainsKey(key))
+						if (!Sections[sectionName].TryGetValue(key, out List<string>? value1))
 							Sections[sectionName].Add(key, [value]);
 						else
-							Sections[sectionName][key].Add(value);
+                            value1.Add(value);
 					}
 				}
 

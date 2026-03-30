@@ -1,4 +1,5 @@
 ﻿using Netboot.Common;
+using Netboot.Common.Cryptography;
 using Netboot.Common.Cryptography.Interfaces;
 using Netboot.Common.Database.Interfaces;
 using Netboot.Common.Network.HTTP;
@@ -229,9 +230,9 @@ namespace Netboot.Module
 			else
 			{
 				if (context.Request.Headers.ContainsKey("Provider"))
-					key = context.Request.Headers["Provider"].FromBase64().Captitalize();
+					key = Base64.FromBase64(context.Request.Headers["Provider"], Encoding.UTF8).Captitalize();
 				if (context.Request.Headers.ContainsKey("Action"))
-					str = context.Request.Headers["Action"].FromBase64().Captitalize();
+					str = Base64.FromBase64(context.Request.Headers["Action"],Encoding.UTF8).Captitalize();
 			}
 			if (string.IsNullOrEmpty(key) || string.IsNullOrEmpty(str))
 				return string.Empty;

@@ -13,7 +13,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace Netboot.Module.DHCPListener
 {
-
 	public enum BootpFlags
 	{
 		Unicast = 0,
@@ -52,7 +51,28 @@ namespace Netboot.Module.DHCPListener
 		HIARP = 28
 	}
 
-	public enum MagicCookie : uint
+    public enum BootServerType : ushort
+    {
+        PXEBootstrapServer = 0,
+        MicrosoftWindowsNT = 1,
+        IntelLCM = 2,
+        DOSUNDI = 3,
+        NECESMPRO = 4,
+        IBMWSoD = 5,
+        IBMLCCM = 6,
+        CAUnicenterTNG = 7,
+        HPOpenView = 8,
+        Reserved = 9,
+        Vendor = 32768,
+        AppleLegacy = ushort.MaxValue - 5,
+        AppleBootServer = ushort.MaxValue - 4,
+        LinuxBootServer = ushort.MaxValue - 3,
+        BootIntegrityService = ushort.MaxValue - 2,
+        WindowsDeploymentServer = ushort.MaxValue - 1,
+        ApiTest = ushort.MaxValue
+    }
+
+    public enum MagicCookie : uint
 	{
 		/// <summary>
 		///	The Packet has only BOOTP specific options set.
@@ -85,46 +105,6 @@ namespace Netboot.Module.DHCPListener
 		AppleMacintosh,
 		HTTPClient,
 		Msft
-	}
-
-	public enum PXEVendorEncOptions : byte
-	{
-		MultiCastIPAddress = 1,
-		MulticastClientPort = 2,
-		MulticastServerPort = 3,
-		MulticastTFTPTimeout = 4,
-		MulticastTFTPDelay = 5,
-		DiscoveryControl = 6,
-		DiscoveryMulticastAddress = 7,
-		BootServer = 8,
-		BootMenue = 9,
-		MenuPrompt = 10,
-		MulticastAddressAllocation = 11,
-		CredentialTypes = 12,
-		/// <summary>
-		/// 
-		/// </summary>
-		NetworkCardPath = 64,
-		ManagementInformation = 65,
-		OSInformation = 66,
-		BootOSInfo = 67,
-		PromptInfo = 68,
-		OSInformation2 = 69,
-		BootOSInfo2 = 70,
-		BootItem = 71,
-
-		#region "LCM Options (see: https://gitlab.com/wireshark/wireshark/-/issues/15498 for more informations...)"
-
-		LCMServer = 179,
-		LCMDomain = 180,
-		LCMNicOptions = 181,
-		LCMWorkGroup = 190,
-		LCMDiscovery = 191,
-		LCMConfigured = 192,
-		LCMVersion = 193,
-		#endregion
-		
-		End = byte.MaxValue
 	}
 
 	public enum Architecture : ushort

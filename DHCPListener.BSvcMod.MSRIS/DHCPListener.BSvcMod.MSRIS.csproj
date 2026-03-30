@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<BaseOutputPath>..\</BaseOutputPath>
+		<EnableDynamicLoading>true</EnableDynamicLoading>
+		<EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<Compile Include="MSRIS.cs" />
+		<Compile Include="Network\Client\RISClient.cs" />
+		<Compile Include="Network\Interfaces\IRISClient.cs" />
+	</ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\NetBoot.Content\Netboot.Content.csproj" />
+    <ProjectReference Include="..\Netboot.Module.DHCPListener\Netboot.Module.DHCPListener.csproj" />
+    <ProjectReference Include="..\NetBootd.Common\Netboot.Common.csproj" />
+  </ItemGroup>
+
+</Project>

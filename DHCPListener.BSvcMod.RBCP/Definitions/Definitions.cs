@@ -14,7 +14,7 @@ namespace DHCPListener.BSvcMod.RBCP.Definitions
 			Credential
 		}
 
-		public enum PXEOptions : byte
+        public enum PXEOptions : byte
 		{
 			MultiCastIPAddress = 1,
 			MulticastClientPort = 2,
