@@ -6,16 +6,16 @@
 
 namespace Netboot.Common.Provider.Events
 {
-	public enum ControlType
-	{
-		Input,
-		Textbox,
-		Button,
-		Hidden,
-		File,
-		Password,
-		Form,
-		Label,
-		None,
-	}
+    public enum ControlType
+    {
+        Input,
+        Textbox,
+        Button,
+        Hidden,
+        File,
+        Password,
+        Form,
+        Label,
+        None,
+    }
 }

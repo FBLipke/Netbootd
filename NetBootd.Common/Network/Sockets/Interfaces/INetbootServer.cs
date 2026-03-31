@@ -5,46 +5,46 @@ using System.Xml;
 
 namespace Netboot.Common.Network.Sockets.Interfaces
 {
-	public interface INetbootServer : IDisposable
-	{
-		event ServerReceivedDataEventHandler ServerReceivedData;
+    public interface INetbootServer : IDisposable
+    {
+        event ServerReceivedDataEventHandler ServerReceivedData;
 
-		event ServerAddedSocketEventHandler ServerAddedSocket;
+        event ServerAddedSocketEventHandler ServerAddedSocket;
 
-		event ServerClosedSocketEventHandler ServerClosedSocket;
+        event ServerClosedSocketEventHandler ServerClosedSocket;
 
-		event ServerClosedClientConnectionEventHandler ServerClosedClientConnection;
+        event ServerClosedClientConnectionEventHandler ServerClosedClientConnection;
 
-		Dictionary<Guid, INetbootSocket> Sockets { get; set; }
+        Dictionary<Guid, INetbootSocket> Sockets { get; set; }
 
-		Guid Id { get; set; }
+        Guid Id { get; set; }
 
-		ProtoType ProtocolType { get; set; }
+        ProtoType ProtocolType { get; set; }
 
-		Filesystem FileSystem { get; set; }
+        Filesystem FileSystem { get; set; }
 
-		void Add(IPEndPoint endpoint);
+        void Add(IPEndPoint endpoint);
 
-		void Remove(Guid socket);
-		void Start();
+        void Remove(Guid socket);
+        void Start();
 
-		void Close();
+        void Close();
 
-		IPEndPoint GetEndPoint(Guid socket);
-		public IPEndPoint GetClientEndPoint(Guid server, Guid socket, Guid client);
+        IPEndPoint GetEndPoint(Guid socket);
+        public IPEndPoint GetClientEndPoint(Guid server, Guid socket, Guid client);
 
-		void Send(Guid socket, Guid client, string data, Encoding encoding, bool keepAlive);
-		void Send(Guid socket, Guid client, MemoryStream data, bool keepAlive);
-		void Send(Guid socket, Guid client, byte[] data, bool keepAlive);
-		void Send(Guid socket, Guid client, IPEndPoint remoteendpoint, MemoryStream data);
-		void Send(Guid socket, Guid client, IPEndPoint remoteendpoint, byte[] data);
+        void Send(Guid socket, Guid client, string data, Encoding encoding, bool keepAlive);
+        void Send(Guid socket, Guid client, MemoryStream data, bool keepAlive);
+        void Send(Guid socket, Guid client, byte[] data, bool keepAlive);
+        void Send(Guid socket, Guid client, IPEndPoint remoteendpoint, MemoryStream data);
+        void Send(Guid socket, Guid client, IPEndPoint remoteendpoint, byte[] data);
 
-		void JoinMulticastGroup(Guid server, Guid socket, IPAddress group);
+        void JoinMulticastGroup(Guid server, Guid socket, IPAddress group);
 
-		void LeaveMulticastGroup(Guid server, Guid socket, IPAddress group);
+        void LeaveMulticastGroup(Guid server, Guid socket, IPAddress group);
 
-		void HeartBeat();
-		void Stop();
-		void Bootstrap(XmlNode xml);
-	}
+        void HeartBeat();
+        void Stop();
+        void Bootstrap(XmlNode xml);
+    }
 }

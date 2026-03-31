@@ -6,10 +6,10 @@
 
 namespace Netboot.Common.Provider.Events
 {
-	public enum FormatType
-	{
-		Object,
-		List,
-		Widget,
-	}
+    public enum FormatType
+    {
+        Object,
+        List,
+        Widget,
+    }
 }

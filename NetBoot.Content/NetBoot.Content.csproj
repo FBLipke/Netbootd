@@ -20,10 +20,6 @@
   <ItemGroup>
     <None Remove="davenport ntlm.pdf" />
     <None Remove="NTLM.pdf" />
-    <None Remove="Providers\TFTPServer\Boot\x64\boot.wim" />
-    <None Remove="Providers\TFTPServer\Boot\x64\bootmgr.exe" />
-    <None Remove="Providers\TFTPServer\Boot\x64\pxeboot.n12" />
-    <None Remove="Providers\TFTPServer\Boot\x64\wdsnbp.com" />
     <None Remove="Providers\TFTPServer\Boot\x86\boot.sdi" />
     <None Remove="Providers\TFTPServer\Boot\x86\pxeboot.n12" />
   </ItemGroup>
@@ -35,40 +31,22 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Providers\TFTPServer\Netboot\NetbootSP0\10.6 Another Example.nbi\i386\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <None Include="Config\Netboot.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="Dumps\dupp.pcap" />
     <None Include="Dumps\win2k\000000000000000000008A98147E1BFE.sif" />
     <None Include="Dumps\win2k\LAYOUT.INF" />
+    <None Include="Dumps\win2k\ristndrd..txt" />
     <None Include="Dumps\win2k\ristndrd.sif" />
     <None Include="Dumps\win2k\TXTSETUP.SIF" />
     <None Include="Providers\DHCPListener\install.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="Providers\TFTPServer\Boot\x86\wdsnbp.com">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="Providers\WebSite\scripts\netboot.js">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Config\ris\ristndrd.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Providers\TFTPServer\Boot\x64\default.bcd">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
     <None Update="Providers\TFTPServer\Boot\x86\bisconfig.0">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Providers\TFTPServer\Boot\x86\default.bcd">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Providers\TFTPServer\Boot\x86\dosundi.0">
@@ -80,81 +58,10 @@
     <None Update="Providers\TFTPServer\Boot\x86\pxelinux.0">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Providers\TFTPServer\Boot\x86\startrom.n12">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Providers\User\install.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Providers\User\template\User_Add_Form.tpl">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Providers\User\template\User_Edit_Form.tpl">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Providers\User\template\User_Login_Form.tpl">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Providers\TFTPServer\OSChooser\englisch\00004e28.osc">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Providers\TFTPServer\OSChooser\englisch\login.osc">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Providers\TFTPServer\OSChooser\i386\ntldr_OSCHOICE">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Providers\WebSite\admin\styles\default\close.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Providers\WebSite\admin\styles\default\offline.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Providers\WebSite\admin\styles\default\online.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Providers\WebSite\admin\styles\default\style.css">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Providers\WebSite\admin\styles\default\unknown.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Providers\WebSite\favicon.ico">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Providers\WebSite\public\styles\default\fonts\Roboto-Medium.ttf">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Providers\WebSite\public\styles\default\fonts\RobotoSlab-Regular.ttf">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Providers\WebSite\public\styles\default\images\avatar.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Providers\WebSite\public\styles\default\images\back.jpg">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Providers\WebSite\public\styles\default\images\disk.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Providers\WebSite\public\styles\default\images\nav-icon.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Providers\WebSite\public\styles\default\images\pfeil.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Providers\WebSite\public\styles\default\style.css">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Providers\WebSite\scripts\dropdown.js">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Providers\WebSite\scripts\jquery-1.12.4.min.js">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Providers\WebSite\template\site_footer.tpl">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Docs\RIS\" />
   </ItemGroup>
 
 </Project>

@@ -11,54 +11,51 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Netboot.Common.Network.Interfaces;
 using Netboot.Module.DHCPListener;
-using System.Net;
-using System.Net.Sockets;
 
 namespace DHCPListener.BSvcMod.MSRIS
 {
-	public class RISClient : IRISClient
-	{
+    public class RISClient : IRISClient
+    {
 
-		public Guid Id { get; set; }
-		
-		public DHCPPacket? Response { get; set; }
-		
-		public DHCPPacket? Request { get; set; }
-		
-		public DHCPVendorID VendorId { get; set; }
-		
-		public NicSpecType NicSpecType { get; set; }
-		
-		public Guid Socket { get; set; }
-		
-		public Guid Server { get; set; }
-		
-		public Guid Client { get; set; }
+        public Guid Id { get; set; }
+
+        public DHCPPacket? Response { get; set; }
+
+        public DHCPPacket? Request { get; set; }
+
+        public DHCPVendorID VendorId { get; set; }
+
+        public NicSpecType NicSpecType { get; set; }
+
+        public Guid Socket { get; set; }
+
+        public Guid Server { get; set; }
+
+        public Guid Client { get; set; }
         public Architecture Architecture { get; set; } = Architecture.X86PC;
 
         private void _ctorFunc()
-		{
-			VendorId = Request.GetVendorIdent;
-			Response = new DHCPPacket();
-		}
+        {
+            VendorId = Request.GetVendorIdent;
+            Response = new DHCPPacket();
+        }
 
-		public RISClient(Guid id, DHCPPacket request, Guid server, Guid socket, Guid client)
-		{
-			Server = server;
-			Client = client;
-			Socket = socket;
+        public RISClient(Guid id, DHCPPacket request, Guid server, Guid socket, Guid client)
+        {
+            Server = server;
+            Client = client;
+            Socket = socket;
 
-			Request = request;
-			Id = id;
-			_ctorFunc();
-		}
+            Request = request;
+            Id = id;
+            _ctorFunc();
+        }
 
-		public void Dispose()
-		{
-			Request.Dispose();
-			Response.Dispose();
-		}
-	}
+        public void Dispose()
+        {
+            Request.Dispose();
+            Response.Dispose();
+        }
+    }
 }

@@ -2,11 +2,11 @@
 
 namespace Netboot.Common.Network.Sockets
 {
-	public class ClientAcceptedEventArgs
-	{
-		public ClientAcceptedEventArgs(INetbootClient client)
-			=> Client = client;
+    public class ClientAcceptedEventArgs
+    {
+        public ClientAcceptedEventArgs(INetbootClient client)
+            => Client = client;
 
-		public INetbootClient Client { get; private set; }
-	}
+        public INetbootClient Client { get; private set; }
+    }
 }

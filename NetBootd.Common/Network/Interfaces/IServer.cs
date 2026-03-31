@@ -12,18 +12,17 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 using System.Net;
-using System.Xml;
 
 namespace Netboot.Common.Network.Interfaces
 {
-	public interface IServer : IDisposable
-	{
-		string ServiceType { get; }
+    public interface IServer : IDisposable
+    {
+        string ServiceType { get; }
 
-		void Initialize();
-		void Start();
-		void Stop();
-		void Send(Guid socketId, IPacket packet, IClient client);
-		IPAddress Get_IPAddress(Guid socket);
-	}
+        void Initialize();
+        void Start();
+        void Stop();
+        void Send(Guid socketId, IPacket packet, IClient client);
+        IPAddress Get_IPAddress(Guid socket);
+    }
 }

@@ -11,45 +11,43 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System.Net;
-
 namespace Netboot.Module.DHCPListener
 {
-	public partial class DHCPClient : IDHCPClient 
-	{
-		public DHCPClient(bool testClient, Guid server, Guid socket, Guid client, DHCPPacket request)
-		{
-			Response = new DHCPPacket();
-			Request = request;
+    public partial class DHCPClient : IDHCPClient
+    {
+        public DHCPClient(bool testClient, Guid server, Guid socket, Guid client, DHCPPacket request)
+        {
+            Response = new DHCPPacket();
+            Request = request;
 
-			Socket = socket;
-			Client = client;
-			Server = server;
+            Socket = socket;
+            Client = client;
+            Server = server;
 
-			if (request.HasOption(DHCPOptions.NetworkInterfaceIdentifier))
-				NicSpecType = (NicSpecType)request.GetOption((byte)DHCPOptions.NetworkInterfaceIdentifier).AsByte();
+            if (request.HasOption(DHCPOptions.NetworkInterfaceIdentifier))
+                NicSpecType = (NicSpecType)request.GetOption((byte)DHCPOptions.NetworkInterfaceIdentifier).AsByte();
 
-			NetBootdClient = testClient;
-		}
+            NetBootdClient = testClient;
+        }
 
-		public bool NetBootdClient { get; private set; }
+        public bool NetBootdClient { get; private set; }
 
-		public Architecture Architecture { get; set; }
+        public Architecture Architecture { get; set; }
 
-		public DHCPPacket Response { get; set; }
+        public DHCPPacket Response { get; set; }
 
-		public DHCPPacket Request { get; set; }
+        public DHCPPacket Request { get; set; }
 
-		public DHCPVendorID VendorId { get; set; }
+        public DHCPVendorID VendorId { get; set; }
 
-		public NicSpecType NicSpecType { get; set; }
+        public NicSpecType NicSpecType { get; set; }
 
-		public Guid Socket { get; set; }
+        public Guid Socket { get; set; }
 
-		public Guid Server { get; set; }
+        public Guid Server { get; set; }
 
-		public Guid Client { get; set; }
+        public Guid Client { get; set; }
 
-		public Guid Id { get; set; }
-	}
+        public Guid Id { get; set; }
+    }
 }

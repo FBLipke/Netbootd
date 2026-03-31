@@ -5,223 +5,223 @@ using System.Text;
 
 namespace Netboot.Common.Network.Sockets
 {
-	public class NetbootTcpClient : INetbootClient
-	{
-		private TcpClient _client;
+    public class NetbootTcpClient : INetbootClient
+    {
+        private TcpClient _client;
 
-		public event DataReadFromClientEventHandler DataReadFromClient;
+        public event DataReadFromClientEventHandler DataReadFromClient;
 
-		public event ClientErrorEventHandler ClientError;
+        public event ClientErrorEventHandler ClientError;
 
-		public void Heartbeat()
-		{
-		}
+        public void Heartbeat()
+        {
+        }
 
-		public void Start()
-		{
-			if (Connected)
-				return;
+        public void Start()
+        {
+            if (Connected)
+                return;
 
-			Connect(RemoteEndpoint);
-		}
+            Connect(RemoteEndpoint);
+        }
 
-		public event ClientClosedEventHandler ClientClosedConnection;
+        public event ClientClosedEventHandler ClientClosedConnection;
 
-		public event ClientConnectedEventHandler ClientConnected;
+        public event ClientConnectedEventHandler ClientConnected;
 
-		public NetbootTcpClient(Guid id, TcpClient c)
-		{
-			Id = id;
-			_client = c;
-			RemoteEndpoint = (IPEndPoint)_client.Client.RemoteEndPoint;
-			InputStream = OutputStream = new BufferedStream(_client.GetStream());
-			Connected = _client.Connected;
-		}
+        public NetbootTcpClient(Guid id, TcpClient c)
+        {
+            Id = id;
+            _client = c;
+            RemoteEndpoint = (IPEndPoint)_client.Client.RemoteEndPoint;
+            InputStream = OutputStream = new BufferedStream(_client.GetStream());
+            Connected = _client.Connected;
+        }
 
-		public NetbootTcpClient(Guid id, string host, ushort port, ushort clientBuffer = 4096)
-		{
-			Id = id;
-			try
-			{
-				_client = new TcpClient(host, port);
-				Connected = _client.Connected;
-			}
-			catch (SocketException ex)
-			{
-				ClientError.Invoke(this, new ClientErrorEventArgs(Id, ex));
-			}
-		}
+        public NetbootTcpClient(Guid id, string host, ushort port, ushort clientBuffer = 4096)
+        {
+            Id = id;
+            try
+            {
+                _client = new TcpClient(host, port);
+                Connected = _client.Connected;
+            }
+            catch (SocketException ex)
+            {
+                ClientError.Invoke(this, new ClientErrorEventArgs(Id, ex));
+            }
+        }
 
-		public BufferedStream OutputStream { get; set; }
+        public BufferedStream OutputStream { get; set; }
 
-		public BufferedStream InputStream { get; set; }
+        public BufferedStream InputStream { get; set; }
 
 
-		public Guid Id { get; set; }
+        public Guid Id { get; set; }
 
-		public bool Connected { get; set; }
-		
-		public IPEndPoint RemoteEndpoint { get; set; }
+        public bool Connected { get; set; }
 
-		public void Send(string data, Encoding encoding, bool keepAlive)
-			=> Send(encoding.GetBytes(data), keepAlive);
+        public IPEndPoint RemoteEndpoint { get; set; }
 
-		public void Read()
-		{
-			if (!Connected || !InputStream.CanRead)
-			{
-				Close();
-			}
-			else
-			{
-				var array = new byte[16384];
-				var newSize = InputStream.Read(array, 0, array.Length);
-				if (newSize == 0 || newSize == -1)
-				{
-					Close();
-				}
-				else
-				{
-					Array.Resize(ref array, newSize);
-					DataReadFromClient.Invoke(this, new DataReadFromClientEventArgs(Id, array));
-				}
-			}
-		}
+        public void Send(string data, Encoding encoding, bool keepAlive)
+            => Send(encoding.GetBytes(data), keepAlive);
 
-		public void Connect(string host, ushort port)
-			=> _client.BeginConnect(host, port, new AsyncCallback(EndConnect), null);
+        public void Read()
+        {
+            if (!Connected || !InputStream.CanRead)
+            {
+                Close();
+            }
+            else
+            {
+                var array = new byte[16384];
+                var newSize = InputStream.Read(array, 0, array.Length);
+                if (newSize == 0 || newSize == -1)
+                {
+                    Close();
+                }
+                else
+                {
+                    Array.Resize(ref array, newSize);
+                    DataReadFromClient.Invoke(this, new DataReadFromClientEventArgs(Id, array));
+                }
+            }
+        }
 
-		public void Connect(IPEndPoint endPoint)
-		{
-			try
-			{
-				_client.BeginConnect(endPoint.Address, endPoint.Port, new AsyncCallback(EndConnect), null);
-			}
-			catch (Exception ex)
-			{
-				ClientError.Invoke(this, new ClientErrorEventArgs(Id, ex));
-			}
-		}
+        public void Connect(string host, ushort port)
+            => _client.BeginConnect(host, port, new AsyncCallback(EndConnect), null);
 
-		private void EndConnect(IAsyncResult ar)
-		{
-			_client.EndConnect(ar);
+        public void Connect(IPEndPoint endPoint)
+        {
+            try
+            {
+                _client.BeginConnect(endPoint.Address, endPoint.Port, new AsyncCallback(EndConnect), null);
+            }
+            catch (Exception ex)
+            {
+                ClientError.Invoke(this, new ClientErrorEventArgs(Id, ex));
+            }
+        }
 
-			if (_client == null)
-				return;
+        private void EndConnect(IAsyncResult ar)
+        {
+            _client.EndConnect(ar);
 
-			Connected = _client.Connected;
-			if (!Connected)
-			{
-				_client.Close();
-			}
-			else
-			{
-				InputStream = OutputStream = new BufferedStream(_client.GetStream());
+            if (_client == null)
+                return;
 
-				ClientConnected.Invoke(this, new ClientConnectedEventArgs(Id));
-			}
-		}
+            Connected = _client.Connected;
+            if (!Connected)
+            {
+                _client.Close();
+            }
+            else
+            {
+                InputStream = OutputStream = new BufferedStream(_client.GetStream());
 
-		public void Disconnect() => Close();
+                ClientConnected.Invoke(this, new ClientConnectedEventArgs(Id));
+            }
+        }
 
-		public void Send(MemoryStream stream, bool keepAlive) => Send(stream.ToArray(), keepAlive);
+        public void Disconnect() => Close();
 
-		public void Send(byte[] data, bool keepAlive)
-		{
-			if (!OutputStream.CanWrite)
-				return;
+        public void Send(MemoryStream stream, bool keepAlive) => Send(stream.ToArray(), keepAlive);
 
-			OutputStream.BeginWrite(data, 0, data.Length, new AsyncCallback(EndWriteData), keepAlive);
-		}
+        public void Send(byte[] data, bool keepAlive)
+        {
+            if (!OutputStream.CanWrite)
+                return;
 
-		public void Close()
-		{
-			InputStream?.Close();
-			OutputStream?.Close();
+            OutputStream.BeginWrite(data, 0, data.Length, new AsyncCallback(EndWriteData), keepAlive);
+        }
 
-			if (_client != null)
-			{
-				_client.Close();
-			}
+        public void Close()
+        {
+            InputStream?.Close();
+            OutputStream?.Close();
 
-			Connected = false;
+            if (_client != null)
+            {
+                _client.Close();
+            }
 
-			ClientClosedConnection?.Invoke
-				(this, new ClientConnectionClosedEventArgs(Id));
-		}
+            Connected = false;
 
-		private void EndWriteData(IAsyncResult ar)
-		{
-			if (OutputStream.CanWrite)
-			{
-				OutputStream?.EndWrite(ar);
-				OutputStream?.FlushAsync();
-			}
+            ClientClosedConnection?.Invoke
+                (this, new ClientConnectionClosedEventArgs(Id));
+        }
 
-			Close();
-		}
+        private void EndWriteData(IAsyncResult ar)
+        {
+            if (OutputStream.CanWrite)
+            {
+                OutputStream?.EndWrite(ar);
+                OutputStream?.FlushAsync();
+            }
 
-		public void Dispose()
-		{
-			if (InputStream != null)
-			{
-				InputStream.Dispose();
-			}
+            Close();
+        }
 
-			if (OutputStream != null)
-			{
-				OutputStream.Dispose();
-			}
+        public void Dispose()
+        {
+            if (InputStream != null)
+            {
+                InputStream.Dispose();
+            }
 
-			if (_client == null)
-				return;
+            if (OutputStream != null)
+            {
+                OutputStream.Dispose();
+            }
 
-			_client.Close();
-		}
+            if (_client == null)
+                return;
 
-		public void Send(ref byte[] data)
-		{
-			Send(data, true);
-		}
+            _client.Close();
+        }
 
-		public void Send(ref MemoryStream data)
-		{
-			Send(data, true);
-		}
+        public void Send(ref byte[] data)
+        {
+            Send(data, true);
+        }
 
-		public void HeartBeat()
-		{
-		}
+        public void Send(ref MemoryStream data)
+        {
+            Send(data, true);
+        }
 
-		public void Send(string data, bool keepAlive)
-		{
-			Send(Encoding.ASCII.GetBytes(data), keepAlive);
-		}
+        public void HeartBeat()
+        {
+        }
 
-		public void Send(ref byte[] data, bool keepalive)
-		{
-			Send(data, keepalive);
-		}
+        public void Send(string data, bool keepAlive)
+        {
+            Send(Encoding.ASCII.GetBytes(data), keepAlive);
+        }
 
-		public void Send(IPEndPoint remoteEndpoint, ref byte[] data)
-		{
-			Send(ref data);
-		}
+        public void Send(ref byte[] data, bool keepalive)
+        {
+            Send(data, keepalive);
+        }
 
-		public void Send(IPEndPoint remoteEndpoint, ref MemoryStream data)
-		{
-			Send(ref data);
-		}
+        public void Send(IPEndPoint remoteEndpoint, ref byte[] data)
+        {
+            Send(ref data);
+        }
 
-		public IPEndPoint GetEndPoint()
-		{
-			return RemoteEndpoint;
-		}
+        public void Send(IPEndPoint remoteEndpoint, ref MemoryStream data)
+        {
+            Send(ref data);
+        }
 
-		public delegate void DataReadFromClientEventHandler(object sender, DataReadFromClientEventArgs e);
-		public delegate void ClientErrorEventHandler(object sender, ClientErrorEventArgs e);
-		public delegate void ClientClosedEventHandler(object sender, ClientConnectionClosedEventArgs e);
-		public delegate void ClientConnectedEventHandler(object sender, ClientConnectedEventArgs e);
-	}
+        public IPEndPoint GetEndPoint()
+        {
+            return RemoteEndpoint;
+        }
+
+        public delegate void DataReadFromClientEventHandler(object sender, DataReadFromClientEventArgs e);
+        public delegate void ClientErrorEventHandler(object sender, ClientErrorEventArgs e);
+        public delegate void ClientClosedEventHandler(object sender, ClientConnectionClosedEventArgs e);
+        public delegate void ClientConnectedEventHandler(object sender, ClientConnectedEventArgs e);
+    }
 }

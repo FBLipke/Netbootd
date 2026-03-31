@@ -6,10 +6,10 @@
 
 namespace Netboot.Common.Network.Sockets
 {
-	public enum ProtoType
-	{
-		Tcp,
-		Udp,
-		Raw
-	}
+    public enum ProtoType
+    {
+        Tcp,
+        Udp,
+        Raw
+    }
 }

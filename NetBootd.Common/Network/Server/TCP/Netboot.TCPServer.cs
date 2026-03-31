@@ -44,9 +44,10 @@ namespace Netboot.Common.Network.Sockets
             var NetbootTcpSocket = new NetbootTcpSocket(guid, endpoint);
             NetbootTcpSocket.SocketAddedClient += (sender, e) => Sockets[e.SocketId].Clients[e.ClientId]?.Read();
             NetbootTcpSocket.SocketFailedToStart += (sender, e) => Remove(e.Socket);
-            NetbootTcpSocket.SocketClosedClient += (sender, e) => {
-               ServerClosedSocket?.Invoke(this, new(Id, e.Socket));
-               ServerClosedClientConnection?.Invoke(this, new(Id, e.Socket, e.Client));
+            NetbootTcpSocket.SocketClosedClient += (sender, e) =>
+            {
+                ServerClosedSocket?.Invoke(this, new(Id, e.Socket));
+                ServerClosedClientConnection?.Invoke(this, new(Id, e.Socket, e.Client));
             };
 
             NetbootTcpSocket.SocketReadDataFromClient += (sender, e) =>
@@ -88,46 +89,46 @@ namespace Netboot.Common.Network.Sockets
 
             Sockets.Clear();
         }
-		public void Send(Guid socket, Guid client, string data, Encoding encoding, bool keepAlive)
-		{
-			if (!Sockets.ContainsKey(socket))
-				return;
+        public void Send(Guid socket, Guid client, string data, Encoding encoding, bool keepAlive)
+        {
+            if (!Sockets.ContainsKey(socket))
+                return;
 
-			Sockets[socket].Send(client, data, encoding, keepAlive);
-		}
+            Sockets[socket].Send(client, data, encoding, keepAlive);
+        }
 
-		public void Send(Guid socket, Guid client, MemoryStream data, bool keepAlive)
-		{
-			if (!Sockets.ContainsKey(socket))
-				return;
+        public void Send(Guid socket, Guid client, MemoryStream data, bool keepAlive)
+        {
+            if (!Sockets.ContainsKey(socket))
+                return;
 
-			Sockets[socket].Send(client, data, keepAlive);
-		}
+            Sockets[socket].Send(client, data, keepAlive);
+        }
 
-		public void Send(Guid socket, Guid client, IPEndPoint remoteendpoint, MemoryStream data)
-		{
-			if (!Sockets.ContainsKey(socket))
-				return;
+        public void Send(Guid socket, Guid client, IPEndPoint remoteendpoint, MemoryStream data)
+        {
+            if (!Sockets.ContainsKey(socket))
+                return;
 
-			Sockets[socket].Send(client, remoteendpoint, data);
-		}
+            Sockets[socket].Send(client, remoteendpoint, data);
+        }
 
-		public void Send(Guid socket, Guid client, IPEndPoint remoteendpoint, byte[] data)
-		{
-			if (!Sockets.ContainsKey(socket))
-				return;
+        public void Send(Guid socket, Guid client, IPEndPoint remoteendpoint, byte[] data)
+        {
+            if (!Sockets.ContainsKey(socket))
+                return;
 
-			Sockets[socket].Send(client, remoteendpoint, data);
-		}
+            Sockets[socket].Send(client, remoteendpoint, data);
+        }
 
-		public void Send(Guid socket, Guid client, byte[] data, bool keepAlive)
-		{
-			if (!Sockets.ContainsKey(socket))
-				return;
+        public void Send(Guid socket, Guid client, byte[] data, bool keepAlive)
+        {
+            if (!Sockets.ContainsKey(socket))
+                return;
 
-			Sockets[socket].Send(client, data, keepAlive);
-		}
-		public void Stop()
+            Sockets[socket].Send(client, data, keepAlive);
+        }
+        public void Stop()
         {
             foreach (var socket in Sockets.Values.ToList())
                 socket.Close();
@@ -162,18 +163,18 @@ namespace Netboot.Common.Network.Sockets
 
         public void JoinMulticastGroup(Guid server, Guid socket, IPAddress group)
         {
-			if (!Sockets.ContainsKey(socket))
-				return;
+            if (!Sockets.ContainsKey(socket))
+                return;
 
-			Sockets[socket].JoinMulticastGroup(group);
+            Sockets[socket].JoinMulticastGroup(group);
         }
 
         public void LeaveMulticastGroup(Guid server, Guid socket, IPAddress group)
         {
-			if (!Sockets.ContainsKey(socket))
-				return;
+            if (!Sockets.ContainsKey(socket))
+                return;
 
-			Sockets[socket].LeaveMulticastGroup(group);
+            Sockets[socket].LeaveMulticastGroup(group);
         }
 
         public delegate void ServerReceivedDataEventHandler(

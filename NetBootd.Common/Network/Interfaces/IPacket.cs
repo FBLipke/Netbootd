@@ -13,8 +13,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace Netboot.Common.Network.Interfaces
 {
-	public interface IPacket : IDisposable
-	{
-		MemoryStream Buffer { get; set; }
-	}
+    public interface IPacket : IDisposable
+    {
+        MemoryStream Buffer { get; set; }
+    }
 }

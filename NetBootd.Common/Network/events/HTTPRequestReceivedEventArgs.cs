@@ -12,33 +12,32 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 using Netboot.Common.Network.HTTP;
-using System;
 
 namespace Netboot.Common.Network
 {
-	public class HTTPRequestReceivedEventArgs : EventArgs
-	{
-		public NetbootHttpContext Context { get; private set; }
+    public class HTTPRequestReceivedEventArgs : EventArgs
+    {
+        public NetbootHttpContext Context { get; private set; }
 
-		public Guid Server { get; private set; }
+        public Guid Server { get; private set; }
 
-		public Guid Socket { get; private set; }
+        public Guid Socket { get; private set; }
 
-		public Guid Client { get; private set; }
+        public Guid Client { get; private set; }
 
-		public bool MediaRequest { get; private set; }
-		public HTTPRequestReceivedEventArgs(
+        public bool MediaRequest { get; private set; }
+        public HTTPRequestReceivedEventArgs(
   Guid server,
   Guid socket,
   Guid client,
   bool icyData,
   NetbootHttpContext context)
-		{
-			MediaRequest = icyData;
-			Server = server;
-			Socket = socket;
-			Client = client;
-			Context = context;
-		}
-	}
+        {
+            MediaRequest = icyData;
+            Server = server;
+            Socket = socket;
+            Client = client;
+            Context = context;
+        }
+    }
 }

@@ -15,53 +15,53 @@ using Netboot.Common.Common.Definitions;
 
 namespace Netboot.Common
 {
-	public class NetbootPlatform
-	{
-		public string ConfigDirectory { get; private set; } = string.Empty;
+    public class NetbootPlatform
+    {
+        public string ConfigDirectory { get; private set; } = string.Empty;
 
-		public string NetbootDirectory { get; private set; } = string.Empty;
+        public string NetbootDirectory { get; private set; } = string.Empty;
 
-		public string DirectorySeperatorChar { get; private set; } = string.Empty;
+        public string DirectorySeperatorChar { get; private set; } = string.Empty;
 
-		public OSPlatformId OSPlatform { get; private set; }
+        public OSPlatformId OSPlatform { get; private set; }
 
-		public bool Initialize()
-		{
-			if (OperatingSystem.IsWindows())
-				OSPlatform = OSPlatformId.Windows;
-			else if (OperatingSystem.IsLinux())
-				OSPlatform = OSPlatformId.Linux;
-			else if (OperatingSystem.IsIOS())
-				OSPlatform = OSPlatformId.Ios;
-			else if (OperatingSystem.IsAndroid())
-				OSPlatform = OSPlatformId.Android;
-			else if (OperatingSystem.IsMacOS())
-				OSPlatform = OSPlatformId.MacOS;
-			else if (OperatingSystem.IsFreeBSD())
-				OSPlatform = OSPlatformId.FreeBSD;
-			else
-				return false;
+        public bool Initialize()
+        {
+            if (OperatingSystem.IsWindows())
+                OSPlatform = OSPlatformId.Windows;
+            else if (OperatingSystem.IsLinux())
+                OSPlatform = OSPlatformId.Linux;
+            else if (OperatingSystem.IsIOS())
+                OSPlatform = OSPlatformId.Ios;
+            else if (OperatingSystem.IsAndroid())
+                OSPlatform = OSPlatformId.Android;
+            else if (OperatingSystem.IsMacOS())
+                OSPlatform = OSPlatformId.MacOS;
+            else if (OperatingSystem.IsFreeBSD())
+                OSPlatform = OSPlatformId.FreeBSD;
+            else
+                return false;
 
-			NetbootDirectory = Path.Combine(Directory.GetCurrentDirectory());
-			ConfigDirectory = Path.Combine(NetbootDirectory, "Config");
+            NetbootDirectory = Path.Combine(Directory.GetCurrentDirectory());
+            ConfigDirectory = Path.Combine(NetbootDirectory, "Config");
 
-			switch (OSPlatform)
-			{
-				case OSPlatformId.Windows:
-					DirectorySeperatorChar = "\\";
-					break;
-				case OSPlatformId.FreeBSD:
-				case OSPlatformId.Android:
-				case OSPlatformId.Linux:
-				case OSPlatformId.MacOS:
-				case OSPlatformId.Ios:
-					DirectorySeperatorChar = "/";
-					break;
-				default:
-					return false;
-			}
+            switch (OSPlatform)
+            {
+                case OSPlatformId.Windows:
+                    DirectorySeperatorChar = "\\";
+                    break;
+                case OSPlatformId.FreeBSD:
+                case OSPlatformId.Android:
+                case OSPlatformId.Linux:
+                case OSPlatformId.MacOS:
+                case OSPlatformId.Ios:
+                    DirectorySeperatorChar = "/";
+                    break;
+                default:
+                    return false;
+            }
 
-			return true;
-		}
-	}
+            return true;
+        }
+    }
 }

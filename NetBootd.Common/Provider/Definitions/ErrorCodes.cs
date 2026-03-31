@@ -6,16 +6,16 @@
 
 namespace Netboot.Common.Provider.Events
 {
-	public enum ErrorCodes
-	{
-		Success,
-		Notfound,
-		Permissions,
-		Noobjects,
-		RequiredArgsMissed,
-		NotHandled,
-		InvalidIdentity,
-		OperationInProgress,
-		RedirectToNewLocation,
-	}
+    public enum ErrorCodes
+    {
+        Success,
+        Notfound,
+        Permissions,
+        Noobjects,
+        RequiredArgsMissed,
+        NotHandled,
+        InvalidIdentity,
+        OperationInProgress,
+        RedirectToNewLocation,
+    }
 }

@@ -17,51 +17,51 @@ using System.Text;
 
 namespace Netboot.Module.DHCPListener
 {
-	public class BootMenueEntry
-	{
-		public BootServerType Item { get; private set; }
+    public class BootMenueEntry
+    {
+        public BootServerType Item { get; private set; }
 
-		public string Description { get; private set; }
+        public string Description { get; private set; }
 
-		public BootMenueEntry(BootServerType item, string desc)
-		{
-			Item = item;
-			Description = desc;
-		}
+        public BootMenueEntry(BootServerType item, string desc)
+        {
+            Item = item;
+            Description = desc;
+        }
 
-		public byte[] AsBytes(EndianessBehavier endianess = EndianessBehavier.LittleEndian)
-		{
-			var descBytes = Encoding.ASCII.GetBytes(Description);
-			var itemBytes = new byte[sizeof(ushort) + sizeof(byte) + descBytes.Length];
-			var index = 0;
+        public byte[] AsBytes(EndianessBehavier endianess = EndianessBehavier.LittleEndian)
+        {
+            var descBytes = Encoding.ASCII.GetBytes(Description);
+            var itemBytes = new byte[sizeof(ushort) + sizeof(byte) + descBytes.Length];
+            var index = 0;
 
-			#region "Item"
-			switch (endianess)
-			{
-				case EndianessBehavier.BigEndian:
-					BinaryPrimitives.WriteUInt16BigEndian(itemBytes, (ushort)Item);
-					break;
-				case EndianessBehavier.LittleEndian:
-				default:
-					BinaryPrimitives.WriteUInt16LittleEndian(itemBytes, (ushort)Item);
-					break;
-			}
+            #region "Item"
+            switch (endianess)
+            {
+                case EndianessBehavier.BigEndian:
+                    BinaryPrimitives.WriteUInt16BigEndian(itemBytes, (ushort)Item);
+                    break;
+                case EndianessBehavier.LittleEndian:
+                default:
+                    BinaryPrimitives.WriteUInt16LittleEndian(itemBytes, (ushort)Item);
+                    break;
+            }
 
-			index += sizeof(ushort);
-			#endregion
+            index += sizeof(ushort);
+            #endregion
 
-			#region "Length"
-			itemBytes[index] = Convert.ToByte(descBytes.Length);
-			index += sizeof(byte);
-			#endregion
+            #region "Length"
+            itemBytes[index] = Convert.ToByte(descBytes.Length);
+            index += sizeof(byte);
+            #endregion
 
-			#region "Description"
+            #region "Description"
 
-			Array.Copy(descBytes, 0, itemBytes, index, descBytes.Length);
-			index += descBytes.Length;
-			#endregion
+            Array.Copy(descBytes, 0, itemBytes, index, descBytes.Length);
+            index += descBytes.Length;
+            #endregion
 
-			return itemBytes;
-		}
-	}
+            return itemBytes;
+        }
+    }
 }

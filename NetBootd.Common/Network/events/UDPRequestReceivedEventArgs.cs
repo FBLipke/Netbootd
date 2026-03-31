@@ -11,31 +11,28 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Netboot.Common.Network.HTTP;
-using System;
-
 namespace Netboot.Common.Network
 {
-	public class UDPRequestReceivedEventArgs : EventArgs
-	{
-		public Guid Server { get; private set; }
+    public class UDPRequestReceivedEventArgs : EventArgs
+    {
+        public Guid Server { get; private set; }
 
-		public Guid Socket { get; private set; }
+        public Guid Socket { get; private set; }
 
-		public Guid Client { get; private set; }
+        public Guid Client { get; private set; }
 
-		public MemoryStream Data { get; private set; }
+        public MemoryStream Data { get; private set; }
 
-		public UDPRequestReceivedEventArgs(
+        public UDPRequestReceivedEventArgs(
   Guid server,
   Guid socket,
   Guid client,
   byte[] data)
-		{
-			Server = server;
-			Socket = socket;
-			Client = client;
-			Data = new MemoryStream(data, false);
-		}
-	}
+        {
+            Server = server;
+            Socket = socket;
+            Client = client;
+            Data = new MemoryStream(data, false);
+        }
+    }
 }

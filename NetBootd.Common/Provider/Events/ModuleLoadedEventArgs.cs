@@ -8,19 +8,19 @@ using System.Xml;
 
 namespace Netboot.Common.Provider.Events
 {
-	public class ModuleLoadedEventArgs
-	{
-		public IProvider Module { get; private set; }
+    public class ModuleLoadedEventArgs
+    {
+        public IProvider Module { get; private set; }
 
-		public string Name { get; private set; }
+        public string Name { get; private set; }
 
-		public XmlNodeList Xml { get; private set; }
+        public XmlNodeList Xml { get; private set; }
 
-		public ModuleLoadedEventArgs(IProvider module, string name, XmlNodeList xml)
-		{
-			Xml = xml;
-			Name = name;
-			Module = module;
-		}
-	}
+        public ModuleLoadedEventArgs(IProvider module, string name, XmlNodeList xml)
+        {
+            Xml = xml;
+            Name = name;
+            Module = module;
+        }
+    }
 }

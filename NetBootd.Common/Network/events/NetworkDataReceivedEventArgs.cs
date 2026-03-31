@@ -11,31 +11,28 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Netboot.Common.System;
-using System;
-
 namespace Netboot.Common.Network.Sockets
 {
-	public class NetworkDataReceivedEventArgs<T>
-	{
-		public Guid Server { get; private set; }
+    public class NetworkDataReceivedEventArgs<T>
+    {
+        public Guid Server { get; private set; }
 
-		public Guid Socket { get; private set; }
+        public Guid Socket { get; private set; }
 
-		public Guid Client { get; private set; }
+        public Guid Client { get; private set; }
 
-		public T Data { get; private set; }
+        public T Data { get; private set; }
 
-		public NetworkDataReceivedEventArgs(
-		  Guid server,
-		  Guid socket,
-		  Guid client,
-		  T data)
-		{
-			Data = data;
-			Server = server;
-			Socket = socket;
-			Client = client;
-		}
-	}
+        public NetworkDataReceivedEventArgs(
+          Guid server,
+          Guid socket,
+          Guid client,
+          T data)
+        {
+            Data = data;
+            Server = server;
+            Socket = socket;
+            Client = client;
+        }
+    }
 }

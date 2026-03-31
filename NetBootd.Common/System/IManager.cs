@@ -8,18 +8,18 @@ using System.Xml;
 
 namespace Netboot.Common.System
 {
-	public interface IManager
-	{
-		void Start();
+    public interface IManager
+    {
+        void Start();
 
-		void Stop();
+        void Stop();
 
-		void HeartBeat();
+        void HeartBeat();
 
-		void Bootstrap(XmlNode xml);
+        void Bootstrap(XmlNode xml);
 
-		void Close();
+        void Close();
 
-		void Dispose();
-	}
+        void Dispose();
+    }
 }

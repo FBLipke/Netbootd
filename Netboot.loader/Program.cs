@@ -16,36 +16,36 @@ using System.Diagnostics;
 
 namespace Netboot
 {
-	internal class Program
-	{
-		static NetbootBase? NetbootBase;
+    internal class Program
+    {
+        static NetbootBase? NetbootBase;
 
-		[STAThread]
-		static void Main(string[] args)
-		{
-			var currentProcess = Process.GetCurrentProcess();
-			currentProcess.Exited += CurrentDomain_ProcessExit;
-			AppDomain.CurrentDomain.ProcessExit += CurrentDomain_ProcessExit;
-			AppDomain.CurrentDomain.DomainUnload += CurrentDomain_ProcessExit;
+        [STAThread]
+        static void Main(string[] args)
+        {
+            var currentProcess = Process.GetCurrentProcess();
+            currentProcess.Exited += CurrentDomain_ProcessExit;
+            AppDomain.CurrentDomain.ProcessExit += CurrentDomain_ProcessExit;
+            AppDomain.CurrentDomain.DomainUnload += CurrentDomain_ProcessExit;
 
-			NetbootBase = new NetbootBase(args);
-			NetbootBase.Bootstrap(null);
-			NetbootBase.Start();
+            NetbootBase = new NetbootBase(args);
+            NetbootBase.Bootstrap(null);
+            NetbootBase.Start();
 
-			#region "keep program alive"
-			var x = string.Empty;
+            #region "keep program alive"
+            var x = string.Empty;
 
-			while (x != "!exit")
-				x = Console.ReadLine();
-			#endregion
+            while (x != "!exit")
+                x = Console.ReadLine();
+            #endregion
 
-			CurrentDomain_ProcessExit(null, EventArgs.Empty);
-		}
+            CurrentDomain_ProcessExit(null, EventArgs.Empty);
+        }
 
-		private static void CurrentDomain_ProcessExit(object? sender, EventArgs e)
-		{
-			NetbootBase?.Stop();
-			NetbootBase?.Dispose();
-		}
-	}
+        private static void CurrentDomain_ProcessExit(object? sender, EventArgs e)
+        {
+            NetbootBase?.Stop();
+            NetbootBase?.Dispose();
+        }
+    }
 }

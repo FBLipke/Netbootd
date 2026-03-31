@@ -15,6 +15,11 @@
 	  <Compile Include="Network\Client\BSDPClient.cs" />
 	  <Compile Include="Network\Interfaces\IBSDPClient.cs" />
 	</ItemGroup>
+
+	<ItemGroup>
+	  <None Include="Netboot\NetbootSP0\10.6 Another Example.nbi\NBImageInfo.plist" />
+	  <None Include="Netboot\NetbootSP0\10.6 Another Example.nbi\Netinstall.dmg" />
+	</ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\NetBoot.Content\Netboot.Content.csproj" />
     <ProjectReference Include="..\Netboot.Module.DHCPListener\Netboot.Module.DHCPListener.csproj" />

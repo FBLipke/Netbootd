@@ -17,7 +17,7 @@ namespace Netboot.Module.TFTPServer
     {
         public long BytesRead { get; set; }
         public long BytesToRead { get; set; }
-        public ushort Block {get; set; }
+        public ushort Block { get; set; }
 
         public TFTPPacketBacklogEntry(long bytesRead, long bytesToRead, ushort block)
         {

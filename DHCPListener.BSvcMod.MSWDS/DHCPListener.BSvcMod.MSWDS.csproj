@@ -20,4 +20,16 @@
     <ProjectReference Include="..\Netboot.Module.DHCPListener\Netboot.Module.DHCPListener.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="Providers\TFTPServer\Boot\x64\default.bcd">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Providers\TFTPServer\Boot\x86\default.bcd">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Providers\TFTPServer\Boot\x86\wdsnbp.com">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

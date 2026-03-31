@@ -12,29 +12,28 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 using Netboot.Common.Cryptography.Interfaces;
-using System.Security.Cryptography;
 using System.Text;
 
 namespace Netboot.Common.Cryptography
 {
-	public class MD5 : ICrypto
-	{
-		public string GetHash(string text, string key = "notNeededforMD5")
-		{
-			if (string.IsNullOrEmpty(text))
-				return string.Empty;
+    public class MD5 : ICrypto
+    {
+        public string GetHash(string text, string key = "notNeededforMD5")
+        {
+            if (string.IsNullOrEmpty(text))
+                return string.Empty;
 
-			var numArray = null as byte[];
+            var numArray = null as byte[];
 
-			using (var cryptoServiceProvider = global::System.Security.Cryptography.MD5.Create())
-				numArray = cryptoServiceProvider.ComputeHash(Encoding.ASCII.GetBytes(text));
+            using (var cryptoServiceProvider = global::System.Security.Cryptography.MD5.Create())
+                numArray = cryptoServiceProvider.ComputeHash(Encoding.ASCII.GetBytes(text));
 
-			return BitConverter.ToString(numArray).Replace("-", string.Empty).ToLower();
-		}
+            return BitConverter.ToString(numArray).Replace("-", string.Empty).ToLower();
+        }
 
-		public byte[] GetHash(byte[] data)
-		{
-			throw new NotImplementedException();
-		}
-	}
+        public byte[] GetHash(byte[] data)
+        {
+            throw new NotImplementedException();
+        }
+    }
 }

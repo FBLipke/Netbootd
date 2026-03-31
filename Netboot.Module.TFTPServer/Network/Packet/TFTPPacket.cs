@@ -18,14 +18,14 @@ using System.Text;
 
 namespace Netboot.Module.TFTPServer
 {
-	public class TFTPPacket : BasePacket
-	{
-		public readonly Dictionary<string, string> Options = [];
+    public class TFTPPacket : BasePacket
+    {
+        public readonly Dictionary<string, string> Options = [];
 
-		public TFTPPacket(byte[] buffer) : base(buffer)
-		{
-			ParsePacket();
-		}
+        public TFTPPacket(byte[] buffer) : base(buffer)
+        {
+            ParsePacket();
+        }
 
         public TFTPPacket(MemoryStream buffer) : base(buffer)
         {
@@ -33,111 +33,111 @@ namespace Netboot.Module.TFTPServer
         }
 
         public TFTPPacket(TFTPOPCodes opCode) : base()
-		{
-			ParsePacket();
-			TFTPOPCode = opCode;
-		}
+        {
+            ParsePacket();
+            TFTPOPCode = opCode;
+        }
 
-		public byte[] Data
-		{
-			get
-			{
-				switch (TFTPOPCode)
-				{
-					case TFTPOPCodes.DAT:
-						var curPos = Buffer.Position;
-						Buffer.Position = 4;
-						var result = Read_Bytes(Buffer.Length - Buffer.Position);
-						Buffer.Position = curPos;
-						return result;
-					default:
-						return [];
-				}
-			}
+        public byte[] Data
+        {
+            get
+            {
+                switch (TFTPOPCode)
+                {
+                    case TFTPOPCodes.DAT:
+                        var curPos = Buffer.Position;
+                        Buffer.Position = 4;
+                        var result = Read_Bytes(Buffer.Length - Buffer.Position);
+                        Buffer.Position = curPos;
+                        return result;
+                    default:
+                        return [];
+                }
+            }
 
-			set
-			{
-				switch (TFTPOPCode)
-				{
-					case TFTPOPCodes.DAT:
-						Buffer.Position = 4;
-						Write_Bytes(value);
-						break;
-					default:
-						break;
-				}
-			}
-		}
+            set
+            {
+                switch (TFTPOPCode)
+                {
+                    case TFTPOPCodes.DAT:
+                        Buffer.Position = 4;
+                        Write_Bytes(value);
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
 
-		public TFTPErrorCode ErrorCode
-		{
-			get
-			{
-				var curPos = Buffer.Position;
-				Buffer.Position = 2;
-				var result = BinaryPrimitives.ReadUInt16BigEndian(Read_Bytes(2));
-				Buffer.Position = curPos;
-				return (TFTPErrorCode)result;
-			}
-			set
-			{
-				var curPos = Buffer.Position;
-				Buffer.Position = 2;
+        public TFTPErrorCode ErrorCode
+        {
+            get
+            {
+                var curPos = Buffer.Position;
+                Buffer.Position = 2;
+                var result = BinaryPrimitives.ReadUInt16BigEndian(Read_Bytes(2));
+                Buffer.Position = curPos;
+                return (TFTPErrorCode)result;
+            }
+            set
+            {
+                var curPos = Buffer.Position;
+                Buffer.Position = 2;
 
-				var bytes = new byte[sizeof(ushort)];
-				BinaryPrimitives.WriteUInt16BigEndian(bytes, (ushort)value);
-				Write_Bytes(bytes);
+                var bytes = new byte[sizeof(ushort)];
+                BinaryPrimitives.WriteUInt16BigEndian(bytes, (ushort)value);
+                Write_Bytes(bytes);
 
-				Buffer.Position = curPos;
-			}
-		}
+                Buffer.Position = curPos;
+            }
+        }
 
-		public string ErrorMessage
-		{
-			get
-			{
-				var curPos = Buffer.Position;
+        public string ErrorMessage
+        {
+            get
+            {
+                var curPos = Buffer.Position;
 
-				Buffer.Position = 4;
-				var result = Read_Bytes(Buffer.Length - Buffer.Position).GetString(Encoding.ASCII);
-				Buffer.Position = curPos;
+                Buffer.Position = 4;
+                var result = Read_Bytes(Buffer.Length - Buffer.Position).GetString(Encoding.ASCII);
+                Buffer.Position = curPos;
 
-				return result;
-			}
-			set
-			{
-				Buffer.Position = 4;
+                return result;
+            }
+            set
+            {
+                Buffer.Position = 4;
 
-				var buffer = new byte[value.Length + 1];
-				var bytes = Encoding.ASCII.GetBytes(value);
-				Array.Copy(bytes, 0, buffer, 0, bytes.Length);
-				Buffer.Position += Write_Bytes(buffer);
-			}
-		}
+                var buffer = new byte[value.Length + 1];
+                var bytes = Encoding.ASCII.GetBytes(value);
+                Array.Copy(bytes, 0, buffer, 0, bytes.Length);
+                Buffer.Position += Write_Bytes(buffer);
+            }
+        }
 
-		public ushort Block
-		{
-			get
-			{
-				var curPos = Buffer.Position;
-				Buffer.Position = 2;
+        public ushort Block
+        {
+            get
+            {
+                var curPos = Buffer.Position;
+                Buffer.Position = 2;
 
-				var result = BinaryPrimitives.ReadUInt16BigEndian(Read_Bytes(2));
+                var result = BinaryPrimitives.ReadUInt16BigEndian(Read_Bytes(2));
 
-				Buffer.Position = curPos;
-				return result;
-			}
-			set
-			{
-				var curPos = Buffer.Position;
-				Buffer.Position = 2;
+                Buffer.Position = curPos;
+                return result;
+            }
+            set
+            {
+                var curPos = Buffer.Position;
+                Buffer.Position = 2;
 
-				var bytes = new byte[sizeof(ushort)];
-				BinaryPrimitives.WriteUInt16BigEndian(bytes, value);
-				Write_Bytes(bytes);
-				Buffer.Position = curPos;
-			}
-		}
+                var bytes = new byte[sizeof(ushort)];
+                BinaryPrimitives.WriteUInt16BigEndian(bytes, value);
+                Write_Bytes(bytes);
+                Buffer.Position = curPos;
+            }
+        }
 
         public byte NextWindow
         {
@@ -145,134 +145,134 @@ namespace Netboot.Module.TFTPServer
             {
                 SetPosition(4);
                 var result = Read_Bytes(1).FirstOrDefault();
-				RestorePosition();
-				return result;
+                RestorePosition();
+                return result;
             }
             set
             {
-				SetPosition(4);
+                SetPosition(4);
                 var bytes = new byte[sizeof(byte)];
                 bytes[0] = value;
 
                 Write_Bytes(bytes);
-				RestorePosition();
+                RestorePosition();
             }
         }
 
         public TFTPOPCodes TFTPOPCode
-		{
-			get
-			{
-				var curPos = Buffer.Position;
-				Buffer.Position = 0;
-				var result = (TFTPOPCodes)BinaryPrimitives.ReadUInt16BigEndian(Read_Bytes(2));
-				Buffer.Position = curPos;
+        {
+            get
+            {
+                var curPos = Buffer.Position;
+                Buffer.Position = 0;
+                var result = (TFTPOPCodes)BinaryPrimitives.ReadUInt16BigEndian(Read_Bytes(2));
+                Buffer.Position = curPos;
 
-				return result;
-			}
-			set
-			{
-				var bytes = new byte[sizeof(ushort)];
+                return result;
+            }
+            set
+            {
+                var bytes = new byte[sizeof(ushort)];
 
-				var curPos = Buffer.Position;
-				Buffer.Position = 0;
+                var curPos = Buffer.Position;
+                Buffer.Position = 0;
 
-				BinaryPrimitives.WriteUInt16BigEndian(bytes, (ushort)value);
-				Write_Bytes(bytes);
-				Buffer.Position = curPos;
-			}
-		}
+                BinaryPrimitives.WriteUInt16BigEndian(bytes, (ushort)value);
+                Write_Bytes(bytes);
+                Buffer.Position = curPos;
+            }
+        }
 
-		public void CommitOptions()
-		{
-			switch (TFTPOPCode)
-			{
-				case TFTPOPCodes.OCK:
-					Buffer.Position = 2;
-					var offset = 2;
-					foreach (var option in Options)
-					{
-						var bytes = Encoding.ASCII.GetBytes(option.Key);
-						offset += Write_Bytes(bytes) + 1;
+        public void CommitOptions()
+        {
+            switch (TFTPOPCode)
+            {
+                case TFTPOPCodes.OCK:
+                    Buffer.Position = 2;
+                    var offset = 2;
+                    foreach (var option in Options)
+                    {
+                        var bytes = Encoding.ASCII.GetBytes(option.Key);
+                        offset += Write_Bytes(bytes) + 1;
 
-						Buffer.Position = offset;
+                        Buffer.Position = offset;
 
-						bytes = Encoding.ASCII.GetBytes(option.Value);
-						offset += Write_Bytes(bytes) + 1;
+                        bytes = Encoding.ASCII.GetBytes(option.Value);
+                        offset += Write_Bytes(bytes) + 1;
                         Buffer.Position = offset;
                     }
 
-					Buffer.Position = offset;
-					break;
-				default:
-					break;
-			}
+                    Buffer.Position = offset;
+                    break;
+                default:
+                    break;
+            }
 
-			Buffer.Capacity = (int)Buffer.Position;
-			Buffer.SetLength(Buffer.Capacity);
-		}
+            Buffer.Capacity = (int)Buffer.Position;
+            Buffer.SetLength(Buffer.Capacity);
+        }
 
-		public void ParsePacket()
-		{
-			switch (TFTPOPCode)
-			{
-				case TFTPOPCodes.RRQ:
-					Buffer.Position = 2;
-					var parts = Read_Bytes(Buffer.Length - Buffer.Position).GetString(Encoding.ASCII).Split('\0');
+        public void ParsePacket()
+        {
+            switch (TFTPOPCode)
+            {
+                case TFTPOPCodes.RRQ:
+                    Buffer.Position = 2;
+                    var parts = Read_Bytes(Buffer.Length - Buffer.Position).GetString(Encoding.ASCII).Split('\0');
 
-					for (var i = 0; i < parts.Length; i++)
-					{
-						if (i == 0)
-						{
-							var file = parts[i];
-							if (file.StartsWith('\\') || file.StartsWith('/'))
-								file = file.Substring(1);
+                    for (var i = 0; i < parts.Length; i++)
+                    {
+                        if (i == 0)
+                        {
+                            var file = parts[i];
+                            if (file.StartsWith('\\') || file.StartsWith('/'))
+                                file = file.Substring(1);
 
                             if (!Options.ContainsKey("file"))
-								Options.Add("file", file);
-							else
-								Options["file"] = file;
-						}
+                                Options.Add("file", file);
+                            else
+                                Options["file"] = file;
+                        }
 
-						if (i == 1)
-						{
-							if (!Options.ContainsKey("mode"))
-								Options.Add("mode", parts[i]);
-							else
-								Options["mode"] = parts[i];
-						}
+                        if (i == 1)
+                        {
+                            if (!Options.ContainsKey("mode"))
+                                Options.Add("mode", parts[i]);
+                            else
+                                Options["mode"] = parts[i];
+                        }
 
-						if (parts[i] == "blksize")
-						{
-							if (!Options.ContainsKey(parts[i]))
-								Options.Add(parts[i], parts[i + 1]);
-							else
-								Options[parts[i]] = parts[i + 1];
-						}
+                        if (parts[i] == "blksize")
+                        {
+                            if (!Options.ContainsKey(parts[i]))
+                                Options.Add(parts[i], parts[i + 1]);
+                            else
+                                Options[parts[i]] = parts[i + 1];
+                        }
 
-						if (parts[i] == "tsize")
-						{
-							if (!Options.ContainsKey(parts[i]))
-								Options.Add(parts[i], parts[i + 1]);
-							else
-								Options[parts[i]] = parts[i + 1];
-						}
+                        if (parts[i] == "tsize")
+                        {
+                            if (!Options.ContainsKey(parts[i]))
+                                Options.Add(parts[i], parts[i + 1]);
+                            else
+                                Options[parts[i]] = parts[i + 1];
+                        }
 
-						if (parts[i] == "windowsize")
-						{
-							if (!Options.ContainsKey(parts[i]))
-								Options.Add(parts[i], parts[i + 1]);
-							else
-								Options[parts[i]] = parts[i + 1];
-						}
+                        if (parts[i] == "windowsize")
+                        {
+                            if (!Options.ContainsKey(parts[i]))
+                                Options.Add(parts[i], parts[i + 1]);
+                            else
+                                Options[parts[i]] = parts[i + 1];
+                        }
 
-						if (parts[i] == "msftwindow")
-						{
-							if (!Options.ContainsKey(parts[i]))
-								Options.Add(parts[i], parts[i + 1]);
-							else
-								Options[parts[i]] = parts[i + 1];
-						}
+                        if (parts[i] == "msftwindow")
+                        {
+                            if (!Options.ContainsKey(parts[i]))
+                                Options.Add(parts[i], parts[i + 1]);
+                            else
+                                Options[parts[i]] = parts[i + 1];
+                        }
 
                         if (parts[i] == "multicast")
                         {
@@ -282,14 +282,14 @@ namespace Netboot.Module.TFTPServer
                                 Options[parts[i]] = "";
                         }
                     }
-					break;
-				case TFTPOPCodes.ACK:
-					if (Buffer.Length > 4)
-						Options.Add("NextWindow", "");
-					break;
-				default:
-					break;
-			}
-		}
-	}
+                    break;
+                case TFTPOPCodes.ACK:
+                    if (Buffer.Length > 4)
+                        Options.Add("NextWindow", "");
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
 }

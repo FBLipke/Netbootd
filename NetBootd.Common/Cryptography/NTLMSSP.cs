@@ -16,44 +16,44 @@ using Netboot.Common.Cryptography.Interfaces;
 
 namespace Netboot.Common.Cryptography
 {
-	public class NTLMState : ICrypto
-	{
-		public byte[] NTHash { get; private set; }
+    public class NTLMState : ICrypto
+    {
+        public byte[] NTHash { get; private set; }
 
-		public byte[] LMHash { get; private set; }
+        public byte[] LMHash { get; private set; }
 
-		public byte[] Challenge { get; private set; }
+        public byte[] Challenge { get; private set; }
 
-		public byte[] LM_Response { get; private set; }
+        public byte[] LM_Response { get; private set; }
 
-		public byte[] NT_Response { get; private set; }
+        public byte[] NT_Response { get; private set; }
 
-		public ntlmssp_flags NegotiatedFlags { get; set; }
+        public ntlmssp_flags NegotiatedFlags { get; set; }
 
-		public NTLMState()
-		{
-			NTHash = [];
-			LMHash = [];
-			Challenge = [];
-			LM_Response = [];
-			NT_Response = [];
-		}
+        public NTLMState()
+        {
+            NTHash = [];
+            LMHash = [];
+            Challenge = [];
+            LM_Response = [];
+            NT_Response = [];
+        }
 
-		public string GetHash(string text, string key)
-		{
-			throw new NotImplementedException();
-		}
+        public string GetHash(string text, string key)
+        {
+            throw new NotImplementedException();
+        }
 
-		public byte[] GetHash(byte[] data)
-		{
-			throw new NotImplementedException();
-		}
-	}
+        public byte[] GetHash(byte[] data)
+        {
+            throw new NotImplementedException();
+        }
+    }
 
-	public class NTLMSSP
-	{
-		public NTLMSSP()
-		{
-		}
-	}
+    public class NTLMSSP
+    {
+        public NTLMSSP()
+        {
+        }
+    }
 }

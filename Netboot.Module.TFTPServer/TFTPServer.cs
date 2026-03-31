@@ -56,7 +56,8 @@ namespace Netboot.Module.TFTPServer
         public void Bootstrap(XmlNode xml)
         {
             Server = NetbootBase.NetworkManager.ServerManager.Add(ProtoType.Udp, [69, 1758]);
-            NetbootBase.NetworkManager.UDPRequestReceived += (sender, e) => {
+            NetbootBase.NetworkManager.UDPRequestReceived += (sender, e) =>
+            {
                 Base.Handle_Listener_Request(e.Server, e.Socket, e.Client, e.Data);
             };
 
@@ -74,7 +75,7 @@ namespace Netboot.Module.TFTPServer
 
             if (VolativeModule)
                 return;
-            
+
             Database.Close();
         }
 

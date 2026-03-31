@@ -12,17 +12,16 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 using System.Net;
-using System.Xml;
 
 namespace Netboot.Common.Network.Interfaces
 {
-	public interface ISocket : IDisposable
-	{
-		bool Initialize();
-		void Start();
-		void SendTo(IPacket packet, IClient client);
-		void Close();
-		IPAddress GetIPAddress();
+    public interface ISocket : IDisposable
+    {
+        bool Initialize();
+        void Start();
+        void SendTo(IPacket packet, IClient client);
+        void Close();
+        IPAddress GetIPAddress();
 
-	}
+    }
 }

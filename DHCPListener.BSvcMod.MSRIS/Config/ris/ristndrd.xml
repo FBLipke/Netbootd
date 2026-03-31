@@ -38,7 +38,7 @@
 			</OEM_ADs>
 			<UserData>
 				<FullName>Windows User</FullName>
-				<OrgName>Private</OrgName>
+				<OrgName>Privat</OrgName>
 				<ComputerName>[[#ComputerName#]]</ComputerName>
 			</UserData>
 			<GuiUnattended>

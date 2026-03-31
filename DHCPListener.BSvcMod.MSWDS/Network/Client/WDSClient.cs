@@ -11,78 +11,76 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Netboot.Common.Network.Interfaces;
 using Netboot.Module.DHCPListener;
 using System.Net;
-using System.Net.Sockets;
 
 namespace DHCPListener.BSvcMod.MSWDS
 {
-	public class WDSClient : IWDSClient
-	{
-		public PXEPromptOptionValues PXEPromptDone { get; set; }
+    public class WDSClient : IWDSClient
+    {
+        public PXEPromptOptionValues PXEPromptDone { get; set; }
 
-		public PXEPromptOptionValues PXEPromptAction { get; set; } = PXEPromptOptionValues.OptIn;
+        public PXEPromptOptionValues PXEPromptAction { get; set; } = PXEPromptOptionValues.OptIn;
 
-		public uint ServerFeatures { get; set; }
+        public uint ServerFeatures { get; set; }
 
-		public bool ActionDone { get; set; } = false;
+        public bool ActionDone { get; set; } = false;
 
-		public NextActionOptionValues NextAction { get; set; } = NextActionOptionValues.Approval;
-		
-		public string Message { get; set; } = string.Empty;
+        public NextActionOptionValues NextAction { get; set; } = NextActionOptionValues.Approval;
 
-		public bool ServerSelection { get; set; } = false;
+        public string Message { get; set; } = string.Empty;
 
-		public uint RequestId { get; set; } = 0;
-		
-		public bool VersionQuery { get; set; } = false;
+        public bool ServerSelection { get; set; } = false;
 
-		public NBPVersionValues ServerVersion { get; set; }
+        public uint RequestId { get; set; } = 0;
 
-		public IPAddress ReferralServer { get; set; } = IPAddress.Any;
-		
-		public NBPVersionValues NBPVersion { get; set; }
+        public bool VersionQuery { get; set; } = false;
 
-		public Guid Id { get; set; }
-		
-		public Architecture Architecture {get; set; }
-		
-		public DHCPPacket? Response { get; set; }
-		
-		public DHCPPacket? Request { get; set; }
-		
-		public DHCPVendorID VendorId {get; set; }
-		
-		public NicSpecType NicSpecType {get; set; }
-		
-		public Guid Socket {get; set; }
-		
-		public Guid Server {get; set; }
-		
-		public Guid Client {get; set; }
+        public NBPVersionValues ServerVersion { get; set; }
 
-		private void _ctorFunc()
-		{
-			VendorId = Request.GetVendorIdent;
-			Response = new DHCPPacket();
-		}
+        public IPAddress ReferralServer { get; set; } = IPAddress.Any;
 
-		public WDSClient(Guid id, DHCPPacket request, Guid server, Guid socket, Guid client)
-		{
-			Server = server;
-			Client = client;
-			Socket = socket;
+        public NBPVersionValues NBPVersion { get; set; }
 
-			Request = request;
-			Id = id;
-			_ctorFunc();
-		}
+        public Guid Id { get; set; }
 
-		public void Dispose()
-		{
-			Request.Dispose();
-			Response.Dispose();
-		}
-	}
+        public Architecture Architecture { get; set; }
+
+        public DHCPPacket? Response { get; set; }
+
+        public DHCPPacket? Request { get; set; }
+
+        public DHCPVendorID VendorId { get; set; }
+
+        public NicSpecType NicSpecType { get; set; }
+
+        public Guid Socket { get; set; }
+
+        public Guid Server { get; set; }
+
+        public Guid Client { get; set; }
+
+        private void _ctorFunc()
+        {
+            VendorId = Request.GetVendorIdent;
+            Response = new DHCPPacket();
+        }
+
+        public WDSClient(Guid id, DHCPPacket request, Guid server, Guid socket, Guid client)
+        {
+            Server = server;
+            Client = client;
+            Socket = socket;
+
+            Request = request;
+            Id = id;
+            _ctorFunc();
+        }
+
+        public void Dispose()
+        {
+            Request.Dispose();
+            Response.Dispose();
+        }
+    }
 }

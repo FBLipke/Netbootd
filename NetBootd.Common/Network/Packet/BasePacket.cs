@@ -12,100 +12,99 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 using Netboot.Common.Network.Interfaces;
-using System.Buffers.Binary;
 using System.Net;
 
 namespace Netboot.Common.Network.Packet
 {
-	public abstract class BasePacket : IPacket
-	{
-		public MemoryStream Buffer { get; set; }
+    public abstract class BasePacket : IPacket
+    {
+        public MemoryStream Buffer { get; set; }
 
-		long lastPosition { get; set; }
+        long lastPosition { get; set; }
 
-		public BasePacket()
-		{
-			Buffer = new();
-		}
+        public BasePacket()
+        {
+            Buffer = new();
+        }
 
-		public BasePacket(byte[] data)
-		{
-			Buffer = new(data);
-		}
+        public BasePacket(byte[] data)
+        {
+            Buffer = new(data);
+        }
 
-		public BasePacket(int length)
-		{
-			Buffer = new(length);
-		}
+        public BasePacket(int length)
+        {
+            Buffer = new(length);
+        }
 
-		public BasePacket(MemoryStream datastream)
-		{
-			Buffer = datastream;
-		}
+        public BasePacket(MemoryStream datastream)
+        {
+            Buffer = datastream;
+        }
 
-		public void SetCapacity(int capacity)
-		{
-			Buffer.Capacity = capacity;
-		}
+        public void SetCapacity(int capacity)
+        {
+            Buffer.Capacity = capacity;
+        }
 
-		public void Dispose() => GC.SuppressFinalize(this);
+        public void Dispose() => GC.SuppressFinalize(this);
 
-		public void SetPosition(long position)
-		{
-			lastPosition = Buffer.Position;
-			Buffer.Position = position;
-		}
+        public void SetPosition(long position)
+        {
+            lastPosition = Buffer.Position;
+            Buffer.Position = position;
+        }
 
-		public void RestorePosition() => Buffer.Position = lastPosition;
+        public void RestorePosition() => Buffer.Position = lastPosition;
 
-		public byte Read_UINT8(long position = 0)
-		{
-			var curPos = Buffer.Position;
+        public byte Read_UINT8(long position = 0)
+        {
+            var curPos = Buffer.Position;
 
-			Buffer.Position = position != 0 ? position : 0;
-			var result = Convert.ToByte(Buffer.ReadByte());
-			Buffer.Position = curPos;
+            Buffer.Position = position != 0 ? position : 0;
+            var result = Convert.ToByte(Buffer.ReadByte());
+            Buffer.Position = curPos;
 
-			return result;
-		}
+            return result;
+        }
 
-		public int Write_UINT8(byte value, long position = 0)
-		{
-			Buffer.Position = position != 0 ? position : 0;
-			Buffer.WriteByte(value);
+        public int Write_UINT8(byte value, long position = 0)
+        {
+            Buffer.Position = position != 0 ? position : 0;
+            Buffer.WriteByte(value);
 
-			return sizeof(byte);
-		}
+            return sizeof(byte);
+        }
 
-		public byte[] Read_Bytes(long size)
-		{
-			var bytes = new byte[size];
-			Buffer.Read(bytes, 0, bytes.Length);
+        public byte[] Read_Bytes(long size)
+        {
+            var bytes = new byte[size];
+            Buffer.Read(bytes, 0, bytes.Length);
 
-			return bytes;
-		}
+            return bytes;
+        }
 
-		public int Write_Bytes(byte[] input)
-		{
-			Buffer.Write(input, 0, input.Length);
+        public int Write_Bytes(byte[] input)
+        {
+            Buffer.Write(input, 0, input.Length);
 
-			return input.Length;
-		}
+            return input.Length;
+        }
 
-		public IPAddress Read_IPAddress() => new(Read_Bytes(IPAddress.None.GetAddressBytes().Length));
+        public IPAddress Read_IPAddress() => new(Read_Bytes(IPAddress.None.GetAddressBytes().Length));
 
-		public void Write_IPAddress(IPAddress address) => Write_Bytes(address.GetAddressBytes());
+        public void Write_IPAddress(IPAddress address) => Write_Bytes(address.GetAddressBytes());
 
-		public ushort Read_UINT16() => BitConverter.ToUInt16(Read_Bytes(sizeof(ushort)));
+        public ushort Read_UINT16() => BitConverter.ToUInt16(Read_Bytes(sizeof(ushort)));
 
-		public void Write_UINT16(ushort value)
-		{
-			var bytes = BitConverter.GetBytes(value);
-			Write_Bytes(bytes);
-		}
+        public void Write_UINT16(ushort value)
+        {
+            var bytes = BitConverter.GetBytes(value);
+            Write_Bytes(bytes);
+        }
 
-		public uint Read_UINT32() => BitConverter.ToUInt32(Read_Bytes(sizeof(uint)));
+        public uint Read_UINT32() => BitConverter.ToUInt32(Read_Bytes(sizeof(uint)));
 
-		public void Write_UINT32(uint value) => Write_Bytes(BitConverter.GetBytes(value));
-	}
+        public void Write_UINT32(uint value) => Write_Bytes(BitConverter.GetBytes(value));
+    }
 }

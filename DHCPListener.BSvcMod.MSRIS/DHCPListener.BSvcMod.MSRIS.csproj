@@ -21,4 +21,70 @@
     <ProjectReference Include="..\NetBootd.Common\Netboot.Common.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="Config\ris\ristndrd.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Providers\TFTPServer\OSChooser\englisch\00004e22.osc" />
+    <None Include="Providers\TFTPServer\OSChooser\englisch\00004e23.osc" />
+    <None Include="Providers\TFTPServer\OSChooser\englisch\00004e24.osc" />
+    <None Include="Providers\TFTPServer\OSChooser\englisch\00004e25.osc" />
+    <None Include="Providers\TFTPServer\OSChooser\englisch\00004e26.osc" />
+    <None Include="Providers\TFTPServer\OSChooser\englisch\00004e28.osc">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Providers\TFTPServer\OSChooser\englisch\00004e29.osc" />
+    <None Include="Providers\TFTPServer\OSChooser\englisch\00004e2a.osc" />
+    <None Include="Providers\TFTPServer\OSChooser\englisch\00004e2f.osc" />
+    <None Include="Providers\TFTPServer\OSChooser\englisch\00004e30.osc" />
+    <None Include="Providers\TFTPServer\OSChooser\englisch\00004e43.osc" />
+    <None Include="Providers\TFTPServer\OSChooser\englisch\00004e45.osc" />
+    <None Include="Providers\TFTPServer\OSChooser\englisch\00004e47.osc" />
+    <None Include="Providers\TFTPServer\OSChooser\englisch\00004e48.osc" />
+    <None Include="Providers\TFTPServer\OSChooser\englisch\00004e4b.osc" />
+    <None Include="Providers\TFTPServer\OSChooser\englisch\00004e4c.osc" />
+    <None Include="Providers\TFTPServer\OSChooser\englisch\00004e4e.osc" />
+    <None Include="Providers\TFTPServer\OSChooser\englisch\00004e4f.osc" />
+    <None Include="Providers\TFTPServer\OSChooser\englisch\00004e50.osc" />
+    <None Include="Providers\TFTPServer\OSChooser\englisch\00004e51.osc" />
+    <None Include="Providers\TFTPServer\OSChooser\englisch\00004e52.osc" />
+    <None Include="Providers\TFTPServer\OSChooser\englisch\00004e53.osc" />
+    <None Include="Providers\TFTPServer\OSChooser\englisch\choice.osc" />
+    <None Include="Providers\TFTPServer\OSChooser\englisch\choichlp.osc" />
+    <None Include="Providers\TFTPServer\OSChooser\englisch\custhelp.osc" />
+    <None Include="Providers\TFTPServer\OSChooser\englisch\custom.osc" />
+    <None Include="Providers\TFTPServer\OSChooser\englisch\dupauto.osc" />
+    <None Include="Providers\TFTPServer\OSChooser\englisch\dupcust.osc" />
+    <None Include="Providers\TFTPServer\OSChooser\englisch\install.osc" />
+    <None Include="Providers\TFTPServer\OSChooser\englisch\login.osc">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Providers\TFTPServer\OSChooser\englisch\loginhlp.osc" />
+    <None Include="Providers\TFTPServer\OSChooser\englisch\nochoice.osc" />
+    <None Include="Providers\TFTPServer\OSChooser\englisch\nooses.osc" />
+    <None Include="Providers\TFTPServer\OSChooser\englisch\osauto.osc" />
+    <None Include="Providers\TFTPServer\OSChooser\englisch\oschoice.osc" />
+    <None Include="Providers\TFTPServer\OSChooser\englisch\oscust.osc" />
+    <None Include="Providers\TFTPServer\OSChooser\englisch\rstrterr.osc" />
+    <None Include="Providers\TFTPServer\OSChooser\englisch\tools.osc" />
+    <None Include="Providers\TFTPServer\OSChooser\englisch\toolshlp.osc" />
+    <None Include="Providers\TFTPServer\OSChooser\englisch\warning.osc" />
+    <None Include="Providers\TFTPServer\OSChooser\i386\NTDETECT.COM">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Providers\TFTPServer\OSChooser\i386\ntldr">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Providers\TFTPServer\OSChooser\i386\ntldr_OSCHOICE">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Providers\TFTPServer\OSChooser\i386\startrom.n12">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Providers\TFTPServer\OSChooser\i386\winnt.sif">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Providers\TFTPServer\OSChooser\welcome.osc" />
+  </ItemGroup>
+
 </Project>

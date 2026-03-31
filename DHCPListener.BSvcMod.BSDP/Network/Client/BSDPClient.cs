@@ -12,97 +12,96 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 using Netboot.Module.DHCPListener;
-using System.Net;
 
 namespace DHCPListener.BSvcMod.BSDP
 {
-	public class BSDPClient : IBSDPClient
-	{
+    public class BSDPClient : IBSDPClient
+    {
 
-		public Architecture Architecture {get; set; }
-		
-		public DHCPPacket Response {get; set; }
+        public Architecture Architecture { get; set; }
 
-		public DHCPPacket Request {get; set; }
-		
-		public DHCPVendorID VendorId {get; set; }
-		
-		public Guid Id {get; set; }
-		
-		public Guid Socket {get; set; }
-		
-		public Guid Server {get; set; }
-		
-		public Guid Client {get; set; }
+        public DHCPPacket Response { get; set; }
+
+        public DHCPPacket Request { get; set; }
+
+        public DHCPVendorID VendorId { get; set; }
+
+        public Guid Id { get; set; }
+
+        public Guid Socket { get; set; }
+
+        public Guid Server { get; set; }
+
+        public Guid Client { get; set; }
 
         public bool TestClient { get; set; }
 
         public NicSpecType NicSpecType { get; set; }
 
-		public BSDPMsgType BSDPMsgType { get; set; }
+        public BSDPMsgType BSDPMsgType { get; set; }
 
-		public Version BSDPVersion { get; set; }
+        public Version BSDPVersion { get; set; }
 
-		private void _ctorFunc()
-		{
-			VendorId = Request.GetVendorIdent;
-			Response = new DHCPPacket();
+        private void _ctorFunc()
+        {
+            VendorId = Request.GetVendorIdent;
+            Response = new DHCPPacket();
 
-			var encaps = Request.GetEncOptions((byte)43).Values;
-			foreach (var option in encaps)
-			{
-				switch ((BSDPVendorEncOptions)option.Option)
-				{
-					case BSDPVendorEncOptions.MessageType:
-						BSDPMsgType = (BSDPMsgType)option.AsByte();
-						break;
-					case BSDPVendorEncOptions.Version:
-						BSDPVersion = new Version(option.Data.First(), option.Data.Last());
-						break;
-					case BSDPVendorEncOptions.ServerIdentifier:
+            var encaps = Request.GetEncOptions((byte)43).Values;
+            foreach (var option in encaps)
+            {
+                switch ((BSDPVendorEncOptions)option.Option)
+                {
+                    case BSDPVendorEncOptions.MessageType:
+                        BSDPMsgType = (BSDPMsgType)option.AsByte();
+                        break;
+                    case BSDPVendorEncOptions.Version:
+                        BSDPVersion = new Version(option.Data.First(), option.Data.Last());
+                        break;
+                    case BSDPVendorEncOptions.ServerIdentifier:
 
-						break;
-					case BSDPVendorEncOptions.ServerPriority:
-						break;
-					case BSDPVendorEncOptions.ReplyPort:
-						break;
-					case BSDPVendorEncOptions.BootImageListPath:
-						break;
-					case BSDPVendorEncOptions.DefaultBootImage:
-						break;
-					case BSDPVendorEncOptions.SelectedBootImage:
-						break;
-					case BSDPVendorEncOptions.BootImageList:
-						break;
-					case BSDPVendorEncOptions.Netboot10Firmware:
-						break;
-					case BSDPVendorEncOptions.AttributesFilterList:
-						break;
-					case BSDPVendorEncOptions.MaxMessageSize:
-						break;
-					default:
-						break;
-				}
-			}
-		}
+                        break;
+                    case BSDPVendorEncOptions.ServerPriority:
+                        break;
+                    case BSDPVendorEncOptions.ReplyPort:
+                        break;
+                    case BSDPVendorEncOptions.BootImageListPath:
+                        break;
+                    case BSDPVendorEncOptions.DefaultBootImage:
+                        break;
+                    case BSDPVendorEncOptions.SelectedBootImage:
+                        break;
+                    case BSDPVendorEncOptions.BootImageList:
+                        break;
+                    case BSDPVendorEncOptions.Netboot10Firmware:
+                        break;
+                    case BSDPVendorEncOptions.AttributesFilterList:
+                        break;
+                    case BSDPVendorEncOptions.MaxMessageSize:
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
 
-		public BSDPClient(bool testClient, Guid id, DHCPPacket request, Guid server, Guid socket, Guid client)
-		{
-			Server = server;
-			Client = client;
-			Socket = socket;
+        public BSDPClient(bool testClient, Guid id, DHCPPacket request, Guid server, Guid socket, Guid client)
+        {
+            Server = server;
+            Client = client;
+            Socket = socket;
 
-			TestClient = testClient;
+            TestClient = testClient;
 
             Request = request;
-			Id = id;
-			_ctorFunc();
-		}
+            Id = id;
+            _ctorFunc();
+        }
 
-		public void Dispose()
-		{
-			Request.Dispose();
-			Response.Dispose();
-		}
-	}
+        public void Dispose()
+        {
+            Request.Dispose();
+            Response.Dispose();
+        }
+    }
 }

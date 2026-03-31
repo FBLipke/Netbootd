@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Net;
 
 namespace Netboot.Module.TFTPServer
 {
-	public interface ITFTPClient: IDisposable
-	{
+    public interface ITFTPClient : IDisposable
+    {
         public Dictionary<ushort, TFTPPacketBacklogEntry> PacketBacklog { get; set; }
 
         public ushort BlockSize { get; set; }
@@ -27,19 +22,19 @@ namespace Netboot.Module.TFTPServer
 
         public ushort MSFTWindow { get; set; }
 
-		public IPEndPoint RemoteEndpoint { get; set; }
+        public IPEndPoint RemoteEndpoint { get; set; }
 
-		public string FileName { get; set; }
+        public string FileName { get; set; }
 
         public FileStream FileStream { get; set; }
 
         public Guid Id { get; set; }
 
-		Guid Socket { get; set; }
-		
-		Guid Server { get; set; }
-		
-		Guid Client { get; set; }
+        Guid Socket { get; set; }
+
+        Guid Server { get; set; }
+
+        Guid Client { get; set; }
 
         bool OpenFile();
 

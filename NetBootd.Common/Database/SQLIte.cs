@@ -11,8 +11,8 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Netboot.Common.System;
 using Netboot.Common.Database.Interfaces;
+using Netboot.Common.System;
 using System.Collections.Specialized;
 using System.Data;
 using System.Data.SQLite;
@@ -20,135 +20,135 @@ using System.Xml;
 
 namespace Netboot.Common.Database
 {
-	public class SqlDatabase : IDisposable, IManager, IDatabase
-	{
-		private readonly SQLiteConnection? _sqlConn;
+    public class SqlDatabase : IDisposable, IManager, IDatabase
+    {
+        private readonly SQLiteConnection? _sqlConn;
 
-		public Filesystem FileSystem
-		{
-			get => throw new NotImplementedException();
-			set => throw new NotImplementedException();
-		}
+        public Filesystem FileSystem
+        {
+            get => throw new NotImplementedException();
+            set => throw new NotImplementedException();
+        }
 
-		public SqlDatabase(Filesystem fs, string database)
-		{
-			if (string.IsNullOrEmpty(database))
-				return;
+        public SqlDatabase(Filesystem fs, string database)
+        {
+            if (string.IsNullOrEmpty(database))
+                return;
 
-			_sqlConn = new SQLiteConnection(string.Format("Data Source={0};Version=3;", Path.Combine(fs.Root, database)));
-			_sqlConn?.Open();
-		}
+            _sqlConn = new SQLiteConnection(string.Format("Data Source={0};Version=3;", Path.Combine(fs.Root, database)));
+            _sqlConn?.Open();
+        }
 
-		public int Count<TS>(string table, string condition, TS value)
-		{
-				try
-				{
-					var num = 0;
-					using (var sqLiteCommand = new SQLiteCommand(string.Format("SELECT Count({0}) FROM {1} WHERE {2}=\"{3}\"", condition, table, condition, value), _sqlConn))
-					{
-						sqLiteCommand.CommandType = CommandType.Text;
-						num = Convert.ToInt32(sqLiteCommand.ExecuteScalar());
-					}
+        public int Count<TS>(string table, string condition, TS value)
+        {
+            try
+            {
+                var num = 0;
+                using (var sqLiteCommand = new SQLiteCommand(string.Format("SELECT Count({0}) FROM {1} WHERE {2}=\"{3}\"", condition, table, condition, value), _sqlConn))
+                {
+                    sqLiteCommand.CommandType = CommandType.Text;
+                    num = Convert.ToInt32(sqLiteCommand.ExecuteScalar());
+                }
 
-					return num;
-				}
-				catch (SQLiteException)
-				{
-					//Console.WriteLine(ex);
-					return 0;
-				}
-		}
+                return num;
+            }
+            catch (SQLiteException)
+            {
+                //Console.WriteLine(ex);
+                return 0;
+            }
+        }
 
-		public Dictionary<int, NameValueCollection> Query(string sql)
-		{
-			var dictionary = new Dictionary<int, NameValueCollection>();
-			using (var cmd = new SQLiteCommand(sql, _sqlConn))
-			{
-				Nonqry(cmd, out bool result);
-				if (result)
-				{
-					using (var sqLiteDataReader = cmd.ExecuteReader())
-					{
-						var key = 0;
-						while (sqLiteDataReader.Read())
-						{
-							if (!dictionary.ContainsKey(key))
-							{
-								dictionary.Add(key, sqLiteDataReader.GetValues());
-								++key;
-							}
-						}
-						sqLiteDataReader.Close();
-					}
-				}
-				return dictionary;
-			}
-		}
+        public Dictionary<int, NameValueCollection> Query(string sql)
+        {
+            var dictionary = new Dictionary<int, NameValueCollection>();
+            using (var cmd = new SQLiteCommand(sql, _sqlConn))
+            {
+                Nonqry(cmd, out bool result);
+                if (result)
+                {
+                    using (var sqLiteDataReader = cmd.ExecuteReader())
+                    {
+                        var key = 0;
+                        while (sqLiteDataReader.Read())
+                        {
+                            if (!dictionary.ContainsKey(key))
+                            {
+                                dictionary.Add(key, sqLiteDataReader.GetValues());
+                                ++key;
+                            }
+                        }
+                        sqLiteDataReader.Close();
+                    }
+                }
+                return dictionary;
+            }
+        }
 
-		public bool Insert(string sql)
-		{
-			var result = false;
-			using (var cmd = new SQLiteCommand(sql))
-				Nonqry(cmd, out result);
-			
-			return result;
-		}
+        public bool Insert(string sql)
+        {
+            var result = false;
+            using (var cmd = new SQLiteCommand(sql))
+                Nonqry(cmd, out result);
 
-		public string Query(string sql, string key)
-		{
-			var str = string.Empty;
-			using (var cmd = new SQLiteCommand(sql, _sqlConn))
-			{
-				Nonqry(cmd, out bool result);
+            return result;
+        }
 
-				using (var sqLiteDataReader = cmd.ExecuteReader())
-				{
-					while (sqLiteDataReader.Read())
-						str = string.Format("{0}", sqLiteDataReader[key]);
-				
-					sqLiteDataReader.Close();
-				}
-			}
-			return str;
-		}
+        public string Query(string sql, string key)
+        {
+            var str = string.Empty;
+            using (var cmd = new SQLiteCommand(sql, _sqlConn))
+            {
+                Nonqry(cmd, out bool result);
 
-		private void Nonqry(SQLiteCommand cmd, out bool result)
-		{
-			cmd.CommandType = CommandType.Text;
-			cmd.Connection = _sqlConn;
-			try
-			{
-				result = cmd.ExecuteNonQuery() != 0;
-			}
-			catch
-			{
-				result = false;
-			}
-		}
+                using (var sqLiteDataReader = cmd.ExecuteReader())
+                {
+                    while (sqLiteDataReader.Read())
+                        str = string.Format("{0}", sqLiteDataReader[key]);
 
-		public void Close() => Stop();
+                    sqLiteDataReader.Close();
+                }
+            }
+            return str;
+        }
 
-		public void Start()
-		{
-			if (_sqlConn.State != ConnectionState.Closed)
-				return;
-			_sqlConn.Open();
-		}
+        private void Nonqry(SQLiteCommand cmd, out bool result)
+        {
+            cmd.CommandType = CommandType.Text;
+            cmd.Connection = _sqlConn;
+            try
+            {
+                result = cmd.ExecuteNonQuery() != 0;
+            }
+            catch
+            {
+                result = false;
+            }
+        }
 
-		public void Stop()
-		{
-			if (_sqlConn.State == 0)
-				return;
+        public void Close() => Stop();
 
-			_sqlConn.Close();
-		}
+        public void Start()
+        {
+            if (_sqlConn.State != ConnectionState.Closed)
+                return;
+            _sqlConn.Open();
+        }
 
-		public void HeartBeat() { }
+        public void Stop()
+        {
+            if (_sqlConn.State == 0)
+                return;
 
-		public void Dispose() => _sqlConn.Dispose();
+            _sqlConn.Close();
+        }
 
-		public void Bootstrap(XmlNode xml)
-		{
-		}
-	}
+        public void HeartBeat() { }
+
+        public void Dispose() => _sqlConn.Dispose();
+
+        public void Bootstrap(XmlNode xml)
+        {
+        }
+    }
 }

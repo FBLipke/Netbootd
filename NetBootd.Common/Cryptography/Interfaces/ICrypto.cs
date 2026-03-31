@@ -16,8 +16,8 @@ namespace Netboot.Common.Cryptography.Interfaces
     public interface ICrypto
     {
         string GetHash(string text, string key);
-        
+
         byte[] GetHash(byte[] data);
 
-	}
+    }
 }

@@ -11,20 +11,18 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-
 namespace Netboot.Common.Network.Sockets
 {
-	public class DataReadFromClientEventArgs
-	{
-		public DataReadFromClientEventArgs(Guid id, byte[] data)
-		{
-			Data = data;
-			Client = id;
-		}
+    public class DataReadFromClientEventArgs
+    {
+        public DataReadFromClientEventArgs(Guid id, byte[] data)
+        {
+            Data = data;
+            Client = id;
+        }
 
-		public Guid Client { get; }
+        public Guid Client { get; }
 
-		public byte[] Data { get; }
-	}
+        public byte[] Data { get; }
+    }
 }

@@ -15,15 +15,15 @@ using System.Net;
 
 namespace Netboot.Common.Network.Interfaces
 {
-	public interface IClient : IDisposable
-	{
-		public Guid SocketId { get; set; }
-		public Guid ServerId { get; set; }
-		public string ServiceType { get; set; }
-		public string ClientId { get; set; }
-		IPEndPoint RemoteEndpoint { get; set; }
+    public interface IClient : IDisposable
+    {
+        public Guid SocketId { get; set; }
+        public Guid ServerId { get; set; }
+        public string ServiceType { get; set; }
+        public string ClientId { get; set; }
+        IPEndPoint RemoteEndpoint { get; set; }
 
-		void Close();
-		void Heartbeat();
-	}
+        void Close();
+        void Heartbeat();
+    }
 }

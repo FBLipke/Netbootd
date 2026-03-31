@@ -13,29 +13,29 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace DHCPListener.BSvcMod.BSDP
 {
-	public enum BSDPMsgType : byte
-	{
-		List = 1,
-		Select = 2,
-		Failed = 3
-	}
+    public enum BSDPMsgType : byte
+    {
+        List = 1,
+        Select = 2,
+        Failed = 3
+    }
 
-	public enum BSDPVendorEncOptions : byte
-	{
-		MessageType = 1,
-		Version = 2,
-		ServerIdentifier = 3,
-		ServerPriority = 4,
-		ReplyPort = 5,
-		/// <summary>
-		/// Not Used
-		/// </summary>
-		BootImageListPath = 6,
-		DefaultBootImage = 7,
-		SelectedBootImage = 8,
-		BootImageList = 9,
-		Netboot10Firmware = 10,
-		AttributesFilterList = 11,
-		MaxMessageSize = 12,
-	}
+    public enum BSDPVendorEncOptions : byte
+    {
+        MessageType = 1,
+        Version = 2,
+        ServerIdentifier = 3,
+        ServerPriority = 4,
+        ReplyPort = 5,
+        /// <summary>
+        /// Not Used
+        /// </summary>
+        BootImageListPath = 6,
+        DefaultBootImage = 7,
+        SelectedBootImage = 8,
+        BootImageList = 9,
+        Netboot10Firmware = 10,
+        AttributesFilterList = 11,
+        MaxMessageSize = 12,
+    }
 }

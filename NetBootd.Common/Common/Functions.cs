@@ -18,30 +18,30 @@ using System.Xml;
 
 namespace Netboot.Common
 {
-	public static partial class Functions
-	{
-		public static long NTQuerySystemTime()
-		{
-			var nano = 10000L * Stopwatch.GetTimestamp();
-			nano /= TimeSpan.TicksPerMillisecond;
-			nano *= 100L;
+    public static partial class Functions
+    {
+        public static long NTQuerySystemTime()
+        {
+            var nano = 10000L * Stopwatch.GetTimestamp();
+            nano /= TimeSpan.TicksPerMillisecond;
+            nano *= 100L;
 
-			return nano;
-		}
+            return nano;
+        }
 
-		public static string GetCompressedName(string filename)
-		{
-			var tmp = filename;
+        public static string GetCompressedName(string filename)
+        {
+            var tmp = filename;
 
-			if (!tmp.EndsWith("_"))
-			{
-				var x = tmp.ToCharArray();
-				x[x.Length - 1] = '_';
-				tmp = new string(x);
-			}
+            if (!tmp.EndsWith("_"))
+            {
+                var x = tmp.ToCharArray();
+                x[x.Length - 1] = '_';
+                tmp = new string(x);
+            }
 
-			return tmp;
-		}
+            return tmp;
+        }
 
         public static void GetIPAddresses(List<ushort> ports, Action<IPEndPoint> @delegate)
         {
@@ -53,55 +53,55 @@ namespace Netboot.Common
         }
 
         public static int Length(this IPAddress iPAddress)
-			=> iPAddress.GetAddressBytes().Length;
+            => iPAddress.GetAddressBytes().Length;
 
-		public static void PrintMessage(string message)
-			=> Console.WriteLine(message);
+        public static void PrintMessage(string message)
+            => Console.WriteLine(message);
 
-		public static byte[] NTLMChallenge()
-		{
-			#region "Generate the Seed"
-			var SysTime = BitConverter.GetBytes(NTQuerySystemTime());
-			var Seed = SysTime[1] + 1 << 0 | SysTime[2] + 0 << 8
-				| SysTime[3] - 1 << 16 | SysTime[4] + 0 << 24;
-			Seed *= 0x100;
-			#endregion
+        public static byte[] NTLMChallenge()
+        {
+            #region "Generate the Seed"
+            var SysTime = BitConverter.GetBytes(NTQuerySystemTime());
+            var Seed = SysTime[1] + 1 << 0 | SysTime[2] + 0 << 8
+                | SysTime[3] - 1 << 16 | SysTime[4] + 0 << 24;
+            Seed *= 0x100;
+            #endregion
 
-			#region "Generate the Challenge"
-			var rand = new Random(Seed);
+            #region "Generate the Challenge"
+            var rand = new Random(Seed);
 
-			var ulChallenge = new uint[2];
-			var ulNegate = (uint)rand.Next();
+            var ulChallenge = new uint[2];
+            var ulNegate = (uint)rand.Next();
 
-			for (var i = 0; i < ulChallenge.Length; i++)
-				ulChallenge[i] = (uint)rand.Next();
+            for (var i = 0; i < ulChallenge.Length; i++)
+                ulChallenge[i] = (uint)rand.Next();
 
-			var x = ulNegate & 0x1;
-			var y = ulNegate & 0x2;
+            var x = ulNegate & 0x1;
+            var y = ulNegate & 0x2;
 
-			if (x == 1)
-				ulChallenge[0] |= 0x80000000;
-			if (y == 1)
-				ulChallenge[1] |= 0x80000000;
-			#endregion
+            if (x == 1)
+                ulChallenge[0] |= 0x80000000;
+            if (y == 1)
+                ulChallenge[1] |= 0x80000000;
+            #endregion
 
-			#region "Create the challenge Buffer"
-			var challenge = new byte[2 * sizeof(uint)];
+            #region "Create the challenge Buffer"
+            var challenge = new byte[2 * sizeof(uint)];
 
-			var chal0 = BitConverter.GetBytes(ulChallenge[0]);
-			var chal1 = BitConverter.GetBytes(ulChallenge[1]);
+            var chal0 = BitConverter.GetBytes(ulChallenge[0]);
+            var chal1 = BitConverter.GetBytes(ulChallenge[1]);
 
-			Array.Copy(chal0, 0, challenge, 0, chal0.Length);
-			Array.Copy(chal1, 0, challenge, sizeof(uint), chal1.Length);
-			#endregion
+            Array.Copy(chal0, 0, challenge, 0, chal0.Length);
+            Array.Copy(chal1, 0, challenge, sizeof(uint), chal1.Length);
+            #endregion
 
-			return challenge;
-		}
+            return challenge;
+        }
 
 
-		public static ushort ValueAsUint16(this XmlNode node, string attribute)
-		{
-			var attribVal = node.Attributes?.GetNamedItem(attribute).Value;
+        public static ushort ValueAsUint16(this XmlNode node, string attribute)
+        {
+            var attribVal = node.Attributes?.GetNamedItem(attribute).Value;
             return !string.IsNullOrEmpty(attribVal) ? ushort.Parse(attribVal) : ushort.MinValue;
         }
 
@@ -111,27 +111,27 @@ namespace Netboot.Common
             return !string.IsNullOrEmpty(attribVal) ? byte.Parse(attribVal) : byte.MinValue;
         }
 
-		public static void InvokeMethod(object obj, string name, object?[]? args)
-		{
-			try
-			{
-				var methods = obj.GetType().GetMethods()
-					.Where(m => m.Name == name && m.IsPublic).FirstOrDefault();
-				methods.Invoke(obj, args);
-			}
-			catch (NullReferenceException ex)
-			{
-				Console.WriteLine(ex.Message);
-			}
-		}
+        public static void InvokeMethod(object obj, string name, object?[]? args)
+        {
+            try
+            {
+                var methods = obj.GetType().GetMethods()
+                    .Where(m => m.Name == name && m.IsPublic).FirstOrDefault();
+                methods.Invoke(obj, args);
+            }
+            catch (NullReferenceException ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+        }
 
-		public static IEnumerable<IPAddress> GetIPAddresses()
-			=> from networkInterface in NetworkInterface.GetAllNetworkInterfaces()
-				from unicastAddress in networkInterface.GetIPProperties().UnicastAddresses
-				where !IPAddress.IsLoopback(unicastAddress.Address) &&
-					unicastAddress.Address.GetAddressBytes()[0] != 0xa9
-						select unicastAddress.Address;
+        public static IEnumerable<IPAddress> GetIPAddresses()
+            => from networkInterface in NetworkInterface.GetAllNetworkInterfaces()
+               from unicastAddress in networkInterface.GetIPProperties().UnicastAddresses
+               where !IPAddress.IsLoopback(unicastAddress.Address) &&
+                   unicastAddress.Address.GetAddressBytes()[0] != 0xa9
+               select unicastAddress.Address;
 
-		public static bool IsLittleEndian() => BitConverter.IsLittleEndian;
-	}
+        public static bool IsLittleEndian() => BitConverter.IsLittleEndian;
+    }
 }

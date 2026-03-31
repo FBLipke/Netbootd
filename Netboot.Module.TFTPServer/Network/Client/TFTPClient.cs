@@ -11,130 +11,129 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Netboot.Common;
 using System.Net;
 
 namespace Netboot.Module.TFTPServer
 {
-	public class TFTPClient : ITFTPClient
-	{
-		public TFTPClient(bool testClient, string clientId, Guid client, Guid server, Guid socket, TFTPPacket request, IPEndPoint endpoint)
-		{ 
-			BytesRead = 0;
-			Request = request;
-			RemoteEndpoint = endpoint;
-			Id = Client;
+    public class TFTPClient : ITFTPClient
+    {
+        public TFTPClient(bool testClient, string clientId, Guid client, Guid server, Guid socket, TFTPPacket request, IPEndPoint endpoint)
+        {
+            BytesRead = 0;
+            Request = request;
+            RemoteEndpoint = endpoint;
+            Id = Client;
 
-			Socket = socket;
-			Server = server;
-			Client = client;
-		}
+            Socket = socket;
+            Server = server;
+            Client = client;
+        }
 
-		public Dictionary<ushort, TFTPPacketBacklogEntry> PacketBacklog { get; set; } = [];
+        public Dictionary<ushort, TFTPPacketBacklogEntry> PacketBacklog { get; set; } = [];
 
-		public ushort BlockSize { get; set; } = 4096;
+        public ushort BlockSize { get; set; } = 4096;
 
-		public ushort CurrentBlock { get; set; } = 0;
+        public ushort CurrentBlock { get; set; } = 0;
 
-		public ushort TotalBlocks { get; set; } = ushort.MinValue;
+        public ushort TotalBlocks { get; set; } = ushort.MinValue;
 
-		public long BytesToRead { get; set; } = long.MinValue;
+        public long BytesToRead { get; set; } = long.MinValue;
 
-		public long BytesRead { get; set; } = long.MinValue;
+        public long BytesRead { get; set; } = long.MinValue;
 
-		public  bool isOpen { get; set; } = false;
+        public bool isOpen { get; set; } = false;
 
-		public byte WindowSize { get; set; } = 1;
+        public byte WindowSize { get; set; } = 1;
 
-		public IPEndPoint RemoteEndpoint { get; set; }
+        public IPEndPoint RemoteEndpoint { get; set; }
 
-		public ushort MSFTWindow { get; set; } = 31416;
+        public ushort MSFTWindow { get; set; } = 31416;
 
-		public string FileName { get; set; } = string.Empty;
+        public string FileName { get; set; } = string.Empty;
 
-		public FileStream FileStream { get; set; }
+        public FileStream FileStream { get; set; }
 
         public Guid Id { get; set; }
-        
-		public Guid Socket { get; set; }
+
+        public Guid Socket { get; set; }
 
         public Guid Server { get; set; }
 
         public Guid Client { get; set; }
 
-		public TFTPPacket Request { get; set; }
+        public TFTPPacket Request { get; set; }
 
         public TFTPPacket Response { get; set; }
 
         public bool OpenFile()
-		{
-			if (isOpen)
-				return true;
+        {
+            if (isOpen)
+                return true;
 
-			try
-			{
-				var fil = new FileInfo(FileName);
-				if (fil.Exists)
-				{
-					FileStream = new FileStream(fil.FullName, FileMode.Open, FileAccess.Read, FileShare.Read, 2 << 64);
-					BytesToRead = FileStream.Length;
-					BytesRead = 0;
-					FileStream.Position = 0;
-					isOpen = true;
-				}
-				else
-					isOpen = false;
+            try
+            {
+                var fil = new FileInfo(FileName);
+                if (fil.Exists)
+                {
+                    FileStream = new FileStream(fil.FullName, FileMode.Open, FileAccess.Read, FileShare.Read, 2 << 64);
+                    BytesToRead = FileStream.Length;
+                    BytesRead = 0;
+                    FileStream.Position = 0;
+                    isOpen = true;
+                }
+                else
+                    isOpen = false;
 
-				return isOpen;
-			}
-			catch (Exception ex)
-			{
-				CloseFile();
+                return isOpen;
+            }
+            catch (Exception ex)
+            {
+                CloseFile();
 
-				Console.WriteLine(ex);
-				return isOpen;
-			}
-		}
+                Console.WriteLine(ex);
+                return isOpen;
+            }
+        }
 
-		public void ResetState(ushort block)
-		{
-			if (PacketBacklog.ContainsKey(block))
-			{
-				BytesRead = PacketBacklog[block].BytesRead;
-				BytesToRead = PacketBacklog[block].BytesToRead;
-				CurrentBlock = PacketBacklog[block].Block;
-			}
-		}
+        public void ResetState(ushort block)
+        {
+            if (PacketBacklog.ContainsKey(block))
+            {
+                BytesRead = PacketBacklog[block].BytesRead;
+                BytesToRead = PacketBacklog[block].BytesToRead;
+                CurrentBlock = PacketBacklog[block].Block;
+            }
+        }
 
-		public byte[] ReadChunk()
-		{
-			var chunksize = BlockSize;
+        public byte[] ReadChunk()
+        {
+            var chunksize = BlockSize;
 
-			if (BytesToRead - BytesRead <= chunksize)
-				chunksize = (ushort)(BytesToRead - BytesRead);
+            if (BytesToRead - BytesRead <= chunksize)
+                chunksize = (ushort)(BytesToRead - BytesRead);
 
-			var buffer = new byte[chunksize];
+            var buffer = new byte[chunksize];
 
-			if (FileStream != null && isOpen)
-			{
-				FileStream.Seek(BytesRead, SeekOrigin.Begin);
-				var readedBytes = FileStream.Read(buffer, 0, buffer.Length);
-				BytesRead += readedBytes;
-			}
+            if (FileStream != null && isOpen)
+            {
+                FileStream.Seek(BytesRead, SeekOrigin.Begin);
+                var readedBytes = FileStream.Read(buffer, 0, buffer.Length);
+                BytesRead += readedBytes;
+            }
 
-			return buffer;
-		}
+            return buffer;
+        }
 
-		public void CloseFile()
-		{
-			FileStream?.Close();
-		}
+        public void CloseFile()
+        {
+            FileStream?.Close();
+        }
 
-		public void Dispose()
-		{
-			CloseFile();
-			FileStream?.Dispose();
-			PacketBacklog.Clear();
-		}
-	}
+        public void Dispose()
+        {
+            CloseFile();
+            FileStream?.Dispose();
+            PacketBacklog.Clear();
+        }
+    }
 }

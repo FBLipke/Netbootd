@@ -13,33 +13,33 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace Netboot.Module.TFTPServer
 {
-	public enum TFTPOPCodes : ushort
-	{
-		RRQ = 1,
-		WRQ = 2,
-		DAT = 3,
-		ACK = 4,
-		ERR = 5,
-		OCK = 6
-	}
+    public enum TFTPOPCodes : ushort
+    {
+        RRQ = 1,
+        WRQ = 2,
+        DAT = 3,
+        ACK = 4,
+        ERR = 5,
+        OCK = 6
+    }
 
-	public enum TFTPMode
-	{
-		Octet,
-		Mail,
-		NetASCII
-	}
+    public enum TFTPMode
+    {
+        Octet,
+        Mail,
+        NetASCII
+    }
 
-	public enum TFTPErrorCode : ushort
-	{
-		Unknown = 0,
-		FileNotFound,
-		AccessViolation,
-		DiskFull,
-		IllegalOperation,
-		UnknownTID,
-		FileExists,
-		NoSuchUser,
-		InvalidOption
-	}
+    public enum TFTPErrorCode : ushort
+    {
+        Unknown = 0,
+        FileNotFound,
+        AccessViolation,
+        DiskFull,
+        IllegalOperation,
+        UnknownTID,
+        FileExists,
+        NoSuchUser,
+        InvalidOption
+    }
 }
