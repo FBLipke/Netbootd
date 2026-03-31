@@ -1,6 +1,5 @@
 ﻿using Netboot.Common;
 using Netboot.Module.DHCPListener;
-using Netboot.Module.DHCPListener.Interfaces;
 using System.Net;
 using System.Text;
 using System.Xml;
@@ -8,15 +7,14 @@ using static DHCPListener.BSvcMod.RBCP.Definitions.Definitions;
 
 namespace DHCPListener.BSvcMod.RBCP
 {
-    public class PxeRBCP : IBootService, IDHCPListener
+    public class PxeRBCP : BootService
     {
-        Dictionary<Guid, IRBCPClient> Clients = [];
-
-        private Dictionary<string, BootServer> bootServers = [];
-
-        public BootServerType ServerType { get; set; } = BootServerType.PXEBootstrapServer;
-
         public byte DiscoveryControl { get; private set; } = 3;
+
+        public byte MenueTimeout { get; private set; } = 10;
+
+        public string[] MenuePrompt { get; private set; } =
+            { "Select Server...", "Press [F8] to boot from Network or [esc] to cancel..." };
 
         public byte MulticastDelay { get; private set; } = 4;
 
@@ -28,172 +26,66 @@ namespace DHCPListener.BSvcMod.RBCP
 
         public IPAddress MulticastDiscoveryAddress { get; private set; } = IPAddress.Any;
 
-        public PxeRBCP(XmlNode xml)
+        public PxeRBCP(XmlNode xml) : base(xml)
         {
+            ServerType = BootServerType.PXEBootstrapServer;
             DiscoveryControl = byte.Parse(xml.Attributes.GetNamedItem("discovery").Value);
             MulticastDelay = byte.Parse(xml.Attributes.GetNamedItem("mcstartdelay").Value);
             MulticastTimeout = byte.Parse(xml.Attributes.GetNamedItem("mctimeout").Value);
             MulticastDiscoveryAddress = IPAddress.Parse(xml.Attributes.GetNamedItem("mcaddr").Value);
+            MenueTimeout = byte.Parse(xml.Attributes.GetNamedItem("menuetimeout").Value);
+            MenuePrompt = xml.Attributes.GetNamedItem("prompt").Value.Split(';');
 
             MulticastSPort = ushort.Parse(xml.Attributes.GetNamedItem("mcsport").Value);
             MulticastCPort = ushort.Parse(xml.Attributes.GetNamedItem("mccport").Value);
-
-            DHCPListenerBase.BootServiceRequest += (sender, e) =>
-            {
-                Handle_Listener_Request(e.Server, e.Socket, e.Client, e.Request);
-            };
-
-            var hostname = Environment.MachineName;
-            bootServers.Add(Guid.Empty.ToString(), new BootServer(hostname, ServerType));
-            DHCPListenerBase.RegisterBootService(this, ServerType, hostname);
-
-
-            //Clients.Add(Guid.Empty, new RBCPClient(true, Guid.Empty,))
         }
 
-        public void Handle_Listener_Request(Guid server, Guid socket, Guid client, MemoryStream memoryStream)
+        public override void Handle_Bootp_Request(DHCPPacket requestPacket, Guid server, Guid socket, Guid client)
         {
-            var requestPacket = new DHCPPacket(memoryStream);
+            var clientId = CreateClientId(requestPacket);
 
-            if (!NetbootBase.NetworkManager.ServerManager.HasSocket(server, socket))
+
+            switch (requestPacket.GetVendorIdent)
             {
-                NetbootBase.Log("E", GetType().ToString(), string.Format("Server {0} does not contains Socket {1}", server, socket));
-                return;
-            }
+                case DHCPVendorID.PXEClient:
+                    if (requestPacket.GetMessageType() != DHCPMessageType.Discover)
+                        return;
 
-            if (requestPacket.HasOption(DHCPOptions.ServerIdentifier))
-            {
-                var ipPrefServer = requestPacket.GetOption((byte)DHCPOptions.ServerIdentifier).AsIPAddress();
+                    Clients[clientId] = new RBCPClient(false, requestPacket, server, socket, client);
 
-                if (!NetbootBase.NetworkManager.ServerManager.Servers[server]
-                    .GetEndPoint(socket).Address.Equals(ipPrefServer))
-                    return;
-            }
-
-
-
-
-            switch (requestPacket.BootpOPCode)
-            {
-                case BOOTPOPCode.BootRequest:
-
-                    switch (requestPacket.GetVendorIdent)
-                    {
-                        case DHCPVendorID.PXEClient:
-                            if (requestPacket.GetMessageType() != DHCPMessageType.Discover)
-                                return;
-
-                            #region Get the UUID (GUID) of the Client and add him
-                            var clientId = Guid.Empty;
-                            Clients[clientId] = new RBCPClient(false, clientId, requestPacket, server, socket, client);
-
-                            var idBytes = new byte[Guid.NewGuid().ToByteArray().Length];
-
-                            var opt = requestPacket.GetOption((byte)DHCPOptions.UuidGuidBasedClientIdentifier).AsByte();
-                            switch ((ClientIdentType)opt)
-                            {
-                                case ClientIdentType.UUID:
-                                    idBytes[0] = opt;
-                                    clientId = Netboot.Module.DHCPListener.Functions.AsLittleEndianGuid(idBytes);
-                                    break;
-                                default:
-                                    break;
-                            }
-
-                            if (requestPacket.HasOption(43))
-                            {
-                                var enCapOpts = requestPacket.GetEncOptions(43);
-                                if (enCapOpts.ContainsKey(71))
-                                {
-                                    var bsType = enCapOpts[71].AsUInt16();
-                                    return;
-                                }
-                            }
-
-                            var serverIP = NetbootBase.NetworkManager.ServerManager.GetEndPoint(server, socket);
-                            Clients[clientId].Response = Clients[clientId].Request.CreateResponse(serverIP.Address);
-
-                            #endregion
-
-                            Handle_BootService_Request(clientId, Clients[clientId].Request);
-                            break;
-                        default:
-                            NetbootBase.Log("I", string.Format("DHCPListener[{0}]", ServerType),
-                                string.Format("Got {0} ({1}) request from Client: {2}", requestPacket.GetMessageType(),
-                                requestPacket.GetVendorIdent, client));
-                            return;
-                    }
-
-                    break;
-                case BOOTPOPCode.BootReply:
-
-                    var srvIP = Clients[client].Request.Options[(byte)DHCPOptions.ServerIdentifier].AsIPAddress();
-
-                    NetbootBase.Log("I", string.Format("DHCPListener[{0}]", ServerType),
-                        string.Format("Received {0} reply from DHCP Server: {1} ({2})", requestPacket.GetMessageType(), client, srvIP));
+                    Handle_BootService_Request(clientId, Clients[clientId].Request);
                     break;
                 default:
                     return;
             }
-        }
 
-        public void Handle_BootService_Request(string client, DHCPPacket requestPacket)
-            => Handle_BootService_Request(Guid.Parse(client), requestPacket);
+            Clients[clientId].Response.CommitOptions();
 
-        public void Handle_BootService_Request(Guid client, DHCPPacket requestPacket)
-        {
-            NetbootBase.Log("I", string.Format("DHCPListener[{0}]", ServerType),
-                string.Format("Got {0} request from Client: {1}", requestPacket.GetMessageType(),
-                    client));
+            var endpoint = NetbootBase.NetworkManager.ServerManager.GetClientEndPoint(Clients[clientId].Server,
+                Clients[clientId].Socket, Clients[clientId].Client);
 
-            switch (requestPacket.GetMessageType())
-            {
-                case DHCPMessageType.Discover:
-                    Handle_DHCP_Discover(client, requestPacket);
-                    break;
-                case DHCPMessageType.Request:
-                    Handle_DHCP_Request(client, requestPacket);
-                    break;
-                default:
-                    return;
-            }
-        }
-
-        public void Handle_DHCP_Discover(Guid clientid, DHCPPacket request)
-        {
-            Clients[clientid].Response.Flags = BootpFlags.Broadcast;
-
-            var EncVendorOptions = new List<DHCPOption<byte>>
-            {
-                new((byte)PXEOptions.MulticastTFTPDelay, MulticastDelay),
-                new((byte)PXEOptions.MulticastTFTPTimeout, MulticastTimeout),
-                new((byte)PXEOptions.DiscoveryMulticastAddress, MulticastDiscoveryAddress),
-                GenerateBootServersList(bootServers),
-                GenerateBootMenuePrompt(),
-                GenerateBootMenue(bootServers),
-                new((byte)PXEOptions.MulticastServerPort, MulticastSPort),
-                new((byte)PXEOptions.MulticastClientPort, MulticastCPort),
-                new((byte)PXEOptions.DiscoveryControl, DiscoveryControl),
-                new((byte)PXEOptions.End)
-            };
-
-
-            Clients[clientid].Response.AddOption(new((byte)DHCPOptions.VendorClassIdentifier, "PXEClient", Encoding.ASCII));
-            Clients[clientid].Response.AddOption(new((byte)DHCPOptions.VendorSpecificInformation, EncVendorOptions));
-
-            var bytes = Clients[clientid].Response.Buffer.GetBuffer();
-            Clients[clientid].Response.CommitOptions();
-
-            var endpoint = NetbootBase.NetworkManager.ServerManager.GetClientEndPoint(Clients[clientid].Server, Clients[clientid].Socket, Clients[clientid].Client);
             if (endpoint.Address.Equals(IPAddress.Parse("0.0.0.0")))
                 endpoint.Address = IPAddress.Broadcast;
 
-            NetbootBase.NetworkManager.ServerManager.Send(Clients[clientid].Server,
-                Clients[clientid].Socket, Clients[clientid].Client, endpoint, bytes);
+            NetbootBase.NetworkManager.ServerManager.Send(Clients[clientId].Server,
+                Clients[clientId].Socket, Clients[clientId].Client, endpoint, Clients[clientId].Response.Buffer.GetBuffer());
         }
 
-        public void Handle_DHCP_Request(Guid clientid, DHCPPacket request)
+        public override void Handle_DHCP_Discover(Guid clientid, DHCPPacket request)
         {
+            Clients[clientid].Response.AddOption(new((byte)DHCPOptions.VendorSpecificInformation,
+            [
+                new ((byte) PXEOptions.MulticastTFTPDelay, MulticastDelay),
+                new ((byte) PXEOptions.MulticastTFTPTimeout, MulticastTimeout),
+                new ((byte) PXEOptions.DiscoveryMulticastAddress, MulticastDiscoveryAddress),
+                GenerateBootServersList(bootServers),
+                GenerateBootMenuePrompt(MenueTimeout, MenuePrompt),
+                GenerateBootMenue(bootServers),
+                new ((byte) PXEOptions.MulticastServerPort, MulticastSPort),
+                new ((byte) PXEOptions.MulticastClientPort, MulticastCPort),
+                new ((byte) PXEOptions.DiscoveryControl, DiscoveryControl),
+                new ((byte) PXEOptions.End)
+            ]));
         }
 
         public static DHCPOption<byte> GenerateBootServersList(Dictionary<string, BootServer> serverlist)
@@ -213,7 +105,7 @@ namespace DHCPListener.BSvcMod.RBCP
 
             Array.Resize(ref serverlistBlock, sbIndex);
 
-            return new DHCPOption<byte>((byte)PXEOptions.BootServer, serverlistBlock);
+            return new((byte)PXEOptions.BootServer, serverlistBlock);
         }
 
         public static DHCPOption<byte> GenerateBootMenue(Dictionary<string, BootServer> servers)
@@ -253,27 +145,14 @@ namespace DHCPListener.BSvcMod.RBCP
             }
 
             Array.Resize(ref menubuffer, mbIndex);
-            return new DHCPOption<byte>((byte)PXEOptions.BootMenue, menubuffer);
+            
+            return new((byte)PXEOptions.BootMenue, menubuffer);
         }
 
-        public void HeartBeat()
+        public static DHCPOption<byte> GenerateBootMenuePrompt(byte timeout, string[] menueprompt)
         {
-            bootServers.Clear();
-            bootServers.Add(Guid.Empty.ToString(), new(Environment.MachineName, ServerType));
-
-            foreach (var key in DHCPListenerBase.Bootservices.Keys.ToList())
-            {
-                if (key == BootServerType.PXEBootstrapServer)
-                    continue;
-
-                bootServers.Add(Guid.NewGuid().ToString(), new(Environment.MachineName, key));
-            }
-        }
-
-        public static DHCPOption<byte> GenerateBootMenuePrompt(byte timeout = byte.MaxValue)
-        {
-            var prompt = Encoding.ASCII.GetBytes(timeout == byte.MaxValue ? "Select Server..." :
-                "Press [F8] to boot from Network or [esc] to cancel...");
+            var prompt = Encoding.ASCII.GetBytes(timeout == byte.MaxValue ?  menueprompt.First() :
+                menueprompt.Last());
 
             var promptbuffer = new byte[1 + prompt.Length];
             var offset = 0;

@@ -29,11 +29,5 @@ namespace DHCPListener.BSvcMod.MSWDS
         public IPAddress? ReferralServer { get; set; }
 
         public NBPVersionValues NBPVersion { get; set; }
-
-        /// <summary>
-        /// Internal WDS ID of the Client...
-        /// </summary>
-        public Guid Id { get; set; }
-
     }
 }

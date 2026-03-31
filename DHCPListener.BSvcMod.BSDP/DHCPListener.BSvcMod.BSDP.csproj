@@ -19,6 +19,30 @@
 	<ItemGroup>
 	  <None Include="Netboot\NetbootSP0\10.6 Another Example.nbi\NBImageInfo.plist" />
 	  <None Include="Netboot\NetbootSP0\10.6 Another Example.nbi\Netinstall.dmg" />
+	  <None Include="Providers\TFTPServer\Boot\x64\Apple\boot.efi">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Include="Providers\TFTPServer\Boot\x64\Apple\booter">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Include="Providers\TFTPServer\Boot\x64\Apple\mach.macosx">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Include="Providers\TFTPServer\Boot\x64\Apple\mach.macosx.mkext">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Include="Providers\TFTPServer\Boot\x86\Apple\boot.efi">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Include="Providers\TFTPServer\Boot\x86\Apple\booter">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Include="Providers\TFTPServer\Boot\x86\Apple\mach.macosx">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Include="Providers\TFTPServer\Boot\x86\Apple\mach.macosx.mkext">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
 	</ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\NetBoot.Content\Netboot.Content.csproj" />

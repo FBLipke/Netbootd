@@ -4,6 +4,8 @@ namespace DHCPListener.BSvcMod.BSDP
 {
     public interface IBSDPClient : IDHCPClient
     {
-        bool TestClient { get; set; }
+        public BSDPMsgType BSDPMsgType { get; set; }
+
+        public Version BSDPVersion { get; set; }
     }
 }

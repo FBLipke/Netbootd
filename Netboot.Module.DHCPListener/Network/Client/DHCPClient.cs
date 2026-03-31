@@ -11,26 +11,45 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Netboot.Common;
+using System.Text;
+
 namespace Netboot.Module.DHCPListener
 {
-    public partial class DHCPClient : IDHCPClient
+    public class DHCPClient : IDHCPClient
     {
         public DHCPClient(bool testClient, Guid server, Guid socket, Guid client, DHCPPacket request)
         {
-            Response = new DHCPPacket();
-            Request = request;
-
             Socket = socket;
             Client = client;
             Server = server;
 
+            Request = request;
+            VendorId = Request.GetVendorIdent;
+            
+            Response = Request.CreateResponse(NetbootBase.NetworkManager.ServerManager.GetEndPoint(server, socket).Address);
+            Response.AddOption(new((byte)DHCPOptions.VendorClassIdentifier, VendorId.ToString(), Encoding.ASCII));
+
             if (request.HasOption(DHCPOptions.NetworkInterfaceIdentifier))
                 NicSpecType = (NicSpecType)request.GetOption((byte)DHCPOptions.NetworkInterfaceIdentifier).AsByte();
 
-            NetBootdClient = testClient;
+            Architecture = (Netboot.Module.DHCPListener.Architecture)
+                Request.GetOption((byte)DHCPOptions.SystemArchitectureType).AsUInt16();
+
+            TestClient = testClient;
         }
 
-        public bool NetBootdClient { get; private set; }
+        private void _ctorFunc()
+        {
+        }
+
+        public void Dispose()
+        {
+            Request?.Dispose();
+            Response?.Dispose();
+        }
+
+        public bool TestClient { get; set; }
 
         public Architecture Architecture { get; set; }
 

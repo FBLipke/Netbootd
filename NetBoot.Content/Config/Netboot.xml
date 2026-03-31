@@ -2,20 +2,27 @@
 <Netboot>
 	<Configuration>
 		<Services>
-			<Service type="DHCPListener" port="67,4011" behavior="1" mcaddr="224.0.1.2" mccport="4001" mcsport="69" mcstartdelay="10" mctimeout="30" discovery="0" >
+			<Service type="DHCPListener" port="67,4011" mcaddr="224.0.1.2" mccport="4001" 
+					 mcsport="69" mcstartdelay="10" mctimeout="30" discovery="0" menuetimeout="10" 
+						menueprompt="Select Server...;Press [F8] to boot from Network or [esc] to cancel...">
 				<Bootfiles>
 					<Bootfile behavior="0">Boot/#arch#/bstrap.#layer#</Bootfile>
 					<Bootfile behavior="1">OSChooser\i386\startrom.n12</Bootfile>
 					<Bootfile behavior="3">Boot/#arch#/dosundi.#layer#</Bootfile>
 					<Bootfile behavior="7">Boot/#arch#/bpboot</Bootfile>
-
-					<Bootfile behavior="65531">Boot/#arch#/booter</Bootfile>
+					<Bootfile behavior="65530">Boot/#arch#/bstrap.#layer#</Bootfile>
+					<Bootfile behavior="65531">Boot/#arch#/apple/boot.efi</Bootfile>
 					<Bootfile behavior="65532">Boot/#arch#/pxelinux.#layer#</Bootfile>
 					<Bootfile behavior="65533">Boot/#arch#/bisconfig.#layer#</Bootfile>
 					<Bootfile behavior="65534">Boot\#arch#\wdsnbp.com</Bootfile>
 					<Bootfile behavior="65535">Boot/#arch#/apitest.#layer#</Bootfile>
 				</Bootfiles>
-				<DHCP behavior="1" OSChooser="0">
+				<BootServer>
+					<Server behavior="1">127.0.0.1</Server>
+					<Server behavior="1">127.0.0.2</Server>
+					<Server behavior="1">127.0.0.3</Server>
+				</BootServer>
+				<DHCP behavior="1" oschooser="0" oscfile="welcome.osc" osclang="englisch">
 					<Option id ="251" type="string">OSChooser\#arch#\NTLDR</Option>
 					<Option id ="254" type="string">OSChooser\#arch#\boot.ini</Option>
 				</DHCP>
@@ -29,8 +36,8 @@
 					<Option id ="252" type="string">Boot\#arch#\default.bcd</Option>
 				</DHCP>
 			</Service>
-			<Service type="BINLServer" port="44776" SMBShare="RemInst" rootdir="TFTPRoot" oscfile="welcome.osc" osclang="englisch"/>
-			<Service type="TFTPServer" port="69" max_blksize="16384" />
+			<Service type="BINLServer" port="44776" />
+			<Service type="TFTPServer" port="69" max_blksize="16384" max_window="16" />
 			<Service type="BISServer" port="1638" />
 		</Services>
 	</Configuration>

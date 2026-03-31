@@ -11,12 +11,15 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Netboot.Common.Network.Interfaces;
 using Netboot.Module.DHCPListener;
 using System.Net;
+using System.Net.Sockets;
+using System.Text;
 
 namespace DHCPListener.BSvcMod.MSWDS
 {
-    public class WDSClient : IWDSClient
+    public class WDSClient : DHCPClient, IWDSClient
     {
         public PXEPromptOptionValues PXEPromptDone { get; set; }
 
@@ -42,45 +45,7 @@ namespace DHCPListener.BSvcMod.MSWDS
 
         public NBPVersionValues NBPVersion { get; set; }
 
-        public Guid Id { get; set; }
-
-        public Architecture Architecture { get; set; }
-
-        public DHCPPacket? Response { get; set; }
-
-        public DHCPPacket? Request { get; set; }
-
-        public DHCPVendorID VendorId { get; set; }
-
-        public NicSpecType NicSpecType { get; set; }
-
-        public Guid Socket { get; set; }
-
-        public Guid Server { get; set; }
-
-        public Guid Client { get; set; }
-
-        private void _ctorFunc()
-        {
-            VendorId = Request.GetVendorIdent;
-            Response = new DHCPPacket();
-        }
-
-        public WDSClient(Guid id, DHCPPacket request, Guid server, Guid socket, Guid client)
-        {
-            Server = server;
-            Client = client;
-            Socket = socket;
-
-            Request = request;
-            Id = id;
-            _ctorFunc();
-        }
-
-        public void Dispose()
-        {
-            Request.Dispose();
-            Response.Dispose();
-        }
+        public WDSClient(bool testClient, DHCPPacket request, Guid server, Guid socket, Guid client)
+            : base(testClient, server, socket, client, request) { }
     }
 }

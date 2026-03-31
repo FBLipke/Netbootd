@@ -10,6 +10,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <Compile Include="Definitions\BootService.cs" />
 	  <Compile Include="Events\BootServiceRequestEventArgs.cs" />
 	  <Compile Include="Events\ListenerRequestReceivedEventArgs.cs" />
 	  <Compile Include="DHCPListener.cs" />

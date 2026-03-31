@@ -63,8 +63,10 @@ namespace Netboot.Module.DHCPListener
             if (ports.Count > 0)
                 _ports.AddRange(from port in ports select ushort.Parse(port.Trim()));
 
+            var mcastAddress = IPAddress.Parse(xml.Attributes.GetNamedItem("mcaddr").Value);
+
             Server = NetbootBase.NetworkManager.ServerManager.Add(ProtoType.Udp, _ports);
-            NetbootBase.NetworkManager.ServerManager.JoinMulticastGroup(Server, IPAddress.Parse("224.0.1.2"));
+            NetbootBase.NetworkManager.ServerManager.JoinMulticastGroup(Server, mcastAddress);
 
             NetbootBase.NetworkManager.UDPRequestReceived += (sender, e) =>
             {

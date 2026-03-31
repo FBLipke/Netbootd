@@ -1,19 +1,16 @@
 ﻿using Netboot.Common;
 using Netboot.Module.DHCPListener;
-using Netboot.Module.DHCPListener.Interfaces;
 using System.Buffers.Binary;
+using System.Net;
 using System.Text;
 using System.Xml;
 
 namespace DHCPListener.BSvcMod.MSWDS
 {
-    public class MSWDS : IBootService, IDHCPListener
+    public class MSWDS : BootService
     {
-        Dictionary<Guid, IWDSClient> Clients = [];
-
-        public BootServerType ServerType { get; set; } = BootServerType.WindowsDeploymentServer;
-
         private string Bootfile { get; set; } = string.Empty;
+
         private string bcdFile { get; set; } = string.Empty;
 
         private ushort PollInterval { get; set; } = 10;
@@ -24,7 +21,7 @@ namespace DHCPListener.BSvcMod.MSWDS
 
         private PXEPromptOptionValues PromptAction { get; set; } = PXEPromptOptionValues.OptIn;
 
-        public MSWDS(XmlNode xml)
+        public MSWDS(XmlNode xml) : base(xml)
         {
             var bootfiles = xml.SelectSingleNode("Bootfiles").ChildNodes;
             foreach (XmlNode item in bootfiles)
@@ -60,95 +57,42 @@ namespace DHCPListener.BSvcMod.MSWDS
                     #endregion
                 }
             }
-
-            DHCPListenerBase.BootServiceRequest += (sender, e) =>
-            {
-                Handle_Listener_Request(e.Server, e.Socket, e.Client, e.Request);
-            };
-
-            DHCPListenerBase.RegisterBootService(this, ServerType, Environment.MachineName);
         }
 
-        public void Handle_BootService_Request(string client, DHCPPacket requestPacket)
-            => Handle_BootService_Request(Guid.Parse(client), requestPacket);
-
-        public void Handle_BootService_Request(Guid client, DHCPPacket requestPacket)
+        public override void Handle_Bootp_Request(DHCPPacket requestPacket, Guid server, Guid socket, Guid client)
         {
-            switch (requestPacket.GetMessageType())
+            var clientId = CreateClientId(requestPacket);
+
+            switch (requestPacket.GetVendorIdent)
             {
-                case DHCPMessageType.Request:
-                case DHCPMessageType.Discover:
-                    Handle_DHCP_Request(client, requestPacket);
-                    break;
-            }
-        }
+                case DHCPVendorID.PXEClient:
+                    if (!HasBootItem(requestPacket))
+                        return;
 
-        public void Handle_Listener_Request(Guid server, Guid socket, Guid client, MemoryStream memoryStream)
-        {
-            var requestPacket = new DHCPPacket(memoryStream);
+                    Clients[clientId] = new WDSClient(false, requestPacket, server, socket, client);
 
-            switch (requestPacket.BootpOPCode)
-            {
-                case BOOTPOPCode.BootRequest:
-                    switch (requestPacket.GetVendorIdent)
-                    {
-                        case DHCPVendorID.PXEClient:
-                            #region Get the UUID (GUID) of the Client and add him
-                            var clientId = requestPacket.HardwareAddress.ToGuid();
-
-                            if (!requestPacket.HasOption(43))
-                                return;
-
-                            var enCapOpts = requestPacket.GetEncOptions(43);
-                            if (enCapOpts.ContainsKey(71))
-                            {
-                                var bsType = (BootServerType)enCapOpts[71].AsUInt16();
-                                if (bsType != ServerType)
-                                    return;
-                            }
-
-                            var opt = requestPacket.GetOption((byte)DHCPOptions.UuidGuidBasedClientIdentifier).Data;
-                            switch ((ClientIdentType)opt.First())
-                            {
-                                case ClientIdentType.UUID:
-                                    var idBytes = new byte[16];
-                                    Array.Copy(opt, 1, idBytes, 0, idBytes.Length);
-
-                                    clientId = Netboot.Module.DHCPListener.Functions.AsLittleEndianGuid(idBytes);
-                                    break;
-                                default:
-                                    break;
-                            }
-
-                            Clients[clientId] = new WDSClient(clientId, requestPacket, server, socket, client);
-                            #endregion
-
-                            var serverIP = NetbootBase.NetworkManager.ServerManager.GetEndPoint(server, socket).Address;
-                            Clients[clientId].Response = Clients[clientId].Request.CreateResponse(serverIP);
-
-                            Handle_BootService_Request(clientId, Clients[clientId].Request);
-                            break;
-                        default:
-                            return;
-                    }
-
+                    Handle_BootService_Request(clientId, Clients[clientId].Request);
                     break;
                 default:
                     return;
             }
+
+            Clients[clientId].Response.CommitOptions();
+
+            var endpoint = NetbootBase.NetworkManager.ServerManager.GetClientEndPoint(Clients[clientId].Server, Clients[clientId].Socket, Clients[clientId].Client);
+            if (endpoint.Address.Equals(IPAddress.Parse("0.0.0.0")))
+                endpoint.Address = IPAddress.Broadcast;
+
+            NetbootBase.NetworkManager.ServerManager.Send(Clients[clientId].Server, Clients[clientId].Socket, Clients[clientId].Client, endpoint,
+                    Clients[clientId].Response.Buffer.GetBuffer());
         }
 
-        public void HeartBeat()
-        {
-
-        }
-
-        public void Handle_DHCP_Request(Guid clientid, DHCPPacket request)
+        public override void Handle_DHCP_Request(Guid clientid, DHCPPacket request)
         {
             NetbootBase.Log("I", string.Format("DHCPListener[{0}]", ServerType),
-                string.Format("Got WDS {0} request from WDS Client: {1}", request.GetMessageType(), clientid));
+                string.Format("Got WDS {0} request from Client: {1}", request.GetMessageType(), clientid));
 
-            Handle_WDS_Request(clientid);
+            // Handle_WDS_Request(clientid);
 
             var bcd = string.Empty;
             var filename = string.Empty;
@@ -178,18 +122,11 @@ namespace DHCPListener.BSvcMod.MSWDS
             }
 
             Clients[clientid].Response.FileName = filename;
-            Clients[clientid].Response.AddOption(new((byte)DHCPOptions.VendorClassIdentifier, "PXEClient", Encoding.ASCII));
-            Clients[clientid].Response.AddOption(Handle_WDS_Options(clientid));
+            // Clients[clientid].Response.AddOption(Handle_WDS_Options(clientid));
             Clients[clientid].Response.AddOption(new((byte)252, bcd, Encoding.ASCII));
-
-            var bytes = Clients[clientid].Response.Buffer.GetBuffer();
-
-            Clients[clientid].Response.CommitOptions();
-
-            var endpoint = NetbootBase.NetworkManager.ServerManager.GetClientEndPoint(Clients[clientid].Server, Clients[clientid].Socket, Clients[clientid].Client);
-            NetbootBase.NetworkManager.ServerManager.Send(Clients[clientid].Server, Clients[clientid].Socket, Clients[clientid].Client, endpoint, bytes);
         }
 
+        /*
         void Handle_WDS_Request(Guid client)
         {
             var wdsData = Clients[client].Request.GetEncOptions(250);
@@ -269,9 +206,6 @@ namespace DHCPListener.BSvcMod.MSWDS
 
             return new(250, options);
         }
-
-        public void Handle_DHCP_Discover(Guid clientid, DHCPPacket request)
-        {
-        }
+        */
     }
 }
