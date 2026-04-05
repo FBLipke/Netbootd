@@ -12,6 +12,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 using Netboot.Common;
+using Netboot.Common.Common.Definitions;
 using Netboot.Common.Network.Packet;
 using System.Buffers.Binary;
 using System.Net;
@@ -41,7 +42,7 @@ namespace Netboot.Module.DHCPListener
     : base(datastream) => ParsePacket();
 
         /// <summary>
-        /// Indicates that the packet was relayed
+        /// Indicates that the packet was relayed over an RelayAgent.
         /// </summary>
         public bool IsRelayed { get => GatewayIP != IPAddress.Parse("0.0.0.0"); }
 
@@ -534,6 +535,8 @@ namespace Netboot.Module.DHCPListener
             AddOption(new DHCPOption<byte>
                 ((byte)DHCPOptions.MessageType, (byte)msgType));
         }
+
+        public bool IsRelayedRequest() => GatewayIP != IPAddress.Any;
 
         public static DHCPPacket CreateRequest(IPAddress server)
         {

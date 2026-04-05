@@ -44,11 +44,6 @@ namespace Netboot.Service.BINL.Services
 
 		public string DirName { get; private set; } = "OSChooser";
 
-		public string OSCFileName { get; private set; } = "welcome.osc";
-
-		public string Language { get; private set; } = "englisch";
-
-		public bool NTLMV2Enabled { get; private set; } = false;
 
 		public string ServiceType { get; }
 

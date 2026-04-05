@@ -1,4 +1,5 @@
 ﻿using Netboot.Common;
+using Netboot.Common.Common.Definitions;
 using Netboot.Module.DHCPListener;
 using System.Buffers.Binary;
 using System.Net;
@@ -9,8 +10,6 @@ namespace DHCPListener.BSvcMod.MSWDS
 {
     public class MSWDS : BootService
     {
-        private string Bootfile { get; set; } = string.Empty;
-
         private string bcdFile { get; set; } = string.Empty;
 
         private ushort PollInterval { get; set; } = 10;
@@ -23,16 +22,10 @@ namespace DHCPListener.BSvcMod.MSWDS
 
         public MSWDS(XmlNode xml) : base(xml)
         {
-            var bootfiles = xml.SelectSingleNode("Bootfiles").ChildNodes;
-            foreach (XmlNode item in bootfiles)
-            {
-                var behavior = (BootServerType)item.ValueAsUint16("behavior");
-                if (behavior == ServerType)
-                {
-                    Bootfile = item.InnerText;
-                    break;
-                }
-            }
+            ServerType = BootServerType.WindowsDeploymentServer;
+            DHCPListenerBase.RegisterBootService(this, ServerType, Environment.MachineName);
+
+            ReadBootFile(xml);
 
             var dhcpNodes = xml.SelectNodes("DHCP");
             foreach (XmlNode item in dhcpNodes)
@@ -80,7 +73,9 @@ namespace DHCPListener.BSvcMod.MSWDS
             Clients[clientId].Response.CommitOptions();
 
             var endpoint = NetbootBase.NetworkManager.ServerManager.GetClientEndPoint(Clients[clientId].Server, Clients[clientId].Socket, Clients[clientId].Client);
-            if (endpoint.Address.Equals(IPAddress.Parse("0.0.0.0")))
+            if (!requestPacket.IsRelayed)
+                endpoint.Address = requestPacket.GatewayIP;
+            else if (endpoint.Address.Equals(IPAddress.Parse("0.0.0.0")))
                 endpoint.Address = IPAddress.Broadcast;
 
             NetbootBase.NetworkManager.ServerManager.Send(Clients[clientId].Server, Clients[clientId].Socket, Clients[clientId].Client, endpoint,
@@ -92,7 +87,8 @@ namespace DHCPListener.BSvcMod.MSWDS
             NetbootBase.Log("I", string.Format("DHCPListener[{0}]", ServerType),
                 string.Format("Got WDS {0} request from Client: {1}", request.GetMessageType(), clientid));
 
-            // Handle_WDS_Request(clientid);
+            ((IWDSClient)Clients[clientid]).Handle_WDS_Request();
+
 
             var bcd = string.Empty;
             var filename = string.Empty;
@@ -121,91 +117,10 @@ namespace DHCPListener.BSvcMod.MSWDS
                     break;
             }
 
+
+            ((IWDSClient)Clients[clientid]).Handle_WDS_Options();
             Clients[clientid].Response.FileName = filename;
-            // Clients[clientid].Response.AddOption(Handle_WDS_Options(clientid));
             Clients[clientid].Response.AddOption(new((byte)252, bcd, Encoding.ASCII));
         }
-
-        /*
-        void Handle_WDS_Request(Guid client)
-        {
-            var wdsData = Clients[client].Request.GetEncOptions(250);
-            foreach (var wdsOption in wdsData.Values.ToList())
-            {
-                switch ((WDSNBPOptions)wdsOption.Option)
-                {
-                    case WDSNBPOptions.Unknown:
-                        break;
-                    case WDSNBPOptions.Architecture:
-                        Clients[client].Architecture = (Architecture)wdsOption.AsUInt16();
-                        break;
-                    case WDSNBPOptions.NextAction:
-                        Clients[client].NextAction = (NextActionOptionValues)wdsOption.AsByte();
-                        break;
-                    case WDSNBPOptions.RequestID:
-                        Clients[client].RequestId = wdsOption.AsUInt32();
-                        break;
-                    case WDSNBPOptions.VersionQuery:
-                        Clients[client].VersionQuery = true;
-                        break;
-                    case WDSNBPOptions.ServerVersion:
-                        Clients[client].ServerVersion = (NBPVersionValues)wdsOption.AsUInt32();
-                        break;
-                    case WDSNBPOptions.ReferralServer:
-                        Clients[client].ReferralServer = wdsOption.AsIPAddress();
-                        break;
-                    case WDSNBPOptions.PxePromptDone:
-                        Clients[client].PXEPromptDone = (PXEPromptOptionValues)wdsOption.AsByte();
-                        break;
-                    case WDSNBPOptions.NBPVersion:
-                        Clients[client].NBPVersion = (NBPVersionValues)wdsOption.AsUInt16();
-                        break;
-                    case WDSNBPOptions.ServerFeatures:
-                        Clients[client].ServerFeatures = wdsOption.AsUInt32();
-                        break;
-                    case WDSNBPOptions.ActionDone:
-                        Clients[client].ActionDone = true;
-                        break;
-                    default:
-                        break;
-                }
-            }
-        }
-
-        public DHCPOption<byte> Handle_WDS_Options(Guid client)
-        {
-            var options = new List<DHCPOption<byte>>
-            {
-                new((byte)WDSNBPOptions.NextAction, (byte)Clients[client].NextAction),
-                new((byte)WDSNBPOptions.PxePromptDone, (byte)Clients[client].PXEPromptDone),
-                new((byte)WDSNBPOptions.ActionDone, Convert.ToByte(Clients[client].ActionDone)),
-                new((byte)WDSNBPOptions.PollRetryCount, RetryCount),
-            };
-
-            var requestIDBytes = new byte[sizeof(uint)];
-            BinaryPrimitives.WriteUInt32BigEndian(requestIDBytes, (uint)Clients.Count);
-            options.Add(new((byte)WDSNBPOptions.RequestID, requestIDBytes));
-
-            var polldelayBytes = new byte[sizeof(short)];
-            BinaryPrimitives.WriteUInt16BigEndian(polldelayBytes, PollInterval);
-            options.Add(new((byte)WDSNBPOptions.PollInterval, polldelayBytes));
-            options.Add(new((byte)WDSNBPOptions.PXEClientPrompt, (byte)PromptAction));
-            options.Add(new((byte)WDSNBPOptions.AllowServerSelection, ServerSelection));
-
-            switch (Clients[client].NextAction)
-            {
-                case NextActionOptionValues.Approval:
-                    options.Add(new((byte)WDSNBPOptions.Message, Clients[client].Message, Encoding.ASCII));
-                    break;
-                case NextActionOptionValues.Referral:
-                    options.Add(new((byte)WDSNBPOptions.ReferralServer, Clients[client].ReferralServer));
-                    break;
-                default:
-                    break;
-            }
-
-            return new(250, options);
-        }
-        */
     }
 }

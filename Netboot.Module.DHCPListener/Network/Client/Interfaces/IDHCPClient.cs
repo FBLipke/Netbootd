@@ -1,4 +1,6 @@
-﻿namespace Netboot.Module.DHCPListener
+﻿using Netboot.Common.Common.Definitions;
+
+namespace Netboot.Module.DHCPListener
 {
     public interface IDHCPClient
     {

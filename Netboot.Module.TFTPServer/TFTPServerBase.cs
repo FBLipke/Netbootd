@@ -96,8 +96,7 @@ namespace Netboot.Module.TFTPServer
 
         public void Handle_Read_Request(string clientid)
         {
-            NetbootBase.Log("I", "TFTPServer", string.Format("Got RRQ-Request from client: {0} (Options: {1})",
-                Clients[clientid].RemoteEndpoint, string.Join(',', Clients[clientid].Request.Options.Keys.ToList())));
+
 
             if (!Clients[clientid].Request.Options.ContainsKey("file"))
             {
@@ -121,6 +120,9 @@ namespace Netboot.Module.TFTPServer
                 Clients.Remove(clientid);
                 return;
             }
+
+            NetbootBase.Log("I", "TFTPServer", string.Format("Got RRQ-Request from client: {0} (Options: {1})",
+                Clients[clientid].RemoteEndpoint, string.Join(',', Clients[clientid].Request.Options.Keys.ToList())));
 
             Clients[clientid].CloseFile();
 

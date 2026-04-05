@@ -10,7 +10,11 @@ namespace DHCPListener.BSvcMod.BSDP
     {
         public AppleBSDP(XmlNode xml) : base(xml)
         {
+
             ServerType = BootServerType.AppleBootServer;
+            DHCPListenerBase.RegisterBootService(this, ServerType, Environment.MachineName);
+
+            ReadBootFile(xml);
         }
 
         public override void Handle_Bootp_Request(DHCPPacket requestPacket, Guid server, Guid socket, Guid client)
@@ -32,7 +36,9 @@ namespace DHCPListener.BSvcMod.BSDP
             var endpoint = NetbootBase.NetworkManager.ServerManager.GetClientEndPoint(Clients[clientId].Server,
                 Clients[clientId].Socket, Clients[clientId].Client);
 
-            if (endpoint.Address.Equals(IPAddress.Parse("0.0.0.0")))
+            if (!requestPacket.IsRelayed)
+                endpoint.Address = requestPacket.GatewayIP;
+            else if (endpoint.Address.Equals(IPAddress.Parse("0.0.0.0")))
                 endpoint.Address = IPAddress.Broadcast;
 
             NetbootBase.NetworkManager.ServerManager.Send(Clients[clientId].Server,

@@ -1,4 +1,5 @@
 ﻿using Netboot.Common;
+using Netboot.Common.Common.Definitions;
 using Netboot.Module.DHCPListener.Interfaces;
 using System.Xml;
 
@@ -12,6 +13,8 @@ namespace Netboot.Module.DHCPListener
 
         public BootServerType ServerType { get; set; }
 
+        public string Bootfile { get; set; } = string.Empty;
+
         public BootService(XmlNode xml)
         {
             DHCPListenerBase.BootServiceRequest += (sender, e) =>
@@ -21,18 +24,13 @@ namespace Netboot.Module.DHCPListener
 
             var hostname = Environment.MachineName;
             bootServers.Add(Guid.Empty.ToString(), new BootServer(hostname, ServerType));
-            DHCPListenerBase.RegisterBootService(this, ServerType, hostname);
         }
 
-        public void Handle_BootService_Request(string client, DHCPPacket requestPacket)
+        public virtual void Handle_BootService_Request(string client, DHCPPacket requestPacket)
             => Handle_BootService_Request(Guid.Parse(client), requestPacket);
 
-        public void Handle_BootService_Request(Guid client, DHCPPacket requestPacket)
+        public virtual void Handle_BootService_Request(Guid client, DHCPPacket requestPacket)
         {
-            NetbootBase.Log("I", string.Format("DHCPListener[{0}]", ServerType),
-                string.Format("Got {0} from Client: {1}", requestPacket.GetMessageType(),
-                    client));
-
             switch (requestPacket.GetMessageType())
             {
                 case DHCPMessageType.Discover:
@@ -47,6 +45,46 @@ namespace Netboot.Module.DHCPListener
                 default:
                     return;
             }
+        }
+
+        public void ReadBootFile(XmlNode xml)
+        {
+            var bootfiles = xml.SelectSingleNode("Bootfiles").ChildNodes;
+            foreach (XmlNode item in bootfiles)
+            {
+                var behavior = (BootServerType)item.ValueAsUint16("behavior");
+                if (behavior == ServerType)
+                {
+                    Bootfile = item.InnerText;
+                    break;
+                }
+            }
+        }
+
+        public void SelectBootfile(Guid clientId)
+        {
+            var filename = string.Empty;
+
+            switch (Clients[clientId].Architecture)
+            {
+                case Architecture.X86PC:
+                    filename = Bootfile.Replace("#arch#", "x86");
+                    break;
+                case Architecture.EFI_IA32:
+                    filename = Bootfile.Replace("#arch#", "efi");
+                    break;
+                case Architecture.EFIByteCode:
+                    filename = Bootfile.Replace("#arch#", "efi");
+                    break;
+                case Architecture.EFI_x8664:
+                    filename = Bootfile.Replace("#arch#", "x64");
+                    break;
+                default:
+                    filename = Bootfile.Replace("#arch#", "x86");
+                    break;
+            }
+            
+            Clients[clientId].Response.FileName = filename;
         }
 
         public virtual void Handle_DHCP_Discover(Guid clientid, DHCPPacket request)
@@ -118,7 +156,7 @@ namespace Netboot.Module.DHCPListener
             var srvIP = Clients[client].Request.Options[(byte)DHCPOptions.ServerIdentifier].AsIPAddress();
 
             NetbootBase.Log("I", string.Format("DHCPListener[{0}]", ServerType),
-                string.Format("Received {0} reply from DHCP Server: {1} ({2})", requestPacket.GetMessageType(), client, srvIP));
+                string.Format("Received {3} {0} reply from DHCP Server: {1} ({2})", requestPacket.GetMessageType(), client, srvIP, requestPacket.IsRelayed ? "relayed" : string.Empty));
         }
 
         public Guid CreateClientId(DHCPPacket packet)

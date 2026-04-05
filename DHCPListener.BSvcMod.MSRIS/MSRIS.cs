@@ -14,17 +14,9 @@ namespace DHCPListener.BSvcMod.MSRIS
         public MSRIS(XmlNode xml) : base(xml)
         {
             ServerType = BootServerType.MicrosoftWindowsNT;
+            DHCPListenerBase.RegisterBootService(this, ServerType, Environment.MachineName);
 
-            var bootfiles = xml.SelectSingleNode("Bootfiles").ChildNodes;
-            foreach (XmlNode item in bootfiles)
-            {
-                var behavior = (BootServerType)item.ValueAsUint16("behavior");
-                if (behavior == ServerType)
-                {
-                    Bootfile = item.InnerText;
-                    break;
-                }
-            }
+            ReadBootFile(xml);
 
             var dhcpNodes = xml.SelectNodes("DHCP");
             foreach (XmlNode item in dhcpNodes)
@@ -36,6 +28,8 @@ namespace DHCPListener.BSvcMod.MSRIS
                     #endregion
                 }
             }
+
+            DHCPListenerBase.RegisterBootService(this, ServerType, Environment.MachineName);
         }
 
         public override void Handle_Bootp_Request(DHCPPacket requestPacket, Guid server, Guid socket, Guid client)
@@ -48,7 +42,7 @@ namespace DHCPListener.BSvcMod.MSRIS
                     if (!HasBootItem(requestPacket))
                         return;
 
-                    Clients[clientId] = new RISClient(clientId, requestPacket, server, socket, client);
+                    Clients[clientId] = new RISClient(false, requestPacket, server, socket, client);
 
                     Handle_BootService_Request(clientId, Clients[clientId].Request);
                     break;
@@ -61,7 +55,9 @@ namespace DHCPListener.BSvcMod.MSRIS
             var endpoint = NetbootBase.NetworkManager.ServerManager.GetClientEndPoint(Clients[clientId].Server,
                 Clients[clientId].Socket, Clients[clientId].Client);
 
-            if (endpoint.Address.Equals(IPAddress.Parse("0.0.0.0")))
+            if (!requestPacket.IsRelayed)
+                endpoint.Address = requestPacket.GatewayIP;
+            else if (endpoint.Address.Equals(IPAddress.Parse("0.0.0.0")))
                 endpoint.Address = IPAddress.Broadcast;
 
             NetbootBase.NetworkManager.ServerManager.Send(Clients[clientId].Server,
@@ -73,28 +69,7 @@ namespace DHCPListener.BSvcMod.MSRIS
             NetbootBase.Log("I", string.Format("DHCPListener[{0}]", ServerType),
                 string.Format("Got RIS {0} request from Client: {1}", request.GetMessageType(), clientid));
 
-            var filename = string.Empty;
-
-            switch (Clients[clientid].Architecture)
-            {
-                case Netboot.Module.DHCPListener.Architecture.X86PC:
-                    filename = Bootfile.Replace("#arch#", "x86");
-                    break;
-                case Netboot.Module.DHCPListener.Architecture.EFI_IA32:
-                    filename = Bootfile.Replace("#arch#", "efi");
-                    break;
-                case Netboot.Module.DHCPListener.Architecture.EFIByteCode:
-                    filename = Bootfile.Replace("#arch#", "efi");
-                    break;
-                case Netboot.Module.DHCPListener.Architecture.EFI_x8664:
-                    filename = Bootfile.Replace("#arch#", "x64");
-                    break;
-                default:
-                    filename = Bootfile.Replace("#arch#", "x86");
-                    break;
-            }
-
-            Clients[clientid].Response.FileName = filename;
+            SelectBootfile(clientid);
         }
     }
 }

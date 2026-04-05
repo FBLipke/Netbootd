@@ -75,7 +75,7 @@ namespace Netboot.Module.TFTPServer
             {
                 var curPos = Buffer.Position;
                 Buffer.Position = 2;
-                var result = BinaryPrimitives.ReadUInt16BigEndian(Read_Bytes(2));
+                var result = BinaryPrimitives.ReadUInt16LittleEndian(Read_Bytes(2));
                 Buffer.Position = curPos;
                 return (TFTPErrorCode)result;
             }

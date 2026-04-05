@@ -29,12 +29,14 @@ namespace DHCPListener.BSvcMod.RBCP
         public PxeRBCP(XmlNode xml) : base(xml)
         {
             ServerType = BootServerType.PXEBootstrapServer;
+            DHCPListenerBase.RegisterBootService(this, ServerType, Environment.MachineName);
+
             DiscoveryControl = byte.Parse(xml.Attributes.GetNamedItem("discovery").Value);
             MulticastDelay = byte.Parse(xml.Attributes.GetNamedItem("mcstartdelay").Value);
             MulticastTimeout = byte.Parse(xml.Attributes.GetNamedItem("mctimeout").Value);
             MulticastDiscoveryAddress = IPAddress.Parse(xml.Attributes.GetNamedItem("mcaddr").Value);
             MenueTimeout = byte.Parse(xml.Attributes.GetNamedItem("menuetimeout").Value);
-            MenuePrompt = xml.Attributes.GetNamedItem("prompt").Value.Split(';');
+            MenuePrompt = xml.Attributes.GetNamedItem("menueprompt").Value.Split(';');
 
             MulticastSPort = ushort.Parse(xml.Attributes.GetNamedItem("mcsport").Value);
             MulticastCPort = ushort.Parse(xml.Attributes.GetNamedItem("mccport").Value);
@@ -64,7 +66,9 @@ namespace DHCPListener.BSvcMod.RBCP
             var endpoint = NetbootBase.NetworkManager.ServerManager.GetClientEndPoint(Clients[clientId].Server,
                 Clients[clientId].Socket, Clients[clientId].Client);
 
-            if (endpoint.Address.Equals(IPAddress.Parse("0.0.0.0")))
+            if (!requestPacket.IsRelayed)
+                endpoint.Address = requestPacket.GatewayIP;
+            else if (endpoint.Address.Equals(IPAddress.Parse("0.0.0.0")))
                 endpoint.Address = IPAddress.Broadcast;
 
             NetbootBase.NetworkManager.ServerManager.Send(Clients[clientId].Server,

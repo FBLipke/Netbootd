@@ -11,21 +11,21 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Netboot.Service.BINL.Network.Definitions;
-using NetBoot.Common.Common.Definitions;
-using NetBoot.Common.Network.Packet;
+
+using Netboot.Common.Common.Definitions;
+using Netboot.Common.Network.Packet;
+using Netboot.Module.DHCPListener;
 using System.Buffers.Binary;
 
-namespace Netboot.Service.BINL.Network.Packet
+namespace Netboot.Module.BINLListener
 {
 	public class BINLPacket : BasePacket
 	{
-		public BINLPacket(string serviceType, byte[] data)
-			: base(serviceType, data)
+		public BINLPacket(byte[] data) : base(data)
 		{
 		}
 
-		public BINLPacket(string serviceType, BINLMessageTypes opCode) : base(serviceType)
+		public BINLPacket(BINLMessageTypes opCode) : base()
 		{
 			MessageType = opCode;
 		}
@@ -138,7 +138,7 @@ namespace Netboot.Service.BINL.Network.Packet
 
 				var ntlmsspBytes = Read_Bytes(Length);
 
-				var result = new NTLMSSPPacket(ServiceType, ntlmsspBytes);
+				var result = new NTLMSSPPacket(ntlmsspBytes);
 				RestorePosition();
 
 				return result;

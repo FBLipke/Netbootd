@@ -75,9 +75,7 @@
     <None Include="Providers\TFTPServer\OSChooser\i386\ntldr">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="Providers\TFTPServer\OSChooser\i386\ntldr_OSCHOICE">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
+    <None Include="Providers\TFTPServer\OSChooser\i386\ntldr_SETUP" />
     <None Include="Providers\TFTPServer\OSChooser\i386\startrom.n12">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

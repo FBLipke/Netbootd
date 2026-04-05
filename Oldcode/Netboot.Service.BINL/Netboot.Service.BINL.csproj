@@ -10,12 +10,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<Compile Include="Network\Client\BINLClient.cs" />
-		<Compile Include="Network\Definitions\SecurityBuffer.cs" />
-		<Compile Include="Network\Packet\BINLPacket.cs" />
-		<Compile Include="Network\Packet\NTLMSSPPacket.cs" />
 		<Compile Include="Services\BINLService.cs" />
-		<Compile Include="Network\Definitions\Definitions.cs" />
 	</ItemGroup>
 
 	<ItemGroup>

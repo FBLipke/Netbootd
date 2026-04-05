@@ -13,7 +13,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System.Buffers.Binary;
 
-namespace Netboot.Service.BINL.Network.Definitions
+namespace Netboot.Module.BINLListener
 {
 	public class SecurityBuffer
 	{

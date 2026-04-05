@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
-VisualStudioVersion = 18.3.11520.95 d18.3
+VisualStudioVersion = 18.3.11520.95
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Netboot.Common", "NetBootd.Common\Netboot.Common.csproj", "{F174DB54-33A4-47FB-8D55-F956D2F0C52F}"
 EndProject
@@ -25,6 +25,12 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DHCPListener.BSvcMod.BSDP", "DHCPListener.BSvcMod.BSDP\DHCPListener.BSvcMod.BSDP.csproj", "{9A80C18B-4F65-6A16-5CFC-1D51E5863D9A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DHCPListener.BSvcMod.MSRIS", "DHCPListener.BSvcMod.MSRIS\DHCPListener.BSvcMod.MSRIS.csproj", "{027C30CF-45E3-47E5-BB06-F9504A7BCFFC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Netboot.Utility", "Netboot.Utility\Netboot.Utility.csproj", "{229ACBB5-377D-472E-9083-469DC43ADA58}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Netboot.Module.BINLListener", "Netboot.Module.BINLListener\Netboot.Module.BINLListener.csproj", "{ABD39406-5B02-467F-B4D3-910312A5B3EC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Netboot.Service.BINL", "Oldcode\Netboot.Service.BINL\Netboot.Service.BINL.csproj", "{A5440CD6-97D2-075E-7895-026460B85B0F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -72,6 +78,18 @@ Global
 		{027C30CF-45E3-47E5-BB06-F9504A7BCFFC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{027C30CF-45E3-47E5-BB06-F9504A7BCFFC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{027C30CF-45E3-47E5-BB06-F9504A7BCFFC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{229ACBB5-377D-472E-9083-469DC43ADA58}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{229ACBB5-377D-472E-9083-469DC43ADA58}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{229ACBB5-377D-472E-9083-469DC43ADA58}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{229ACBB5-377D-472E-9083-469DC43ADA58}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ABD39406-5B02-467F-B4D3-910312A5B3EC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ABD39406-5B02-467F-B4D3-910312A5B3EC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ABD39406-5B02-467F-B4D3-910312A5B3EC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ABD39406-5B02-467F-B4D3-910312A5B3EC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A5440CD6-97D2-075E-7895-026460B85B0F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A5440CD6-97D2-075E-7895-026460B85B0F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A5440CD6-97D2-075E-7895-026460B85B0F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A5440CD6-97D2-075E-7895-026460B85B0F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

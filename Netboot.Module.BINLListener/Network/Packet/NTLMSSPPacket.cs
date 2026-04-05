@@ -11,23 +11,23 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Netboot.Service.BINL.Network.Definitions;
-using NetBoot.Common.Common.Definitions;
-using NetBoot.Common.Network.Packet;
+using Netboot.Common.Common.Definitions;
+using Netboot.Common.Network.Packet;
+using Netboot.Module.BINLListener;
 using System.Buffers.Binary;
 
-namespace Netboot.Service.BINL.Network.Packet
+namespace Netboot.Module.BINLListener
 {
 	public class NTLMSSPPacket : BasePacket
 	{
 		Dictionary<string, SecurityBuffer> SecurityBuffers = [];
 
-		public NTLMSSPPacket(string serviceType, ntlmssp_message_type messageType) : base(serviceType)
+		public NTLMSSPPacket(string serviceType, ntlmssp_message_type messageType) : base()
 		{
 			MessageType = messageType;
 		}
 
-		public NTLMSSPPacket(string serviceType, byte[] data) : base(serviceType, data)
+		public NTLMSSPPacket(byte[] data) : base(data)
 		{
 			var curPOS = Buffer.Position;
 

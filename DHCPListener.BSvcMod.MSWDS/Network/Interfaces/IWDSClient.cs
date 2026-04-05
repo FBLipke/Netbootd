@@ -29,5 +29,9 @@ namespace DHCPListener.BSvcMod.MSWDS
         public IPAddress? ReferralServer { get; set; }
 
         public NBPVersionValues NBPVersion { get; set; }
+
+        public void Handle_WDS_Request();
+
+        public void Handle_WDS_Options();
     }
 }

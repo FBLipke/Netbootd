@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<BaseOutputPath>..\</BaseOutputPath>
+		<EnableDynamicLoading>true</EnableDynamicLoading>
+		<EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+	</PropertyGroup>
+
+	<ItemGroup>
+	  <Compile Include="BINLListener.cs" />
+	  <Compile Include="Network\Client\BINLClient.cs" />
+	  <Compile Include="Network\Definitions\Definitions.cs" />
+	  <Compile Include="Network\Definitions\SecurityBuffer.cs" />
+	  <Compile Include="Network\Packet\BINLPacket.cs" />
+	  <Compile Include="Network\Packet\NTLMSSPPacket.cs" />
+	</ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Netboot.Module.DHCPListener\Netboot.Module.DHCPListener.csproj" />
+    <ProjectReference Include="..\NetBootd.Common\Netboot.Common.csproj" />
+  </ItemGroup>
+
+</Project>

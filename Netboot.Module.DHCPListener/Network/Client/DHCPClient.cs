@@ -12,6 +12,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 using Netboot.Common;
+using Netboot.Common.Common.Definitions;
 using System.Text;
 
 namespace Netboot.Module.DHCPListener
@@ -33,7 +34,7 @@ namespace Netboot.Module.DHCPListener
             if (request.HasOption(DHCPOptions.NetworkInterfaceIdentifier))
                 NicSpecType = (NicSpecType)request.GetOption((byte)DHCPOptions.NetworkInterfaceIdentifier).AsByte();
 
-            Architecture = (Netboot.Module.DHCPListener.Architecture)
+            Architecture = (Architecture)
                 Request.GetOption((byte)DHCPOptions.SystemArchitectureType).AsUInt16();
 
             TestClient = testClient;
