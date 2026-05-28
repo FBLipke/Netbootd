@@ -72,14 +72,35 @@ namespace Netboot.Common.Network.Sockets
                 if (joinMulticastGroup)
                     JoinMulticastGroup(MulticastGroup);
 
-                _sock.BeginReceiveFrom(state.Buffer, 0, state.Buffer.Length, 0, ref LocalEndpoint,
-                    new AsyncCallback(Received), state);
-
                 Listening = true;
+                
+                _ = ReceiveLoopAsync();
+
+
             }
             catch (SocketException ex)
             {
                 SocketFailedToStart?.Invoke(this, new SocketFailedToStartEventArgs(Id, ex));
+            }
+        }
+
+        private async Task ReceiveLoopAsync()
+        {
+            var buffer = new byte[ushort.MaxValue];
+            var remoteEndpoint = new IPEndPoint(IPAddress.Any, 0);
+
+            while (Listening && _sock != null)
+            {
+                var result = await _sock.ReceiveFromAsync(buffer, SocketFlags.None, remoteEndpoint);
+                if (result.ReceivedBytes == 0 || result.ReceivedBytes == -1)
+                    return;
+
+                var data = new byte[result.ReceivedBytes];
+                Array.Copy(buffer, data, data.Length);
+
+                var client = new NetbootUdpClient(Guid.NewGuid(), (IPEndPoint)result.RemoteEndPoint);
+                InternalClientAccepted?.Invoke(this, new ClientAcceptedEventArgs(client));
+                SocketReadDataFromClient?.Invoke(this, new SocketReadDataFromClientArgs(Id, client.Id, data));
             }
         }
 
@@ -123,16 +144,7 @@ namespace Netboot.Common.Network.Sockets
 
             state = (SocketState)ar.AsyncState;
             var bytesRead = _sock.EndReceiveFrom(ar, ref remoteEndpoint);
-            if (bytesRead == 0 || bytesRead == -1)
-                return;
-
-            var data = new byte[bytesRead];
-            Array.Copy(state.Buffer, data, data.Length);
-
-            var client = new NetbootUdpClient(Guid.NewGuid(), (IPEndPoint)remoteEndpoint);
-            InternalClientAccepted?.Invoke(this, new ClientAcceptedEventArgs(client));
-
-            SocketReadDataFromClient?.Invoke(this, new SocketReadDataFromClientArgs(Id, client.Id, data));
+            
 
             _sock.BeginReceiveFrom(state.Buffer, 0, state.Buffer.Length, 0,
                 ref LocalEndpoint, new AsyncCallback(Received), state);

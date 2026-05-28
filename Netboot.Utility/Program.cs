@@ -19,7 +19,7 @@ namespace Netboot
 {
     internal class Program
     {
-        static NetbootBase? NetbootBase;
+
 
         [STAThread]
         static void Main(string[] args)
@@ -29,7 +29,6 @@ namespace Netboot
             AppDomain.CurrentDomain.ProcessExit += CurrentDomain_ProcessExit;
             AppDomain.CurrentDomain.DomainUnload += CurrentDomain_ProcessExit;
 
-
             var utility = new Utility(args);
             
             #region "keep program alive"
@@ -38,7 +37,7 @@ namespace Netboot
             while (x != "!exit")
             {
                 x = Console.ReadLine();
-                if (x.StartsWith('!') && x.Contains(' '))
+                if (x.StartsWith('!'))
                     utility.RunCommand(x.Split(' '));
             }
             #endregion
@@ -48,8 +47,6 @@ namespace Netboot
 
         private static void CurrentDomain_ProcessExit(object? sender, EventArgs e)
         {
-            NetbootBase?.Stop();
-            NetbootBase?.Dispose();
         }
     }
 }

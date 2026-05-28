@@ -53,25 +53,31 @@ namespace Netboot.Common.Utility.Commands
         {
             Console.BackgroundColor = ConsoleColor.DarkBlue;
             Console.ForegroundColor = ConsoleColor.White;
-            Console.Clear();
+
             Console.WriteLine("[I] Copies Windows NT CDs into the deployment Share!");
 
         }
 
         bool GetPathOfDosnet(string _path, string dosnetfile = "dosnet.inf")
         {
+            if (!Directory.Exists(_path))
+            {
+                NetbootBase.Log("E", this.GetType().ToString(), string.Format("File or directory not found: {0}", _path));
+                return false;
+            }
+
             var _dosnet = new FileInfo(Directory.GetFiles(_path, dosnetfile, SearchOption.AllDirectories).FirstOrDefault());
             var _txtsetup = new FileInfo(Directory.GetFiles(_path, "txtsetup.sif", SearchOption.AllDirectories).FirstOrDefault());
 
             if (!_dosnet.Exists)
             {
-                Console.WriteLine("File not found: {0}", _dosnet.FullName);
+                NetbootBase.Log("E", this.GetType().ToString(), string.Format("File or directory not found: {0}", _dosnet.FullName));
                 return false;
             }
 
             if (!_txtsetup.Exists)
             {
-                Console.WriteLine("File not found: {0}", _txtsetup.FullName);
+                NetbootBase.Log("E", this.GetType().ToString(), string.Format("File or directory not found: {0}", _txtsetup.FullName));
                 return false;
             }
 
@@ -149,77 +155,82 @@ namespace Netboot.Common.Utility.Commands
                 foreach (var _file in directory.Value)
                 {
                     var dstPath = Path.Combine(destination, _file.Substring(_file.IndexOf('\\') + 1));
-                    Directory.CreateDirectory(dstPath.Substring(0, dstPath.LastIndexOf('\\')));
+                    var dstDir = dstPath.Substring(0, dstPath.LastIndexOf('\\'));
 
-                    if (!_copyFile(_file, dstPath))
+                    if (!Directory.Exists(dstDir))
                     {
-                        var compSrcFileName = _file.Substring(0, _file.Length - 1);
-                        compSrcFileName += "_";
+                        Console.WriteLine(dstDir);
+                        Directory.CreateDirectory(dstDir);
 
-                        var compdstFileName = dstPath.Substring(0, dstPath.Length - 1);
-                        compdstFileName += "_";
+                        if (!_copyFile(_file, dstPath))
+                        {
+                            var compSrcFileName = _file.Substring(0, _file.Length - 1);
+                            compSrcFileName += "_";
 
-                        _copyFile(compSrcFileName, compdstFileName);
+                            var compdstFileName = dstPath.Substring(0, dstPath.Length - 1);
+                            compdstFileName += "_";
+
+                            _copyFile(compSrcFileName, compdstFileName);
+                        }
                     }
                 }
+                #endregion
             }
-            #endregion
         }
-
-        bool _copyFile(string src, string dst)
-        {
-            try
+            bool _copyFile(string src, string dst)
             {
                 if (!File.Exists(src))
                     return false;
 
-                File.Copy(src, dst, true);
+                if (!File.Exists(dst))
+                    File.Copy(src, dst, true);
 
                 return true;
             }
-            catch (Exception ex)
+
+            void CreateAnswerFile(string osImageDir)
             {
-                Console.WriteLine(ex.Message);
-                return false;
-            }
-        }
+                #region "Read Informations from txtsetup.sif"
 
-        void CreateAnswerFile(string osImageDir)
-        {
-            #region "Read Informations from txtsetup.sif"
+                // OS Version 
+                Version = new Version(int.Parse(TXTSETUP.GetValue("SetupData", "MajorVersion").FirstOrDefault()),
+                    int.Parse(TXTSETUP.GetValue("SetupData", "MinorVersion").FirstOrDefault()));
 
-            // OS Version 
-            Version = new Version(int.Parse(TXTSETUP.GetValue("SetupData", "MajorVersion").FirstOrDefault()),
-                int.Parse(TXTSETUP.GetValue("SetupData", "MinorVersion").FirstOrDefault()));
+                var os_sData_LoadIdent = __strings[TXTSETUP.GetValue("SetupData", "LoadIdentifier")
+                    .FirstOrDefault().Replace("%", string.Empty)];
 
-            var os_sData_LoadIdent = __strings[TXTSETUP.GetValue("SetupData", "LoadIdentifier")
-                .FirstOrDefault().Replace("%", string.Empty)];
+                var launchFilePath = "%INSTALLPATH%\\%MACHINETYPE%\\templates\\startrom.com"
+                    .Replace("%MACHINETYPE%", DestinationPlatform).Replace("%INSTALLPATH%", InstallPath);
 
-            var launchFilePath = "%INSTALLPATH%\\%MACHINETYPE%\\templates\\startrom.com"
-                .Replace("%MACHINETYPE%", DestinationPlatform).Replace("%INSTALLPATH%", InstallPath);
+                #endregion
 
-            #endregion
+                var tplDir = Path.Combine(osImageDir, "templates");
+                Directory.CreateDirectory(tplDir);
 
-            var tplDir = Path.Combine(osImageDir, "templates");
-            Directory.CreateDirectory(tplDir);
+                var xmlFile = Path.Combine(ConfigDir, "ris", "ristndrd.xml");
 
-            var ristndrd_xml = new XmlDocument();
-            ristndrd_xml.Load(Path.Combine(ConfigDir, "ris", "ristndrd.xml"));
-            var content = ristndrd_xml.SelectNodes("Netboot/sif/content");
-
-            Console.WriteLine("[I] Creating File (ristndrd.sif)...");
-
-            var answerFile = new Dictionary<string, Dictionary<string, List<string>>> { };
-
-            foreach (XmlNode xmlnode in content)
-            {
-                foreach (XmlNode childNode in xmlnode.ChildNodes)
+                if (!File.Exists(xmlFile))
                 {
-                    var section = childNode.Name;
-                    answerFile.Add(section, []);
+                    NetbootBase.Log("E", this.GetType().ToString(), string.Format("File not Found: {0}", xmlFile));
 
-                    foreach (XmlNode child in childNode.ChildNodes)
-                        answerFile[section].Add(child.Name, [child.InnerText
+                    return;
+                }
+
+                var ristndrd_xml = new XmlDocument();
+                ristndrd_xml.Load(xmlFile);
+                var content = ristndrd_xml.SelectNodes("Netboot/sif/content");
+
+                var answerFile = new Dictionary<string, Dictionary<string, List<string>>> { };
+
+                foreach (XmlNode xmlnode in content)
+                {
+                    foreach (XmlNode childNode in xmlnode.ChildNodes)
+                    {
+                        var section = childNode.Name;
+                        answerFile.Add(section, []);
+
+                        foreach (XmlNode child in childNode.ChildNodes)
+                            answerFile[section].Add(child.Name, [child.InnerText
                                 .Replace("%MACHINETYPE%", DestinationPlatform)
                                     .Replace("%SERVERNAME%", Environment.MachineName)
                                         .Replace("%INSTALLPATH%", InstallPath)
@@ -229,23 +240,24 @@ namespace Netboot.Common.Utility.Commands
                                                         .Replace("[[#Help#]]", os_sData_LoadIdent)
                                                             .Replace ("[[#Version#]]",
                                                                 string.Format("\"{0}.{1}\"", Version.Major, Version.Minor))
-                    ]);
+                        ]);
+                    }
                 }
+
+                #region "Create ristndrd.sif"
+                {
+                    var tmplFile = Path.Combine(tplDir, "ristndrd.sif");
+                    if (File.Exists(tmplFile))
+                        File.Delete(tmplFile);
+
+                    NetbootBase.Log("I", this.GetType().ToString(), string.Format("Creating File: {0}", tmplFile));
+
+                    var newIni = new INIFile(tmplFile);
+                    newIni.SetValues(answerFile);
+                    newIni.Dump();
+                }
+                #endregion
             }
-
-            #region "Create ristndrd.sif"
-            {
-
-                var tmplFile = Path.Combine(tplDir, "ristndrd.sif");
-                if (File.Exists(tmplFile))
-                    File.Delete(tmplFile);
-
-                var newIni = new INIFile(tmplFile);
-                newIni.SetValues(answerFile);
-                newIni.Dump();
-            }
-            #endregion
-        }
 
 
         public void Start(string srcType, string sourcePath)

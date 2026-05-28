@@ -120,7 +120,8 @@ namespace Netboot.Module.BINLListener
             Filesystem?.Dispose();
         }
 
-        public string Handle_Get_Request(NetbootHttpContext request) => JsonConvert.SerializeObject(Members.Values);
+        public string Handle_Get_Request(NetbootHttpContext request)
+            => JsonConvert.SerializeObject(Members.Values);
 
         public void Install()
         {
@@ -145,6 +146,7 @@ namespace Netboot.Module.BINLListener
         public void Start()
         {
             Active = true;
+
             NetbootBase.Log("I", FriendlyName, "This module handles BINL Messages");
         }
 

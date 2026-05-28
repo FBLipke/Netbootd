@@ -1,6 +1,8 @@
 ﻿using Netboot.Common;
 using Netboot.Common.Database.Interfaces;
+using Netboot.Common.Provider;
 using Netboot.Common.System;
+using Netboot.Common.Utility;
 using Netboot.Module.DHCPListener.Event;
 using System.Net;
 using System.Reflection;
@@ -70,6 +72,9 @@ namespace Netboot.Module.DHCPListener
                 NetbootBase.Log("I", "DHCPListener",
                     string.Format("Registered BootService \"{0}\"", sender.ServerType));
             };
+            var typ = this.GetType();
+
+
         }
 
         public void Start()
@@ -86,6 +91,8 @@ namespace Netboot.Module.DHCPListener
                 foreach (var bs in bootservices)
                     bs.HeartBeat();
         }
+
+        
 
         public void Bootstrap(XmlNode xml)
         {

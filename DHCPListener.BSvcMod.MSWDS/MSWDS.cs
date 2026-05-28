@@ -44,6 +44,7 @@ namespace DHCPListener.BSvcMod.MSWDS
                     foreach (XmlNode option in dhcpoptions)
                     {
                         var opt252 = option.ValueAsByte("id");
+
                         if (opt252 == (byte)252)
                             bcdFile = option.InnerText;
                     }
@@ -67,6 +68,8 @@ namespace DHCPListener.BSvcMod.MSWDS
                     Handle_BootService_Request(clientId, Clients[clientId].Request);
                     break;
                 default:
+                    NetbootBase.Log("I", string.Format("DHCPListener[{0}]", ServerType),
+                        string.Format("Got unknown {0} request from Client: {1}", requestPacket.GetMessageType(), clientId));
                     return;
             }
 
@@ -116,7 +119,6 @@ namespace DHCPListener.BSvcMod.MSWDS
                     bcd = bcdFile.Replace("#arch#", "x86");
                     break;
             }
-
 
             ((IWDSClient)Clients[clientid]).Handle_WDS_Options();
             Clients[clientid].Response.FileName = filename;

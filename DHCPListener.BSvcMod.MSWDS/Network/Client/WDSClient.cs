@@ -87,6 +87,7 @@ namespace DHCPListener.BSvcMod.MSWDS
 
             Response.AddOption(new(250, options));
         }
+
         public void Handle_WDS_Request()
         {
             var wdsData = Request.GetEncOptions(250);

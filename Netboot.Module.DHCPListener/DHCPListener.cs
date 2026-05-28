@@ -2,6 +2,7 @@
 using Netboot.Common.Cryptography.Interfaces;
 using Netboot.Common.Database;
 using Netboot.Common.Database.Interfaces;
+using Netboot.Common.Network;
 using Netboot.Common.Network.HTTP;
 using Netboot.Common.Network.Sockets;
 using Netboot.Common.Provider;
@@ -57,21 +58,25 @@ namespace Netboot.Module.DHCPListener
 
         public void Bootstrap(XmlNode xml)
         {
-            var _ports = new List<ushort>();
 
-            var ports = xml.Attributes.GetNamedItem("port").Value.Split(',').ToList();
-            if (ports.Count > 0)
-                _ports.AddRange(from port in ports select ushort.Parse(port.Trim()));
-
-            var mcastAddress = IPAddress.Parse(xml.Attributes.GetNamedItem("mcaddr").Value);
-
-            Server = NetbootBase.NetworkManager.ServerManager.Add(ProtoType.Udp, _ports);
-            NetbootBase.NetworkManager.ServerManager.JoinMulticastGroup(Server, mcastAddress);
-
-            NetbootBase.NetworkManager.UDPRequestReceived += (sender, e) =>
+            if (NetbootBase.NetworkManager != null)
             {
-                Base.Handle_Listener_Request(e.Server, e.Socket, e.Client, e.Data);
-            };
+                var _ports = new List<ushort>();
+
+                var ports = xml.Attributes.GetNamedItem("port").Value.Split(',').ToList();
+                if (ports.Count > 0)
+                    _ports.AddRange(from port in ports select ushort.Parse(port.Trim()));
+
+                var mcastAddress = IPAddress.Parse(xml.Attributes.GetNamedItem("mcaddr").Value);
+
+                Server = NetbootBase.NetworkManager.ServerManager.Add(ProtoType.Udp, _ports);
+                NetbootBase.NetworkManager.ServerManager.JoinMulticastGroup(Server, mcastAddress);
+
+                NetbootBase.NetworkManager.UDPRequestReceived += (sender, e) =>
+                {
+                    Base.Handle_Listener_Request(e.Server, e.Socket, e.Client, e.Data);
+                };
+            }
 
             Base.Bootstrap(xml);
 

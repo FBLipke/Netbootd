@@ -4,6 +4,7 @@
 // MVID: CE4FCADF-C52D-4962-B4B8-C6D36FAB8FAE
 // Assembly location: C:\Users\LipkeGu\Desktop\Netboot___\Netboot.Common.dll
 
+using Netboot.Common.Utility;
 using System.Xml;
 
 namespace Netboot.Common.Provider.Events

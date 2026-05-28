@@ -1,8 +1,8 @@
 ﻿using Netboot.Common;
+using Netboot.Common.Utility;
 using Netboot.Module.DHCPListener;
-using Netboot.Module.DHCPListener.Interfaces;
 using System.Net;
-using System.Text;
+using System.Reflection;
 using System.Xml;
 
 namespace DHCPListener.BSvcMod.MSRIS
@@ -10,6 +10,39 @@ namespace DHCPListener.BSvcMod.MSRIS
     public class MSRIS : BootService
     {
         private string Bootfile { get; set; } = string.Empty;
+
+        public void LoadUtilitiyModule()
+        {
+            #region "Load Service Modules"
+
+            var _types = this.GetType().Assembly.GetTypes();
+            var retvalColl = from t in _types
+                             where (t.GetInterfaces()
+                                .Contains(typeof(IUtility))) && t.IsAbstract == false
+                             let moduleName = this.GetType().Assembly.GetName().Name
+                             select (t, moduleName);
+
+            foreach (var (t, name) in retvalColl)
+            {
+                try
+                {
+                    var b = t.InvokeMember(string.Empty, BindingFlags.CreateInstance,
+                        null, null, null) as IUtility;
+
+                    if (b == null)
+                        continue;
+
+                    NetbootBase.UtilProviders.Add(b.Name, b);
+                }
+                catch (MissingMethodException ex)
+                {
+                    NetbootBase.Log("I", "Netbootd", "Installation completed...");
+                }
+            }
+
+            Console.WriteLine("");
+        }
+        #endregion
 
         public MSRIS(XmlNode xml) : base(xml)
         {
@@ -30,6 +63,8 @@ namespace DHCPListener.BSvcMod.MSRIS
             }
 
             DHCPListenerBase.RegisterBootService(this, ServerType, Environment.MachineName);
+
+            LoadUtilitiyModule();
         }
 
         public override void Handle_Bootp_Request(DHCPPacket requestPacket, Guid server, Guid socket, Guid client)

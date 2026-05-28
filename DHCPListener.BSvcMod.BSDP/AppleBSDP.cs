@@ -28,6 +28,8 @@ namespace DHCPListener.BSvcMod.BSDP
                     Handle_BootService_Request(clientId, Clients[clientId].Request);
                     break;
                 default:
+                    NetbootBase.Log("W", string.Format("DHCPListener[{0}]", ServerType),
+                        string.Format("Got unknown {0} request from Client: {1}", requestPacket.GetMessageType(), clientId));
                     return;
             }
 

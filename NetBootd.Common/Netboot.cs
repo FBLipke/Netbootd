@@ -14,6 +14,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 using Netboot.Common.Network;
 using Netboot.Common.Provider.Events;
 using Netboot.Common.System;
+using Netboot.Common.Utility;
 using System.Globalization;
 using System.Reflection;
 using System.Xml;
@@ -23,10 +24,12 @@ namespace Netboot.Common
     public class NetbootBase : IDisposable, IManager
     {
         private Thread _heartBeatThread;
+        private bool utilityInstance = false;
 
         public static NetworkManager NetworkManager { get; private set; }
 
         public static Dictionary<string, IProvider>? Providers { get; private set; }
+        public static Dictionary<string, IUtility>? UtilProviders { get; private set; }
 
         public Filesystem FileSystem { get; set; }
 
@@ -36,17 +39,22 @@ namespace Netboot.Common
 
         public static NetbootPlatform Platform = new();
 
-        public NetbootBase(string[] args)
+        public NetbootBase(string[] args, bool utilityMode = false)
         {
+            utilityInstance = utilityMode;
+
             var appVersion = Assembly.GetExecutingAssembly().GetName().Version;
-            var title = string.Format("NetBoot {0}.{1}", appVersion.Major, appVersion.Minor);
+            var title = string.Format(utilityMode ? "NetBoot Utility {0}.{1}" : "NetBoot {0}.{1}", appVersion.Major, appVersion.Minor);
             Console.Title = title;
 
             cmdArgs = args;
 
-            _heartBeatThread = new Thread(new ThreadStart(HeartBeat));
+            if (!utilityInstance)
+                _heartBeatThread = new Thread(new ThreadStart(HeartBeat));
 
             Providers = [];
+            UtilProviders = [];
+
             Provider.Provider.ModuleLoaded += (sender, e) =>
             {
                 Log("I", "Common", string.Format("Loading Module \"{0}\"...", e.Module));
@@ -70,12 +78,19 @@ namespace Netboot.Common
                 }
             };
 
-            NetworkManager = new NetworkManager();
+            Provider.Provider.UtilityModuleLoaded += (sender, e) =>
+            {
+                UtilProviders.Add(e.Name, e.Module);
+            };
+
+            if (!utilityInstance)
+                NetworkManager = new NetworkManager();
         }
 
         public void Start()
         {
-            NetworkManager.Start();
+            if (!utilityInstance)
+                NetworkManager.Start();
 
             Running = Providers.Count != 0;
             _heartBeatThread.Start();
@@ -83,7 +98,8 @@ namespace Netboot.Common
 
         public void Stop()
         {
-            NetworkManager.Stop();
+            if (!utilityInstance)
+                NetworkManager.Stop();
 
             foreach (var provider in Providers)
             {
@@ -94,7 +110,8 @@ namespace Netboot.Common
 
         public void Dispose()
         {
-            NetworkManager.Dispose();
+            if (!utilityInstance)
+                NetworkManager.Dispose();
 
             if (Providers.Count != 0)
             {
@@ -105,9 +122,16 @@ namespace Netboot.Common
                 Providers = null;
             }
 
+            if (UtilProviders.Count != 0)
+            {
+                UtilProviders.Clear();
+                UtilProviders = null;
+            }
+
             try
             {
-                _heartBeatThread.Abort();
+                if (!utilityInstance)
+                    _heartBeatThread.Abort();
             }
             catch
             {
@@ -133,14 +157,17 @@ namespace Netboot.Common
             xmlFile.Load(ConfigFile);
             var services = xmlFile.SelectNodes("Netboot/Configuration/Services/Service");
 
-
             Provider.Provider.LoadModule(FileSystem.Root, services);
-
-            NetworkManager.Bootstrap(xml);
+            
+            if (!utilityInstance)
+                NetworkManager.Bootstrap(xml);
         }
 
         public void Close()
         {
+            if (utilityInstance)
+                return;
+
             NetworkManager.Close();
 
             foreach (var provider in Providers)
@@ -152,6 +179,9 @@ namespace Netboot.Common
 
         public void HeartBeat()
         {
+            if (utilityInstance)
+                return;
+
             Thread.Sleep(30000);
             NetworkManager.HeartBeat();
 

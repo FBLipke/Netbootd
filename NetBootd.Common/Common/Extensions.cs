@@ -19,6 +19,14 @@ namespace Netboot.Common
             return flag;
         }
 
+        public static T[] SubArray<T>(this T[] data, int index, int length)
+        {
+            var result = new T[length];
+            Array.Copy(data, index, result, 0, length);
+        
+            return result;
+        }
+
         public static double AsUnixTimeStamp(this DateTime dt)
             => DateTime.Now.Subtract(new DateTime(1970, 1, 1)).TotalSeconds;
 

@@ -17,15 +17,19 @@ namespace Netboot.Common.Utility
 {
     public class Utility : IDisposable
     {
+        static NetbootBase? NetbootBase;
+
         public Utility(string[] args)
         {
+
+
             Initialize(args);
         }
 
         public void Initialize(string[] args)
         {
-            Console.WriteLine("Netboot utility 0.1a ({0})", Functions.IsLittleEndian()
-                ? "LE (LittleEndian)" : "BE (BigEndian)");
+            NetbootBase = new NetbootBase(args, true);
+            NetbootBase.Bootstrap(null);
         }
 
         public void RunCommand(string[] args)
@@ -37,15 +41,66 @@ namespace Netboot.Common.Utility
                 return;
             }
 
+
+            if (args.First().StartsWith('!'))
+            {
+                var module = args.First().Substring(1);
+
+                if (!NetbootBase.UtilProviders.ContainsKey(module))
+                {
+                    Usage();
+                    return;
+                }
+                if (args.Length == 1)
+                {
+                    Console.WriteLine("add: Add an object");
+                    Console.WriteLine("remove: remove an object");
+                    Console.WriteLine("edit: edit an object");
+                    Console.WriteLine("show: show an object");
+                    Console.WriteLine("lsi: list the content for an object");
+
+                }
+                else
+                {
+                    switch (args[1])
+                    {
+                        case "add":
+                            NetbootBase.UtilProviders[module].Add(args.SubArray(2, (args.Length - 2)));
+                            break;
+                        case "remove":
+                            NetbootBase.UtilProviders[module].Remove(args.SubArray(2, (args.Length - 2)));
+                            break;
+                        case "edit":
+                            NetbootBase.UtilProviders[module].Modify(args.SubArray(2, (args.Length - 2)));
+                            break;
+                        case "list":
+                            NetbootBase.UtilProviders[module].List(args.SubArray(2, (args.Length - 2)));
+                            break;
+                        case "show":
+                            NetbootBase.UtilProviders[module].Show(args.SubArray(2, (args.Length - 2)));
+                            break;
+                        default:
+                            Usage();
+                            return;
+                    }
+                }
+            }
+            else
+            {
+                Usage();
+            }
+            
             switch (args.First())
             {
+                case "!list":
+                    foreach (var module in NetbootBase.UtilProviders)
+                    {
+                        Console.WriteLine(module);
+                    }
+
+                    break;
                 case "!dist":
-                    Console.WriteLine("!dist: Distribution share management!");
-                    Console.WriteLine();
-                    Console.WriteLine("Syntax: !dist (mode) (type) (Disk ROOT)");
-                    Console.WriteLine("Mode: add/del/mod");
-                    Console.WriteLine("Type: \"ris\" Performs RIS Operations");
-                    Console.WriteLine("Type: \"wds\" Performs WDS Operations");
+
 
                     switch (args[1])
                     {
@@ -97,6 +152,17 @@ namespace Netboot.Common.Utility
                     }
 
                     break;
+            }
+        }
+
+        public void Usage()
+        {
+            Console.WriteLine();
+            Console.WriteLine("Syntax: !dist (mode) (type) (Disk ROOT)");
+
+            foreach (var arg in NetbootBase.UtilProviders)
+            {
+                Console.WriteLine("!{0}: {1}!", arg.Value.Name, arg.Value.Description);
             }
         }
 

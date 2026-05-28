@@ -3,6 +3,7 @@ using Netboot.Common.Database.Interfaces;
 using Netboot.Common.Network.Sockets;
 using Netboot.Common.Provider.Events;
 using Netboot.Common.System;
+using Netboot.Common.Utility;
 using Newtonsoft.Json;
 using System.Reflection;
 using System.Text;
@@ -13,6 +14,7 @@ namespace Netboot.Common.Provider
     public class Provider
     {
         public static event ModuleLoadedEventHandler ModuleLoaded;
+        public static event UtilityModuleLoadedEventHandler UtilityModuleLoaded;
 
         public static bool HasMethod(object obj, string name) => obj.GetType().GetMethod(name) != null;
         public static bool HasInterFace(object obj, string name) => obj.GetType().GetInterface(name) != (MethodInfo)null;
@@ -31,6 +33,7 @@ namespace Netboot.Common.Provider
                                  where (t.IsSubclassOf(typeof(IProvider)) || t.GetInterfaces()
                                      .Contains(typeof(IProvider))) && t.IsAbstract == false
                                  let moduleName = module.Name.Split('.')[2].Trim()
+                                 
                                  select (t, moduleName);
 
                 foreach (var (t, name) in retvalColl)
@@ -43,6 +46,9 @@ namespace Netboot.Common.Provider
                         if (b == null)
                             continue;
 
+
+
+
                         ModuleLoaded?.Invoke(null, new ModuleLoadedEventArgs(b, name, xml));
                     }
                     catch (MissingMethodException ex)
@@ -53,6 +59,8 @@ namespace Netboot.Common.Provider
             }
             #endregion
         }
+
+        
 
         public static bool HasProperty(object obj, string name) => obj.GetType().GetProperty(name) != null;
 
@@ -412,7 +420,6 @@ namespace Netboot.Common.Provider
             createSQLCommand.AppendLine(")");
 
             db.Insert(createSQLCommand.ToString());
-
         }
 
         public static void Install(
@@ -507,5 +514,6 @@ namespace Netboot.Common.Provider
         public static T AsType<T>(object? obj) => (T)Convert.ChangeType(obj, typeof(T));
 
         public delegate void ModuleLoadedEventHandler(object sender, ModuleLoadedEventArgs e);
+        public delegate void UtilityModuleLoadedEventHandler(object sender, UtilityModuleLoadedEventArgs e);
     }
 }

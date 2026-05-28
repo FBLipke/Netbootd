@@ -162,18 +162,23 @@ namespace Netboot.Module.DHCPListener
         public Guid CreateClientId(DHCPPacket packet)
         {
             var clientId = packet.HardwareAddress.ToGuid();
-            var opt = packet.GetOption((byte)DHCPOptions.UuidGuidBasedClientIdentifier).Data;
-            switch ((ClientIdentType)opt.First())
-            {
-                case ClientIdentType.UUID:
-                    var idBytes = new byte[16];
-                    Array.Copy(opt, 1, idBytes, 0, idBytes.Length);
+            
+            if (!packet.HasOption((byte)DHCPOptions.UuidGuidBasedClientIdentifier))
+                return clientId;
 
-                    clientId = Netboot.Module.DHCPListener.Functions.AsLittleEndianGuid(idBytes);
-                    break;
-                default:
-                    break;
-            }
+            var opt = packet.GetOption((byte)DHCPOptions.UuidGuidBasedClientIdentifier).Data;
+
+                switch ((ClientIdentType)opt.First())
+                {
+                    case ClientIdentType.UUID:
+                        var idBytes = new byte[16];
+                        Array.Copy(opt, 1, idBytes, 0, idBytes.Length);
+
+                        clientId = Netboot.Module.DHCPListener.Functions.AsLittleEndianGuid(idBytes);
+                        break;
+                    default:
+                        break;
+                }
 
             return clientId;
         }
