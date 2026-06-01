@@ -1,4 +1,5 @@
-﻿using Netboot.Common.Utility;
+﻿using DHCPListener.BSvcMod.MSRIS.Utility.Commands;
+using Netboot.Common.Utility;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace DHCPListener.BSvcMod.MSRIS.Utility
 {
-    public class Utility : IUtility
+    public partial class Utility : IUtility
     {
         public Guid Id { get; set; } = Guid.NewGuid();
 
@@ -17,9 +18,21 @@ namespace DHCPListener.BSvcMod.MSRIS.Utility
 
         public void Add(string[] args)
         {
-            foreach (var item in args)
+            if (args.Length == 0)
+                return;
+
+            switch (args.First())
             {
-                Console.WriteLine(item);
+                case "image":
+
+                    if (args.Length == 1)
+                        return;
+
+                    var image = new RisImage(args[1]);
+                    image.Start();
+                    break;
+                default:
+                    break;
             }
         }
 
@@ -33,19 +46,66 @@ namespace DHCPListener.BSvcMod.MSRIS.Utility
 
         public void List(string[] args)
         {
-            
+            if (args.Length == 0)
+                return;
+
+            switch (args.First())
+            {
+                case "image":
+
+                    break;
+                default:
+                    break;
+            }
+
         }
 
         public void Modify(string[] args)
         {
+            if (args.Length == 0)
+                return;
+
+            switch (args.First())
+            {
+                case "image":
+
+                    break;
+                default:
+                    break;
+            }
+
         }
 
         public void Remove(string[] args)
         {
+            if (args.Length == 0)
+                return;
+
+            switch (args.First())
+            {
+                case "image":
+
+                    break;
+                default:
+                    break;
+            }
+
         }
 
         public void Show(string[] args)
         {
+            if (args.Length == 0)
+                return;
+
+            switch (args.First())
+            {
+                case "image":
+
+                    break;
+                default:
+                    break;
+            }
+
         }
 
         public void Start()

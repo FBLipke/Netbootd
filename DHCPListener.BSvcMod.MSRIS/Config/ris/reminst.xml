@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Netboot>
+	<Service name ="msris">
+		<oschooser>
+			<files>
+				<file target="i386\startrom.com">startrom.com</file>
+				<file target="i386\startrom.n12">startrom.n12</file>
+				<file target="i386\ntldr">oschoice.exe</file>
+				<file target="i386\winnt.sif">txtsetup.sif</file>
+			</files>
+		</oschooser>
+		
+	</Service>
+</Netboot>

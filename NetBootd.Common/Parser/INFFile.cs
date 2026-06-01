@@ -11,9 +11,11 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using System.Text;
+
 namespace Netboot.Common.Parser
 {
-    public class INIFile
+    public class INIFile : IDisposable
     {
         Dictionary<string, Dictionary<string, List<string>>> Sections = [];
 
@@ -22,6 +24,8 @@ namespace Netboot.Common.Parser
 
         public INIFile(string filePath)
             => FilePath = filePath;
+
+        public Encoding Encoding { get; private set; } = Encoding.ASCII;
 
         public bool Open(bool ReplaceDuplicates = true)
         {
@@ -32,6 +36,8 @@ namespace Netboot.Common.Parser
             {
                 isOpen = true;
                 var sectionName = string.Empty;
+
+                Encoding = reader.CurrentEncoding;
 
                 while (!reader.EndOfStream)
                 {
@@ -143,7 +149,7 @@ namespace Netboot.Common.Parser
 
                 sw.AutoFlush = true;
                 sw.NewLine = "\r\n";
-
+                
                 foreach (var section in Sections)
                 {
                     sw.WriteLine($"[{section.Key}]");
@@ -161,5 +167,9 @@ namespace Netboot.Common.Parser
 
         public IEnumerable<string> GetSectionKeys(string section)
             => Sections[section].Keys.ToList();
+
+        public void Dispose()
+        {
+        }
     }
 }

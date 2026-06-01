@@ -1,4 +1,6 @@
-﻿using System.Net;
+﻿using System.Buffers.Binary;
+using System.Net;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace Netboot.Common
@@ -26,6 +28,31 @@ namespace Netboot.Common
         
             return result;
         }
+
+        public static uint ReadUint32LE(this Stream stream)
+        {
+            var buffer = new byte[sizeof(uint)];
+            stream.Read(buffer, 0, buffer.Length);
+            
+            return BinaryPrimitives.ReadUInt32LittleEndian(buffer);
+        }
+
+        public static ushort ReadUint16LE(this Stream stream)
+        {
+            var buffer = new byte[sizeof(ushort)];
+            stream.Read(buffer, 0, buffer.Length);
+
+            return BinaryPrimitives.ReadUInt16LittleEndian(buffer);
+        }
+
+        public static string ReadString(this Stream stream, int size, Encoding encoding)
+        {
+            var buffer = new byte[size];
+            stream.Read(buffer, 0, buffer.Length);
+
+            return encoding.GetString(buffer);
+        }
+
 
         public static double AsUnixTimeStamp(this DateTime dt)
             => DateTime.Now.Subtract(new DateTime(1970, 1, 1)).TotalSeconds;

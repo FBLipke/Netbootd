@@ -13,7 +13,12 @@
 		<Compile Include="MSRIS.cs" />
 		<Compile Include="Network\Client\RISClient.cs" />
 		<Compile Include="Network\Interfaces\IRISClient.cs" />
+		<Compile Include="Utility\Commands\RISImage.cs" />
 		<Compile Include="Utility\Utility.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Content Include="Config\ris\reminst.xml" />
 	</ItemGroup>
 
   <ItemGroup>

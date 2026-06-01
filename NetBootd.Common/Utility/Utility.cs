@@ -11,7 +11,9 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Netboot.Common.FileFormats;
 using Netboot.Common.Utility.Commands;
+using System.Reflection.PortableExecutable;
 
 namespace Netboot.Common.Utility
 {
@@ -21,8 +23,6 @@ namespace Netboot.Common.Utility
 
         public Utility(string[] args)
         {
-
-
             Initialize(args);
         }
 
@@ -34,30 +34,48 @@ namespace Netboot.Common.Utility
 
         public void RunCommand(string[] args)
         {
-            if (args.Length == 0)
-            {
-                Console.WriteLine("Available Commands:");
-
-                return;
-            }
-
-
             if (args.First().StartsWith('!'))
             {
                 var module = args.First().Substring(1);
 
                 if (!NetbootBase.UtilProviders.ContainsKey(module))
                 {
-                    Usage();
-                    return;
+                    if (args.First() == "!mscab")
+                    {
+                        if (args.Length == 1)
+                            return;
+
+                        var filename = Path.Combine(NetbootBase.Platform.NetbootDirectory, args[1]);
+                        if (!File.Exists(filename))
+                        {
+                            NetbootBase.Log("E", this.GetType().ToString(), string.Format("File not found: {0}", filename));
+                            return;
+                        }
+
+                        using (var cabfile = new MSCab(filename))
+                        {
+                            cabfile.Dump();
+                            //cabfile.Extract();
+                        }
+                        return;
+                    }
+                    else
+                    {
+                        Usage();
+                        return;
+                    }
                 }
+
+
+
                 if (args.Length == 1)
                 {
+                    Console.WriteLine("Available Commands:");
                     Console.WriteLine("add: Add an object");
                     Console.WriteLine("remove: remove an object");
                     Console.WriteLine("edit: edit an object");
                     Console.WriteLine("show: show an object");
-                    Console.WriteLine("lsi: list the content for an object");
+                    Console.WriteLine("list: list the content for an object");
 
                 }
                 else
@@ -89,7 +107,7 @@ namespace Netboot.Common.Utility
             {
                 Usage();
             }
-            
+
             switch (args.First())
             {
                 case "!list":
@@ -99,42 +117,7 @@ namespace Netboot.Common.Utility
                     }
 
                     break;
-                case "!dist":
 
-
-                    switch (args[1])
-                    {
-                        case "add":
-                            if (args.Length == 2)
-                                return;
-
-                            switch (args[2])
-                            {
-                                case "ris":
-                                    // https://msfn.org/board/topic/127677-txtsetupsif-layoutinf-reference/
-                                    if (args.Length == 3)
-                                        return;
-
-                                    using (var nt5dist = new NT5DistShare())
-                                    {
-                                        nt5dist.Initialize(string.Empty, args[2], args[3]);
-                                        nt5dist.Start(args[2], args[3]);
-                                    }
-                                    break;
-                                case "osx":
-                                    using (var osxdist = new OSXDistShare())
-                                    {
-                                        osxdist.Start(args[2], args[3]);
-                                    }
-                                    break;
-                                default:
-                                    break;
-                            }
-                            break;
-                        default:
-                            break;
-                    }
-                    break;
                 default:
                     break;
                 case "!test":
@@ -158,7 +141,7 @@ namespace Netboot.Common.Utility
         public void Usage()
         {
             Console.WriteLine();
-            Console.WriteLine("Syntax: !dist (mode) (type) (Disk ROOT)");
+            Console.WriteLine("Syntax: !(module) (mode) (type) (Disk ROOT)");
 
             foreach (var arg in NetbootBase.UtilProviders)
             {

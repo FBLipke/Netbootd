@@ -20,6 +20,7 @@ namespace Netboot
     internal class Program
     {
 
+        static Utility utility;
 
         [STAThread]
         static void Main(string[] args)
@@ -29,7 +30,7 @@ namespace Netboot
             AppDomain.CurrentDomain.ProcessExit += CurrentDomain_ProcessExit;
             AppDomain.CurrentDomain.DomainUnload += CurrentDomain_ProcessExit;
 
-            var utility = new Utility(args);
+            utility = new Utility(args);
             
             #region "keep program alive"
             var x = string.Empty;
@@ -47,6 +48,7 @@ namespace Netboot
 
         private static void CurrentDomain_ProcessExit(object? sender, EventArgs e)
         {
+            utility.Dispose();
         }
     }
 }

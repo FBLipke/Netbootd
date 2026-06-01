@@ -10,10 +10,13 @@
 
   <ItemGroup>
     <Compile Remove="Config\NewFolder\**" />
+    <Compile Remove="Docs\RIS\**" />
     <Compile Remove="TFTPRoot\**" />
     <EmbeddedResource Remove="Config\NewFolder\**" />
+    <EmbeddedResource Remove="Docs\RIS\**" />
     <EmbeddedResource Remove="TFTPRoot\**" />
     <None Remove="Config\NewFolder\**" />
+    <None Remove="Docs\RIS\**" />
     <None Remove="TFTPRoot\**" />
   </ItemGroup>
 
@@ -32,6 +35,9 @@
 
   <ItemGroup>
     <None Include="Config\Netboot.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Docs\MSCab_Format.pdf">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="Dumps\dupp.pcap" />
@@ -58,10 +64,6 @@
     <None Update="Providers\TFTPServer\Boot\x86\pxelinux.0">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Docs\RIS\" />
   </ItemGroup>
 
 </Project>
