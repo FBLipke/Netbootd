@@ -55,7 +55,7 @@ namespace Netboot.Common.Utility
                         using (var cabfile = new MSCab(filename))
                         {
                             cabfile.Dump();
-                            //cabfile.Extract();
+                            cabfile.Extract();
                         }
                         return;
                     }

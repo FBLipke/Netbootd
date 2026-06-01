@@ -1,5 +1,5 @@
-﻿using Netboot.Common.FileFormats.Cab;
-using System.Formats.Tar;
+﻿using Netboot.Common.Compression;
+using Netboot.Common.FileFormats.Cab;
 using System.Text;
 
 namespace Netboot.Common.FileFormats
@@ -99,6 +99,12 @@ namespace Netboot.Common.FileFormats
             }
         }
 
+        byte[] DecompressLZX(byte[] compressed, int expectedSize, int windoworder)
+        {
+            var decoder = new LzxDecoder(windoworder);
+            return decoder.Decode(compressed, expectedSize);
+        }
+
         byte[] DecompressMSZIP(byte[] compressed, int expectedSize)
         {
             var result = new byte[expectedSize];
@@ -108,7 +114,6 @@ namespace Netboot.Common.FileFormats
             var dataStart = 0;
             if (compressed.Length >= 2 && BitConverter.ToUInt16(compressed, 0) == 0x4B4A)
                 dataStart = 2;
-
 
             using (var deflate = new global::System.IO.Compression.DeflateStream(
                 new MemoryStream(compressed, dataStart, compressed.Length - dataStart),
@@ -123,7 +128,7 @@ namespace Netboot.Common.FileFormats
             return result;
         }
 
-        byte[] Decompress(byte[] compressed, int expectedSize, ushort compressionType)
+        byte[] Decompress(byte[] compressed, int expectedSize, ushort compressionType, int windoworder)
         {
             switch (compressionType)
             {
@@ -133,7 +138,7 @@ namespace Netboot.Common.FileFormats
                 case 2:
                     return DecompressMSZIP(compressed, expectedSize);
                 case 3:
-                    throw new NotSupportedException("LZX decompression not implemented. Use cabextract or similar.");
+                    return DecompressLZX(compressed, expectedSize, windoworder);
                 default:
                     throw new NotSupportedException($"Unknown compression type: {compressionType}");
             }
@@ -146,8 +151,15 @@ namespace Netboot.Common.FileFormats
 
             using (var memstream = new MemoryStream())
             {
+                Console.WriteLine($"CFFILE size = {file.cbFile}");
                 foreach (var block in folder.DataBlocks)
-                    memstream.Write(Decompress(block.ab, block.cbUncomp, (ushort)folder.typeCompress));
+                {
+                    Console.WriteLine(
+                        $"CFDATA: comp={block.cbData} uncomp={block.cbUncomp}");
+                }
+
+                foreach (var block in folder.DataBlocks)
+                    memstream.Write(Decompress(block.ab, block.cbUncomp, (ushort)folder.typeCompress, folder.lzxWindow));
 
                 memstream.Position = 0;
 

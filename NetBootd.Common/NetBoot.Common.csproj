@@ -43,7 +43,6 @@
 
   <ItemGroup>
     <Folder Include="Compression\Definitions\" />
-    <Folder Include="Compression\LZX\" />
   </ItemGroup>
 
 </Project>
