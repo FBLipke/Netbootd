@@ -45,8 +45,8 @@
 	  </None>
 	</ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\NetBoot.Content\Netboot.Content.csproj" />
-    <ProjectReference Include="..\Netboot.Module.DHCPListener\Netboot.Module.DHCPListener.csproj" />
+    <ProjectReference Include="..\NetBoot.Content\NetBoot.Content.csproj" />
+    <ProjectReference Include="..\NetBoot.Module.DHCPListener\NetBoot.Module.DHCPListener.csproj" />
   </ItemGroup>
 
 </Project>

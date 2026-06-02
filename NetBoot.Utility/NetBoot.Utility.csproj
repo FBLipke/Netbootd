@@ -9,7 +9,7 @@
 	</PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\NetBootd.Common\Netboot.Common.csproj" />
+    <ProjectReference Include="..\NetBoot.Common\NetBoot.Common.csproj" />
   </ItemGroup>
 
 </Project>
