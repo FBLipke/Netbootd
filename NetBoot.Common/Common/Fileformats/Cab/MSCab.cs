@@ -12,7 +12,7 @@ namespace Netboot.Common.FileFormats
         public List<CabfileEntry> FileEntries { get; private set; } = [];
 
         uint get_folder_offset()
-            => Header.coffFiles - (uint)(Header.cFolders * 8);
+            => 36;  // CFFOLDER is always immediately after CFHEADER (36 bytes)
 
         public uint FolderOffset { get => get_folder_offset(); }
 
