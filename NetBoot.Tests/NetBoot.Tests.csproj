@@ -11,6 +11,7 @@
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.9.0" />
     <PackageReference Include="MSTest.TestAdapter" Version="3.2.0" />
     <PackageReference Include="MSTest.TestFramework" Version="3.2.0" />
+    <PackageReference Include="coverlet.collector" Version="6.0.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -19,5 +20,10 @@
     <ProjectReference Include="..\NetBoot.Module.DHCPListener\NetBoot.Module.DHCPListener.csproj" />
     <ProjectReference Include="..\NetBoot.Module.TFTPServer\NetBoot.Module.TFTPServer.csproj" />
     <ProjectReference Include="..\NetBoot.Common\NetBoot.Common.csproj" />
+
   </ItemGroup>
+  <ItemGroup>
+    <None Include="TestData\**" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>
