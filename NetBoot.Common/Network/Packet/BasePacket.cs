@@ -12,6 +12,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 using Netboot.Common.Network.Interfaces;
+using System.Buffers.Binary;
 using System.Net;
 
 namespace Netboot.Common.Network.Packet
@@ -106,5 +107,49 @@ namespace Netboot.Common.Network.Packet
         public uint Read_UINT32() => BitConverter.ToUInt32(Read_Bytes(sizeof(uint)));
 
         public void Write_UINT32(uint value) => Write_Bytes(BitConverter.GetBytes(value));
+
+        public ushort Read_AsUint16BE() => BinaryPrimitives.ReadUInt16BigEndian(Read_Bytes(sizeof(ushort)));
+
+        public ushort Read_AsUint16LE() => BinaryPrimitives.ReadUInt16LittleEndian(Read_Bytes(sizeof(ushort)));
+
+        public uint Read_AsUint32BE() => BinaryPrimitives.ReadUInt32BigEndian(Read_Bytes(sizeof(uint)));
+
+        public uint Read_AsUint32LE() => BinaryPrimitives.ReadUInt32LittleEndian(Read_Bytes(sizeof(uint)));
+
+
+        public void Write_UINT32BE(uint value)
+        {
+            var bytes = new byte[sizeof(uint)];
+            BinaryPrimitives.WriteUInt32BigEndian(bytes, value);
+
+            Write_Bytes(bytes);
+        }
+
+        public void Write_UINT32LE(uint value)
+        {
+            var bytes = new byte[sizeof(uint)];
+            BinaryPrimitives.WriteUInt32LittleEndian(bytes, value);
+
+            Write_Bytes(bytes);
+        }
+
+
+        public void Write_UINT16BE(ushort value)
+        {
+            var bytes = new byte[sizeof(ushort)];
+            BinaryPrimitives.WriteUInt16BigEndian(bytes, value);
+
+            Write_Bytes(bytes);
+        }
+
+        public void Write_UINT16LE(ushort value)
+        {
+            var bytes = new byte[sizeof(ushort)];
+            BinaryPrimitives.WriteUInt16LittleEndian(bytes, value);
+
+            Write_Bytes(bytes);
+        }
+
+
     }
 }

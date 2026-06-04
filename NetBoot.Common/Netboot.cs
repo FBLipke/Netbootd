@@ -158,7 +158,7 @@ namespace Netboot.Common
             var services = xmlFile.SelectNodes("Netboot/Configuration/Services/Service");
 
             Provider.Provider.LoadModule(FileSystem.Root, services);
-            
+
             if (!utilityInstance)
                 NetworkManager.Bootstrap(xml);
         }

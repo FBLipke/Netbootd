@@ -44,7 +44,7 @@ namespace Netboot.Module.DHCPListener
         /// <summary>
         /// Indicates that the packet was relayed over an RelayAgent.
         /// </summary>
-        public bool IsRelayed { get => GatewayIP != IPAddress.Parse("0.0.0.0"); }
+        public bool IsRelayed { get => !GatewayIP.Equals(IPAddress.Any); }
 
         public BOOTPOPCode BootpOPCode
         {
@@ -143,7 +143,7 @@ namespace Netboot.Module.DHCPListener
             get
             {
                 SetPosition(4);
-                var result = Read_UINT32();
+                var result = Read_AsUint32BE();
                 RestorePosition();
 
                 return result;
@@ -151,7 +151,7 @@ namespace Netboot.Module.DHCPListener
             set
             {
                 SetPosition(4);
-                Write_UINT32(value);
+                Write_UINT32BE(value);
                 RestorePosition();
             }
         }
@@ -161,7 +161,7 @@ namespace Netboot.Module.DHCPListener
             get
             {
                 SetPosition(8);
-                var result = Read_UINT16();
+                var result = Read_AsUint16BE();
                 RestorePosition();
 
                 return result;
@@ -169,7 +169,7 @@ namespace Netboot.Module.DHCPListener
             set
             {
                 SetPosition(8);
-                Write_UINT16(value);
+                Write_UINT16BE(value);
                 RestorePosition();
             }
         }
@@ -179,18 +179,15 @@ namespace Netboot.Module.DHCPListener
             get
             {
                 SetPosition(10);
-                var result = Read_UINT16();
+                var result = Read_AsUint16BE();
                 RestorePosition();
 
                 return (BootpFlags)result;
             }
             set
             {
-                var val = new byte[sizeof(ushort)];
-
-                BinaryPrimitives.WriteUInt16BigEndian(val, (ushort)value);
                 SetPosition(10);
-                Write_Bytes(val);
+                Write_UINT16BE((ushort)value);
                 RestorePosition();
             }
         }
@@ -535,8 +532,6 @@ namespace Netboot.Module.DHCPListener
             AddOption(new DHCPOption<byte>
                 ((byte)DHCPOptions.MessageType, (byte)msgType));
         }
-
-        public bool IsRelayedRequest() => GatewayIP != IPAddress.Any;
 
         public static DHCPPacket CreateRequest(IPAddress server)
         {

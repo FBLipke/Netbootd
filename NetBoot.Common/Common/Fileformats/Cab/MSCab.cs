@@ -12,7 +12,7 @@ namespace Netboot.Common.FileFormats
         public List<CabfileEntry> FileEntries { get; private set; } = [];
 
         uint get_folder_offset()
-            => (uint)(Header.coffFiles - (Header.cFolders * (8 + Header.cbCFFolder)));
+            => 36;  // CFFOLDER is always immediately after CFHEADER (36 bytes)
 
         public uint FolderOffset { get => get_folder_offset(); }
 
@@ -54,25 +54,25 @@ namespace Netboot.Common.FileFormats
 
             for (var i = 0; i < Header.cFiles; i++)
             {
-                var fileSize = stream.ReadUint32LE();
-                var start = stream.ReadUint32LE();
-                var folder = stream.ReadUint16LE();
-                var date = stream.ReadUint16LE();
-                var time = stream.ReadUint16LE();
-                var attributes = (FileAttribute)stream.ReadUint16LE();
+                // CFFILE entries are FIXED 64 bytes each per MS-CAB spec.
+                // Fields: cbFile(4) + uOffset(4) + iFolder(2) + date(2) + time(2) + attribs(2) = 16 bytes,
+                // then szName[64-16] = 48 bytes of name starting at offset 16.
+                var buf = new byte[64];
+                stream.Read(buf, 0, 64);
 
-                var bytes = new List<byte>();
-                var length = 0;
+                var fileSize = BitConverter.ToUInt32(buf, 0);
+                var start = BitConverter.ToUInt32(buf, 4);
+                var folder = BitConverter.ToUInt16(buf, 8);
+                var date = BitConverter.ToUInt16(buf, 10);
+                var time = BitConverter.ToUInt16(buf, 12);
+                var attributes = (FileAttribute)BitConverter.ToUInt16(buf, 14);
 
-                var curOffse = stream.Position;
+                // Extract null-terminated filename from szName[64-16] (bytes 16-63)
+                var nameLen = 0;
+                while (nameLen < 48 && buf[16 + nameLen] != 0) nameLen++;
+                var cabFilename = Encoding.ASCII.GetString(buf, 16, nameLen);
 
-                while (stream.ReadByte() != 0)
-                    length++;
-
-                stream.Seek(curOffse, SeekOrigin.Begin);
-                var filname = stream.ReadString(length, Encoding.ASCII);
-
-                FileEntries.Add(new(fileSize, start, folder, date, time, attributes, filname));
+                FileEntries.Add(new(fileSize, start, folder, date, time, attributes, cabFilename));
             }
             #endregion
 

@@ -18,9 +18,10 @@
 	  <Compile Include="Network\Packet\NTLMSSPPacket.cs" />
 	</ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\NetBoot.Module.DHCPListener\NetBoot.Module.DHCPListener.csproj" />
-    <ProjectReference Include="..\NetBoot.Common\NetBoot.Common.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+	  <ProjectReference Include="..\NetBoot.NTLM\NetBoot.NTLM.csproj" />
+	  <ProjectReference Include="..\NetBoot.Module.DHCPListener\NetBoot.Module.DHCPListener.csproj" />
+	  <ProjectReference Include="..\NetBoot.Common\NetBoot.Common.csproj" />
+	</ItemGroup>
 
 </Project>
