@@ -11,9 +11,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Netboot.Common.Common.Definitions;
 using Netboot.Common.Network.Packet;
-using Netboot.Module.BINLListener;
 using System.Buffers.Binary;
 
 namespace Netboot.Module.BINLListener
@@ -22,7 +20,7 @@ namespace Netboot.Module.BINLListener
 	{
 		Dictionary<string, SecurityBuffer> SecurityBuffers = [];
 
-		public NTLMSSPPacket(string serviceType, ntlmssp_message_type messageType) : base()
+		public NTLMSSPPacket(string serviceType, NTLMMessageType messageType) : base()
 		{
 			MessageType = messageType;
 		}
@@ -33,7 +31,7 @@ namespace Netboot.Module.BINLListener
 
 			switch (MessageType)
 			{
-				case ntlmssp_message_type.Challenge:
+				case NTLMMessageType.Challenge:
 					Buffer.Position = 12;
 					var secBuffer = Read_Bytes(8);
 					SecurityBuffers.Add("TargetName", new(secBuffer));
@@ -42,10 +40,10 @@ namespace Netboot.Module.BINLListener
 					secBuffer = Read_Bytes(8);
 					SecurityBuffers.Add("TargetInfo", new(secBuffer));
 					break;
-				case ntlmssp_message_type.Authenticate:
+				case NTLMMessageType.Authenticate:
 					break;
 
-				case ntlmssp_message_type.Negotiate:
+				case NTLMMessageType.Negotiate:
 				default:
 					break;
 			}
@@ -53,7 +51,7 @@ namespace Netboot.Module.BINLListener
 			Buffer.Position = curPOS;
 		}
 
-		public ntlmssp_message_type MessageType
+		public NTLMMessageType MessageType
 		{
 			get
 			{
@@ -64,7 +62,7 @@ namespace Netboot.Module.BINLListener
 
 				var result = BinaryPrimitives.ReadUInt32LittleEndian(msgTypeBytes);
 				Buffer.Position = curPOS;
-				return (ntlmssp_message_type)result;
+				return (NTLMMessageType)result;
 			}
 			set
 			{
@@ -123,7 +121,7 @@ namespace Netboot.Module.BINLListener
 		}
 
 
-		public ntlmssp_flags Flags
+		public NTLMNegotiateFlags Flags
 		{
 			get
 			{
@@ -131,13 +129,13 @@ namespace Netboot.Module.BINLListener
 
 				switch (MessageType)
 				{
-					case ntlmssp_message_type.Negotiate:
+					case NTLMMessageType.Negotiate:
 						Buffer.Position = 12;
 						break;
-					case ntlmssp_message_type.Challenge:
+					case NTLMMessageType.Challenge:
 						Buffer.Position = 20;
 						break;
-					case ntlmssp_message_type.Authenticate:
+					case NTLMMessageType.Authenticate:
 						Buffer.Position = 60;
 						break;
 					default:
@@ -149,7 +147,7 @@ namespace Netboot.Module.BINLListener
 
 				var result = BinaryPrimitives.ReadUInt32LittleEndian(flagsBytes);
 				Buffer.Position = curPOS;
-				return (ntlmssp_flags)result;
+				return (NTLMNegotiateFlags)result;
 			}
 			set
 			{
@@ -157,13 +155,13 @@ namespace Netboot.Module.BINLListener
 
 				switch (MessageType)
 				{
-					case ntlmssp_message_type.Negotiate:
+					case NTLMMessageType.Negotiate:
 						Buffer.Position = 12;
 						break;
-					case ntlmssp_message_type.Challenge:
+					case NTLMMessageType.Challenge:
 						Buffer.Position = 20;
 						break;
-					case ntlmssp_message_type.Authenticate:
+					case NTLMMessageType.Authenticate:
 						Buffer.Position = 60;
 						break;
 					default:

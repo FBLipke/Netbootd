@@ -3,10 +3,25 @@
  * Based on MS-NLMP specification
  */
 
+using System;
+using System.Security.Cryptography;
 using Netboot.Common.Cryptography;
 
-namespace Netboot.Module.BINLListener
+namespace Netboot.Module.BINLListener.Cryptography
 {
+    /// <summary>
+    /// RC4 encryption engine for NTLM sealing/unsealing
+    /// </summary>
+    public class RC4Engine
+    {
+        /// <summary>
+        /// Encrypts or decrypts data using RC4 (self-inverting)
+        /// </summary>
+        public static byte[] Crypt(byte[] key, byte[] data)
+        {
+            return RC4.Crypt(key, data);
+        }
+    }
 
     /// <summary>
     /// NTLM Sealing context - manages session keys and sealing operations
@@ -74,47 +89,8 @@ namespace Netboot.Module.BINLListener
 
         private static byte[] ComputeHMAC_MD5(byte[] key, byte[] data)
         {
-            using var hmac = new HMACMD5(key);
+            using var hmac = new Netboot.Common.Cryptography.HMACMD5(key);
             return hmac.ComputeHash(data);
         }
-    }
-
-    public enum NTLMMessageType : uint
-    {
-        Negotiation = 1,
-        Challenge = 2,
-        Authenticate = 3
-    }
-
-    [Flags]
-    public enum NTLMNegotiateFlags : uint
-    {
-        Unicode = 0x00000001,
-        OEM = 0x00000002,
-        RequestTarget = 0x00000004,
-        Sign = 0x00000010,
-        Seal = 0x00000020,
-        Challenge = 0x00000080,
-        AlwaysSign = 0x00004000,
-        NTLM2Key = 0x00080000,
-        State32 = 0x80000000
-    }
-
-    public enum BINLPacketTag : uint
-    {
-        NEG = 0x814e4547,
-        CHL = 0x8243484c,
-        AUT = 0x81415554,
-        AU2 = 0x81415532,
-        NCQ = 0x814e4351,
-        NCR = 0x824e4352,
-        HLQ = 0x81484c51,
-        HLR = 0x82484c52,
-        RQU = 0x81525155,
-        RSU = 0x82525355,
-        REQ = 0x81525145,
-        RES = 0x82524553,
-        RSP = 0x82525053,
-        OFF = 0x82464f46
     }
 }

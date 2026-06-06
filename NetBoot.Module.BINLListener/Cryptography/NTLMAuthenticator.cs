@@ -5,6 +5,7 @@
 
 using System;
 using System.Security.Cryptography;
+using Netboot.Common.Cryptography;
 
 namespace Netboot.Module.BINLListener.Cryptography
 {
@@ -144,7 +145,7 @@ namespace Netboot.Module.BINLListener.Cryptography
 
         private static byte[] ComputeHMAC_MD5(byte[] key, byte[] data)
         {
-            using var hmac = new HMACMD5(key);
+            using var hmac = new Netboot.Common.Cryptography.HMACMD5(key);
             return hmac.ComputeHash(data);
         }
 
@@ -158,37 +159,6 @@ namespace Netboot.Module.BINLListener.Cryptography
             // For NTLM, NT-OwfPassword = MD4(password in UTF-16LE)
             throw new NotImplementedException("Use MD4 library for NT password hash");
         }
-    }
-
-    /// <summary>
-    /// NTLM Message Types
-    /// </summary>
-    public enum NTLMMessageType : byte
-    {
-        Negotiate = 1,
-        Challenge = 2,
-        Authenticate = 3
-    }
-
-    /// <summary>
-    /// NTLM Negotiate Flags
-    /// </summary>
-    [Flags]
-    public enum NTLMNegotiateFlags : uint
-    {
-        Unicode = 0x00000001,
-        OEM = 0x00000002,
-        RequestTarget = 0x00000004,
-        Sign = 0x00000010,
-        Seal = 0x00000020,
-        Datagram = 0x00000040,
-        Challenge = 0x00000080,
-        CallBack = 0x00000100,
-        MultiDomain = 0x00000200,
-        UnicodeEncoding = 0x00000400, // NTLM2
-        Version = 0x00002000,
-        AlwaysSign = 0x00004000,
-        NTLM2Key = 0x00080000
     }
 
     /// <summary>
