@@ -17,7 +17,7 @@ namespace Netboot.Common.Provider
 		public static event UtilityModuleLoadedEventHandler UtilityModuleLoaded;
 
 		public static bool HasMethod(object obj, string name) => obj.GetType().GetMethod(name) != null;
-		public static bool HasInterFace(object obj, string name) => obj.GetType().GetInterface(name) != (MethodInfo)null;
+		public static bool HasInterFace(object obj, string name) => obj.GetType().GetInterface(name) is not null;
 
 		public static void LoadModule(string rootPath, XmlNodeList xml, string prefixpattern = "Netboot.Module.*.dll")
 		{
@@ -49,9 +49,9 @@ namespace Netboot.Common.Provider
 
 
 
-						ModuleLoaded?.Invoke(null, new ModuleLoadedEventArgs(b, name, xml));
+						ModuleLoaded?.Invoke(null!, new ModuleLoadedEventArgs(b, name, xml));
 					}
-					catch (MissingMethodException ex)
+					catch (MissingMethodException)
 					{
 						NetbootBase.Log("I", "Netbootd", "Installation completed...");
 					}
@@ -123,14 +123,19 @@ namespace Netboot.Common.Provider
 			}
 		}
 
-		public static TS InvokeMethod<TS>(object obj, string name, object[] parameters = null)
+		public static TS InvokeMethod<TS>(object obj, string name, object?[]? parameters = null)
 		{
-			var method = obj.GetType().GetMethod(name);
+			var method = obj.GetType().GetMethod(name)
+				?? throw new MissingMethodException(obj.GetType().FullName, name);
 			return AsType<TS>(method.Invoke(obj, parameters));
 		}
 
-		public static void InvokeMethod(object obj, string name, object[] parameters = null)
-			=> obj.GetType().GetMethod(name).Invoke(obj, parameters);
+		public static void InvokeMethod(object obj, string name, object?[]? parameters = null)
+		{
+			var method = obj.GetType().GetMethod(name)
+				?? throw new MissingMethodException(obj.GetType().FullName, name);
+			method.Invoke(obj, parameters);
+		}
 
 		public static Dictionary<Guid, IMember> LoadFromDataBase(
 		  IDatabase db,
@@ -147,7 +152,7 @@ namespace Netboot.Common.Provider
 				{
 					SetPropertyValue(member, propertyInfo.Name, dictionary2[key][propertyInfo.Name]);
 					if ((propertyInfo.Name == "ExtraData" && dictionary2.ContainsKey(key)) && string.IsNullOrEmpty(dictionary2[key]["ExtraData"]))
-						member.Members = JsonConvert.DeserializeObject<Dictionary<Guid, IMember>>(dictionary2[key]["ExtraData"]);
+						member.Members = JsonConvert.DeserializeObject<Dictionary<Guid, IMember>>(dictionary2[key]["ExtraData"] ?? "[]") ?? [];
 				}
 				if (!dictionary1.ContainsKey(member.Id))
 					dictionary1.Add(member.Id, member);
@@ -453,19 +458,13 @@ namespace Netboot.Common.Provider
 							case "Entries":
 								if (attributes != null)
 								{
-									var email = "me@you.de";
-									var memberName = string.Empty;
-
-									if (attributes.GetNamedItem("Email") != null)
-										email = attributes["Email"].Value;
-
-									if (attributes.GetNamedItem("Name") != null)
-										memberName = attributes.GetNamedItem("Name").Value;
+									var email = attributes?["Email"]?.Value ?? "me@you.de";
+									var memberName = attributes?["Name"]?.Value ?? string.Empty;
 									var totalSeconds = DateTime.Now.Subtract(new DateTime(1970, 1, 1)).TotalSeconds;
-									var s = attributes["Level"].Value;
-									var str2 = attributes["Provider"].Value;
-									var str3 = attributes["Description"].Value;
-									var password = attributes["Password"].Value;
+									var s = attributes?["Level"]?.Value ?? throw new InvalidOperationException("Missing Level attribute.");
+									var str2 = attributes?["Provider"]?.Value ?? string.Empty;
+									var str3 = attributes?["Description"]?.Value ?? string.Empty;
+									var password = attributes?["Password"]?.Value ?? string.Empty;
 									var key = Guid.NewGuid();
 
 									var member = new Member()
@@ -486,8 +485,8 @@ namespace Netboot.Common.Provider
 								}
 								break;
 							case "Servers":
-								var serverType = (ProtoType)Enum.Parse(typeof(ProtoType), attributes.GetNamedItem("Type").Value, true);
-								var serverPort = new List<ushort>([ushort.Parse(attributes.GetNamedItem("Port").Value)]);
+var serverType = (ProtoType)Enum.Parse(typeof(ProtoType), attributes?["Type"]?.Value ?? throw new InvalidOperationException("Missing Type attribute."), true);
+									var serverPort = new List<ushort>([ushort.Parse(attributes?["Port"]?.Value ?? throw new InvalidOperationException("Missing Port attribute."))]);
 
 								NetbootBase.NetworkManager.ServerManager.Add(serverType, serverPort);
 								break;
@@ -511,7 +510,13 @@ namespace Netboot.Common.Provider
 			}
 		}
 
-		public static T AsType<T>(object? obj) => (T)Convert.ChangeType(obj, typeof(T));
+		public static T AsType<T>(object? obj)
+		{
+			var converted = Convert.ChangeType(obj, typeof(T));
+			return converted is null
+				? throw new InvalidCastException($"Unable to convert '{obj}' to {typeof(T).FullName}.")
+				: (T)converted;
+		}
 
 		public delegate void ModuleLoadedEventHandler(object sender, ModuleLoadedEventArgs e);
 		public delegate void UtilityModuleLoadedEventHandler(object sender, UtilityModuleLoadedEventArgs e);

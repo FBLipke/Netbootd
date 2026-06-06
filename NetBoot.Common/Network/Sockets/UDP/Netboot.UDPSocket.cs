@@ -142,7 +142,10 @@ namespace Netboot.Common.Network.Sockets
 
 			EndPoint remoteEndpoint = new IPEndPoint(IPAddress.Any, 0);
 
-			state = (SocketState)ar.AsyncState;
+			if (ar.AsyncState is not SocketState socketState)
+				return;
+
+			state = socketState;
 			var bytesRead = _sock.EndReceiveFrom(ar, ref remoteEndpoint);
 			
 
@@ -193,7 +196,8 @@ namespace Netboot.Common.Network.Sockets
 
 		private void EndSend(IAsyncResult ar)
 		{
-			var so = (Socket)ar.AsyncState;
+			if (ar.AsyncState is not Socket so)
+				return;
 
 			var bytesSend = so.EndSendTo(ar);
 

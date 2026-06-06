@@ -33,7 +33,8 @@ namespace Netboot.Common.Network.Sockets
 		{
 			Id = id;
 			_client = c;
-			RemoteEndpoint = (IPEndPoint)_client.Client.RemoteEndPoint;
+			RemoteEndpoint = _client.Client.RemoteEndPoint as IPEndPoint
+				?? throw new InvalidOperationException("The remote endpoint is not available.");
 			InputStream = OutputStream = new BufferedStream(_client.GetStream());
 			Connected = _client.Connected;
 		}

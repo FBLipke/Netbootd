@@ -40,13 +40,13 @@ namespace Netboot.Common.Network.HTTP
 
 		public Dictionary<string, string> Parameters { get; set; }
 
-		public string Method { get; set; } = null;
+		public string? Method { get; set; }
 
-		public string Path { get; set; } = null;
+		public string? Path { get; set; }
 
-		public string Version { get; set; } = null;
+		public string? Version { get; set; }
 
-		public IMember User { get; set; } = null;
+		public IMember? User { get; set; }
 
 		public MemoryStream Content { get; set; }
 

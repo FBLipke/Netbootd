@@ -43,7 +43,7 @@ namespace DHCPListener.BSvcMod.MSWDS
 
 		public NBPVersionValues ServerVersion { get; set; }
 
-		public IPAddress ReferralServer { get; set; } = IPAddress.Any;
+		public IPAddress? ReferralServer { get; set; } = IPAddress.Any;
 
 		public NBPVersionValues NBPVersion { get; set; }
 

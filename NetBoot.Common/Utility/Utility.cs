@@ -29,7 +29,7 @@ namespace Netboot.Common.Utility
 		public void Initialize(string[] args)
 		{
 			NetbootBase = new NetbootBase(args, true);
-			NetbootBase.Bootstrap(null);
+			NetbootBase.Bootstrap(null!);
 		}
 
 		public void RunCommand(string[] args)

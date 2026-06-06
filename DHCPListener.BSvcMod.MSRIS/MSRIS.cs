@@ -34,7 +34,7 @@ namespace DHCPListener.BSvcMod.MSRIS
 				}
 				catch (MissingMethodException ex)
 				{
-					NetbootBase.Log("I", "Netbootd", "Installation completed...");
+					NetbootBase.Log("I", name, string.Format("Loading bootservice module {0} failed: {1}", name, ex.Message));
 				}
 			}
 
@@ -55,8 +55,6 @@ namespace DHCPListener.BSvcMod.MSRIS
 				var behavior = (BootServerType)item.ValueAsUint16("behavior");
 				if (behavior == ServerType)
 				{
-					#region "DHCP Options"
-					#endregion
 				}
 			}
 

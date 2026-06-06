@@ -128,13 +128,9 @@ namespace Netboot.Common
 				UtilProviders = null;
 			}
 
-			try
+			if (!utilityInstance && _heartBeatThread is { IsAlive: true })
 			{
-				if (!utilityInstance)
-					_heartBeatThread.Abort();
-			}
-			catch
-			{
+				_heartBeatThread.Join(TimeSpan.FromSeconds(5));
 			}
 
 		}
