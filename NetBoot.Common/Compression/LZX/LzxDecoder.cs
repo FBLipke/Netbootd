@@ -164,10 +164,10 @@ namespace Netboot.Common.Compression
 							for (var k = 0; k < 20; k++)
 								m_state.PRETREE_len[k] = (byte)bitbuf.ReadBits(4);
 
-							var resP = MakeDecodeTable(LzxConstants.PRETREE_MAXSYMBOLS, LzxConstants.PRETREE_TABLEBITS,
-								 m_state.PRETREE_len, m_state.PRETREE_table);
+						   var resP = MakeDecodeTable(LzxConstants.PRETREE_MAXSYMBOLS, LzxConstants.PRETREE_TABLEBITS,
+								m_state.PRETREE_len, m_state.PRETREE_table);
 
-							// Functions._ASSERT_(resP != 0, $"MakeDecodeTable failed for PRETREE: rc={resP}");
+						   // Functions._ASSERT_(resP != 0, $"MakeDecodeTable failed for PRETREE: rc={resP}");
 
 							Console.WriteLine($"[D] After PRETREE MakeDecodeTable: table[0]={m_state.PRETREE_table[0]}," +
 								$" table[1]={m_state.PRETREE_table[1]}, table[2]={m_state.PRETREE_table[2]}, ...");
@@ -189,8 +189,8 @@ namespace Netboot.Common.Compression
 							ReadLengths(m_state.MAINTREE_len, 256, m_state.main_elements, bitbuf);
 
 
-							var res = MakeDecodeTable(LzxConstants.MAINTREE_MAXSYMBOLS, LzxConstants.MAINTREE_TABLEBITS,
-								 m_state.MAINTREE_len, m_state.MAINTREE_table);
+						   var res = MakeDecodeTable(LzxConstants.MAINTREE_MAXSYMBOLS, LzxConstants.MAINTREE_TABLEBITS,
+								m_state.MAINTREE_len, m_state.MAINTREE_table);
 
 							Functions._ASSERT_(res != 0, $"MakeDecodeTable failed for MAINTREE: rc={res}");
 
@@ -211,8 +211,8 @@ namespace Netboot.Common.Compression
 							#region "LENGTH"
 							// Read LENGTH tree lengths using PRETREE
 							ReadLengths(m_state.LENGTH_len, 0, LzxConstants.NUM_SECONDARY_LENGTHS, bitbuf);
-							var resL = MakeDecodeTable(LzxConstants.LENGTH_MAXSYMBOLS, LzxConstants.LENGTH_TABLEBITS,
-								 m_state.LENGTH_len, m_state.LENGTH_table);
+						   var resL = MakeDecodeTable(LzxConstants.LENGTH_MAXSYMBOLS, LzxConstants.LENGTH_TABLEBITS,
+								m_state.LENGTH_len, m_state.LENGTH_table);
 
 							Functions._ASSERT_(resL != 0, $"MakeDecodeTable failed for LENGTHTREE: rc={resL}");
 							#endregion

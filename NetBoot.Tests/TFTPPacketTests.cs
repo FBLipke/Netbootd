@@ -216,7 +216,7 @@ public class TFTPPacketTests
 	{
 		var packet = new TFTPPacket(TFTPOPCodes.ERR);
 		packet.ErrorCode = TFTPErrorCode.FileNotFound;
-
+		
 		// Both read and write now use big-endian (RFC 1350)
 		Assert.AreEqual(TFTPErrorCode.FileNotFound, packet.ErrorCode);
 	}
@@ -227,7 +227,7 @@ public class TFTPPacketTests
 		var packet = new TFTPPacket(TFTPOPCodes.ERR);
 		packet.ErrorCode = TFTPErrorCode.FileNotFound;
 		packet.ErrorMessage = "File not found";
-
+		
 		// ErrorMessage includes null terminator, so trim it
 		Assert.AreEqual("File not found", packet.ErrorMessage.TrimEnd('\0'));
 	}

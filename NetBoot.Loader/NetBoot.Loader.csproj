@@ -6,7 +6,12 @@
     <ImplicitUsings>enable</ImplicitUsings>
 	  <BaseOutputPath>..\</BaseOutputPath>
     <Nullable>enable</Nullable>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="**/*.cs" Exclude="obj/**;bin/**" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\NetBoot.Content\NetBoot.Content.csproj" />

@@ -202,11 +202,11 @@ public class CabTests
 		// Assert - first block should have data
 		var firstBlock = cab.Folders[0].DataBlocks[0];
 		Assert.IsTrue(firstBlock.ab.Length > 0, "Data block should contain data");
-
+		
 		// Verify it's ASCII text
 		var content = System.Text.Encoding.ASCII.GetString(firstBlock.ab);
 		Assert.IsTrue(content.Length > 0, "Content should not be empty");
-
+		
 		// Log for debugging
 		Console.WriteLine($"First block data: {content}");
 	}

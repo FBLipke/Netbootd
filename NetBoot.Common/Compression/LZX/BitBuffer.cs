@@ -35,7 +35,7 @@ namespace Netboot.Common.Compression.LZX
 			{
 				buffer_end = stream.Read(byte_buffer, 0, byte_buffer.Length);
 				buffer_pos = 0;
-
+				
 				if (buffer_end <= 0)
 					return false;
 			}

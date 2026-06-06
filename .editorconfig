@@ -5,3 +5,9 @@ tab_width = 4
 
 # CS8602: Dereferenzierung eines möglichen Nullverweises.
 dotnet_diagnostic.CS8602.severity = silent
+
+# CS8604: Möglicher Nullverweisargument.
+dotnet_diagnostic.CS8604.severity = silent
+
+# CS8618: Non-nullable property/field must contain a non-null value.
+dotnet_diagnostic.CS8618.severity = silent

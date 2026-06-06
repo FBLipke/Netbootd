@@ -7,7 +7,7 @@ namespace Netboot.Common.Provider
 	public class UtilityModuleLoadedEventArgs
 	{
 		public string Name { get; set; }
-
+		
 		public string Description { get; set; }
 
 		public IUtility Module { get; }

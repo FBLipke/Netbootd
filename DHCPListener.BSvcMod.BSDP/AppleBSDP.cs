@@ -85,8 +85,8 @@ namespace DHCPListener.BSvcMod.BSDP
 
 		private void Handle_BSDP_Select_Request(Guid clientid, DHCPPacket request)
 		{
-			NetbootBase.Log("I", string.Format("DHCPListener[{0}]", ServerType),
-				 string.Format("Got {0}[Select] from Client: {1}", request.GetMessageType(), clientid));
+		   NetbootBase.Log("I", string.Format("DHCPListener[{0}]", ServerType),
+				string.Format("Got {0}[Select] from Client: {1}", request.GetMessageType(), clientid));
 		}
 
 		public void Handle_BSDP_List_Request(Guid clientid, DHCPPacket request)

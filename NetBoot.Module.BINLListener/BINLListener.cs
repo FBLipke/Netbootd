@@ -40,7 +40,7 @@ namespace Netboot.Module.BINLListener
 
 		public ICrypto Crypt { get; set; }
 
-
+		
 
 		public BINLListener()
 		{
@@ -76,7 +76,7 @@ namespace Netboot.Module.BINLListener
 					case BINLMessageTypes.AuthenticateFlipped:
 						break;
 					case BINLMessageTypes.RequestUnsigned:
-						NetbootBase.Log("I", "BINLListener", "Got RQU Request...");
+						NetbootBase.Log("I","BINLListener", "Got RQU Request...");
 						break;
 					case BINLMessageTypes.RequestSigned:
 						break;
@@ -127,7 +127,7 @@ namespace Netboot.Module.BINLListener
 		{
 		}
 
-		public IMember? Get_Member(Guid id)
+		public IMember Get_Member(Guid id)
 			=> Members.ContainsKey(id) ? Members[id] : null;
 
 		public void HeartBeat()

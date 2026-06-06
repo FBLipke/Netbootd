@@ -73,7 +73,7 @@ namespace Netboot.Common.Network.Sockets
 					JoinMulticastGroup(MulticastGroup);
 
 				Listening = true;
-
+				
 				_ = ReceiveLoopAsync();
 
 
@@ -144,7 +144,7 @@ namespace Netboot.Common.Network.Sockets
 
 			state = (SocketState)ar.AsyncState;
 			var bytesRead = _sock.EndReceiveFrom(ar, ref remoteEndpoint);
-
+			
 
 			_sock.BeginReceiveFrom(state.Buffer, 0, state.Buffer.Length, 0,
 				ref LocalEndpoint, new AsyncCallback(Received), state);

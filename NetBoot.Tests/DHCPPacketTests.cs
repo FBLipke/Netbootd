@@ -343,7 +343,7 @@ public class DHCPPacketTests
 		packet.HardwareLength = 6;
 		var mac = new byte[] { 0x00, 0x11, 0x22, 0x33, 0x44, 0x55 };
 		packet.HardwareAddress = new HWAddress(mac);
-
+		
 		// Read it back
 		var readMac = packet.HardwareAddress.Address;
 		CollectionAssert.AreEqual(mac, readMac.Take(6).ToArray());

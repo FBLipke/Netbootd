@@ -5,7 +5,7 @@ namespace Netboot.Common.Network.HTTP
 {
 	public class HttpProcessor : IDisposable
 	{
-		public static HttpRequest? GetRequest(MemoryStream data, byte[] rawBytes)
+		public static HttpRequest GetRequest(MemoryStream data, byte[] rawBytes)
 		{
 			var req = new HttpRequest();
 			using (var streamReader1 = new StreamReader(data))

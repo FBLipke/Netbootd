@@ -60,7 +60,7 @@ namespace Netboot.Common.Common.Definitions
 		LoongArch64EfiHttp,
 		ArmRPIBoot
 	}
-
+	
 
 	public enum OSPlatformId : byte
 	{

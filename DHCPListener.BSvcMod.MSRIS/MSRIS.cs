@@ -9,8 +9,6 @@ namespace DHCPListener.BSvcMod.MSRIS
 {
 	public class MSRIS : BootService
 	{
-		private new string Bootfile { get; set; } = string.Empty;
-
 		public void LoadUtilitiyModule()
 		{
 			#region "Load Service Modules"

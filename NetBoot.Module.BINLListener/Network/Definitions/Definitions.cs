@@ -97,7 +97,7 @@ namespace Netboot.Module.BINLListener
 		SetupResponse = 0x82535053
 	}
 
-	public enum NTLMMessageType : uint
+	public enum ntlmssp_message_type : uint
 	{
 		Negotiate = 1,
 		Challenge = 2,
@@ -108,7 +108,7 @@ namespace Netboot.Module.BINLListener
 	/// Little Endian
 	/// </summary>
 	[Flags]
-	public enum NTLMNegotiateFlags : uint
+	public enum ntlmssp_flags : uint
 	{
 		/// <summary>
 		/// This flag is set to indicate that the server/client will be using UNICODE strings. (Server <-> Client)

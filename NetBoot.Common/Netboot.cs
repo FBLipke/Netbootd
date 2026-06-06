@@ -23,16 +23,15 @@ namespace Netboot.Common
 {
 	public class NetbootBase : IDisposable, IManager
 	{
-		private Task _heartBeatTask = Task.CompletedTask;
-		private CancellationTokenSource? _heartBeatCts;
+		private Thread _heartBeatThread;
 		private bool utilityInstance = false;
 
-		public static NetworkManager NetworkManager { get; private set; } = null!;
+		public static NetworkManager NetworkManager { get; private set; }
 
 		public static Dictionary<string, IProvider>? Providers { get; private set; }
 		public static Dictionary<string, IUtility>? UtilProviders { get; private set; }
 
-		public Filesystem FileSystem { get; set; } = null!;
+		public Filesystem FileSystem { get; set; }
 
 		private string[] cmdArgs = [];
 
@@ -50,6 +49,8 @@ namespace Netboot.Common
 
 			cmdArgs = args;
 
+			if (!utilityInstance)
+				_heartBeatThread = new Thread(new ThreadStart(HeartBeat));
 
 			Providers = [];
 			UtilProviders = [];
@@ -89,22 +90,16 @@ namespace Netboot.Common
 		public void Start()
 		{
 			if (!utilityInstance)
-			{
-				_heartBeatCts = new CancellationTokenSource();
-				_heartBeatTask = Task.Run(() => HeartBeatLoop(_heartBeatCts.Token));
 				NetworkManager.Start();
-			}
 
 			Running = Providers.Count != 0;
+			_heartBeatThread.Start();
 		}
 
 		public void Stop()
 		{
 			if (!utilityInstance)
-			{
-				_heartBeatCts?.Cancel();
 				NetworkManager.Stop();
-			}
 
 			foreach (var provider in Providers)
 			{
@@ -133,12 +128,13 @@ namespace Netboot.Common
 				UtilProviders = null;
 			}
 
-			if (!utilityInstance)
+			try
 			{
-				_heartBeatCts?.Cancel();
-				_heartBeatTask.Wait(TimeSpan.FromSeconds(2));
-				_heartBeatCts?.Dispose();
-				_heartBeatCts = null;
+				if (!utilityInstance)
+					_heartBeatThread.Abort();
+			}
+			catch
+			{
 			}
 
 		}
@@ -161,11 +157,8 @@ namespace Netboot.Common
 			xmlFile.Load(ConfigFile);
 			var services = xmlFile.SelectNodes("Netboot/Configuration/Services/Service");
 
-			if (services is null)
-				throw new InvalidOperationException("No service configuration nodes were found in Netboot.xml.");
-
 			Provider.Provider.LoadModule(FileSystem.Root, services);
-
+			
 			if (!utilityInstance)
 				NetworkManager.Bootstrap(xml);
 		}
@@ -184,40 +177,20 @@ namespace Netboot.Common
 			}
 		}
 
-		private void HeartBeatLoop(CancellationToken cancellationToken)
-		{
-			while (!cancellationToken.IsCancellationRequested)
-			{
-				try
-				{
-					Task.Delay(TimeSpan.FromSeconds(30), cancellationToken).GetAwaiter().GetResult();
-				}
-				catch (OperationCanceledException)
-				{
-					break;
-				}
-
-				if (cancellationToken.IsCancellationRequested)
-					break;
-
-				NetworkManager.HeartBeat();
-
-				foreach (var provider in Providers ?? [])
-					Provider.Provider.InvokeMethod<IProvider>(provider.Value, "HeartBeat");
-			}
-		}
-
 		public void HeartBeat()
 		{
 			if (utilityInstance)
 				return;
 
-			HeartBeatLoop(CancellationToken.None);
+			Thread.Sleep(30000);
+			NetworkManager.HeartBeat();
+
+			foreach (var provider in Providers)
+				Provider.Provider.InvokeMethod<IProvider>(provider.Value, "HeartBeat");
 		}
 
 		public static void Log(string type, string name, string logmessage)
 		{
-
 			var str = "\t" + DateTime.Now.ToString("dd.MM.yyyy : HH:mm:ss", CultureInfo.InvariantCulture)
 				+ "\tNetboot." + name + ": " + logmessage;
 

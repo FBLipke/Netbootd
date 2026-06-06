@@ -149,7 +149,7 @@ namespace Netboot.Common.Parser
 
 				sw.AutoFlush = true;
 				sw.NewLine = "\r\n";
-
+				
 				foreach (var section in Sections)
 				{
 					sw.WriteLine($"[{section.Key}]");

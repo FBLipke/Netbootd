@@ -62,7 +62,7 @@ namespace Netboot.Common.Provider
 
 		public string EMail { get; set; } = "-";
 
-		public Dictionary<Guid, IMember>? Members { get; set; }
+		public Dictionary<Guid, IMember> Members { get; set; }
 
 		public string Salt { get; set; } = "";
 	}

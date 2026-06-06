@@ -118,7 +118,7 @@ namespace Netboot.Module.DHCPListener
 		{
 		}
 
-		public IMember? Get_Member(Guid id)
+		public IMember Get_Member(Guid id)
 			=> Members.ContainsKey(id) ? Members[id] : null;
 
 		public void HeartBeat()

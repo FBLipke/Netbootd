@@ -1,5 +1,9 @@
 {
-    "chat.tools.terminal.autoApprove": {
-        "dotnet build": true
-    }
+  "chat.tools.terminal.autoApprove": {
+    "dotnet build": true
+  },
+  "editor.insertSpaces": false,
+  "editor.detectIndentation": false,
+  "editor.tabSize": 4,
+  "editor.useTabStops": true
 }

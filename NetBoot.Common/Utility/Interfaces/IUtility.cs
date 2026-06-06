@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Netboot.Common.Utility
 {
-	public interface IUtility : IDisposable
+	public interface IUtility: IDisposable
 	{
 		Guid Id { get; set; }
 
@@ -15,7 +15,7 @@ namespace Netboot.Common.Utility
 		string Description { get; set; }
 
 		void Initialize();
-
+		
 		void Start();
 
 		void Show(string[] args);

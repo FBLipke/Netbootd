@@ -33,7 +33,7 @@ namespace Netboot.Common.Provider
 								 where (t.IsSubclassOf(typeof(IProvider)) || t.GetInterfaces()
 									 .Contains(typeof(IProvider))) && t.IsAbstract == false
 								 let moduleName = module.Name.Split('.')[2].Trim()
-
+								 
 								 select (t, moduleName);
 
 				foreach (var (t, name) in retvalColl)
@@ -59,6 +59,8 @@ namespace Netboot.Common.Provider
 			}
 			#endregion
 		}
+
+		
 
 		public static bool HasProperty(object obj, string name) => obj.GetType().GetProperty(name) != null;
 
@@ -121,13 +123,13 @@ namespace Netboot.Common.Provider
 			}
 		}
 
-		public static TS InvokeMethod<TS>(object obj, string name, object[]? parameters = null)
+		public static TS InvokeMethod<TS>(object obj, string name, object[] parameters = null)
 		{
 			var method = obj.GetType().GetMethod(name);
 			return AsType<TS>(method.Invoke(obj, parameters));
 		}
 
-		public static void InvokeMethod(object obj, string name, object[]? parameters = null)
+		public static void InvokeMethod(object obj, string name, object[] parameters = null)
 			=> obj.GetType().GetMethod(name).Invoke(obj, parameters);
 
 		public static Dictionary<Guid, IMember> LoadFromDataBase(
@@ -188,7 +190,7 @@ namespace Netboot.Common.Provider
 					{
 						var propertyInfos = member.GetType().GetProperties()
 							.Where(p => p.GetGetMethod().IsPublic).Where(p => p.PropertyType.FullName != null && p.PropertyType.FullName.StartsWith("System"))
-								.Where(p => !p.PropertyType.FullName.Contains("Collections"));
+							.Where(p => !p.PropertyType.FullName.Contains("Collections"));
 
 						streamWriter.NewLine = Environment.NewLine;
 						streamWriter.AutoFlush = true;

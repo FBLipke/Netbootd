@@ -151,13 +151,13 @@ namespace DHCPListener.BSvcMod.RBCP
 			}
 
 			Array.Resize(ref menubuffer, mbIndex);
-
+			
 			return new((byte)PXEOptions.BootMenue, menubuffer);
 		}
 
 		public static DHCPOption<byte> GenerateBootMenuePrompt(byte timeout, string[] menueprompt)
 		{
-			var prompt = Encoding.ASCII.GetBytes(timeout == byte.MaxValue ? menueprompt.First() :
+			var prompt = Encoding.ASCII.GetBytes(timeout == byte.MaxValue ?  menueprompt.First() :
 				menueprompt.Last());
 
 			var promptbuffer = new byte[1 + prompt.Length];

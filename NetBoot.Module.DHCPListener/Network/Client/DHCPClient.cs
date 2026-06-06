@@ -27,7 +27,7 @@ namespace Netboot.Module.DHCPListener
 
 			Request = request;
 			VendorId = Request.GetVendorIdent;
-
+			
 			Response = Request.CreateResponse(NetbootBase.NetworkManager.ServerManager.GetEndPoint(server, socket).Address);
 			Response.AddOption(new((byte)DHCPOptions.VendorClassIdentifier, VendorId.ToString(), Encoding.ASCII));
 

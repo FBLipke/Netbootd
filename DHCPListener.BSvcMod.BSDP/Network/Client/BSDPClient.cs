@@ -19,7 +19,7 @@ namespace DHCPListener.BSvcMod.BSDP
 	{
 		public BSDPMsgType BSDPMsgType { get; set; }
 
-		public Version BSDPVersion { get; set; } = new Version(1, 1);
+		public Version BSDPVersion { get; set; } = new Version(1,1);
 
 		public BSDPClient(bool testClient, DHCPPacket request, Guid server, Guid socket, Guid client)
 			: base(testClient, server, socket, client, request)

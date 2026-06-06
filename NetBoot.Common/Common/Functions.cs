@@ -127,7 +127,7 @@ namespace Netboot.Common
 
 		public static void _ASSERT_(bool condition, string message)
 		{
-			if (condition) throw new Exception(string.Format("ASSERT: {0}", message));
+			if (condition) throw new Exception(string.Format("ASSERT: {0}",message));
 		}
 
 		public static IEnumerable<IPAddress> GetIPAddresses()

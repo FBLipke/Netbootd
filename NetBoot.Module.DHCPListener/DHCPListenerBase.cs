@@ -42,7 +42,7 @@ namespace Netboot.Module.DHCPListener
 
 
 
-		public static void RegisterBootService(IBootService sender, BootServerType bootServerType, string description, List<IPAddress>? addresses = null)
+		public static void RegisterBootService(IBootService sender, BootServerType bootServerType, string description, List<IPAddress> addresses = null)
 		{
 			_RegisterBootService.Invoke(sender, new RegisterBootServiceEventArgs(bootServerType, description, addresses));
 		}
@@ -92,7 +92,7 @@ namespace Netboot.Module.DHCPListener
 					bs.HeartBeat();
 		}
 
-
+		
 
 		public void Bootstrap(XmlNode xml)
 		{

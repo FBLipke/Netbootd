@@ -25,7 +25,7 @@ namespace Netboot.Common
 		{
 			var result = new T[length];
 			Array.Copy(data, index, result, 0, length);
-
+		
 			return result;
 		}
 
@@ -33,7 +33,7 @@ namespace Netboot.Common
 		{
 			var buffer = new byte[sizeof(uint)];
 			stream.Read(buffer, 0, buffer.Length);
-
+			
 			return BinaryPrimitives.ReadUInt32LittleEndian(buffer);
 		}
 

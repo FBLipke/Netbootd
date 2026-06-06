@@ -10,7 +10,7 @@ namespace Netboot.Module.DHCPListener
 
 		public List<IPAddress> Addresses { get; private set; }
 
-		public RegisterBootServiceEventArgs(BootServerType type, string description, List<IPAddress>? addresses = null)
+		public RegisterBootServiceEventArgs(BootServerType type, string description, List<IPAddress> addresses = null)
 		{
 			Type = type;
 			Description = description;

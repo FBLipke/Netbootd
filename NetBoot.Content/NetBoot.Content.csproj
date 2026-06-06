@@ -6,9 +6,11 @@
     <Nullable>enable</Nullable>
     <BaseOutputPath>..\</BaseOutputPath>
     <ProduceReferenceAssembly>True</ProduceReferenceAssembly>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="**/*.cs" Exclude="obj/**;bin/**" />
     <Compile Remove="Config\NewFolder\**" />
     <Compile Remove="Docs\RIS\**" />
     <Compile Remove="TFTPRoot\**" />
