@@ -2,10 +2,10 @@
 
 namespace DHCPListener.BSvcMod.BSDP
 {
-    public interface IBSDPClient : IDHCPClient
-    {
-        public BSDPMsgType BSDPMsgType { get; set; }
+	public interface IBSDPClient : IDHCPClient
+	{
+		public BSDPMsgType BSDPMsgType { get; set; }
 
-        public Version BSDPVersion { get; set; }
-    }
+		public Version BSDPVersion { get; set; }
+	}
 }

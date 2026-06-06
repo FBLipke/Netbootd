@@ -18,73 +18,73 @@ using System.Net.Sockets;
 
 namespace Netboot.Module.DHCPListener
 {
-    public class BootServer
-    {
-        public List<IPAddress> Addresses { get; private set; }
+	public class BootServer
+	{
+		public List<IPAddress> Addresses { get; private set; }
 
-        public string Hostname { get; private set; }
+		public string Hostname { get; private set; }
 
-        public BootServerType Type { get; private set; }
+		public BootServerType Type { get; private set; }
 
-        public BootServer(string hostname, BootServerType bootServerType)
-        {
-            Type = bootServerType;
-            Hostname = hostname;
+		public BootServer(string hostname, BootServerType bootServerType)
+		{
+			Type = bootServerType;
+			Hostname = hostname;
 
-            Addresses = Common.Functions.DNSLookup(Hostname)
-                .AddressList.Where(a => a.AddressFamily == AddressFamily.InterNetwork).ToList();
-        }
+			Addresses = Common.Functions.DNSLookup(Hostname)
+				.AddressList.Where(a => a.AddressFamily == AddressFamily.InterNetwork).ToList();
+		}
 
-        public BootServer(IPAddress ipAddr, BootServerType bootServerType)
-        {
-            Type = bootServerType;
-            Addresses = [ipAddr];
-            Hostname = Addresses.FirstOrDefault().ToString();
-        }
+		public BootServer(IPAddress ipAddr, BootServerType bootServerType)
+		{
+			Type = bootServerType;
+			Addresses = [ipAddr];
+			Hostname = Addresses.FirstOrDefault().ToString();
+		}
 
-        public byte[] AsBytes(EndianessBehavier endianess = EndianessBehavier.LittleEndian)
-        {
-            var addressCount = Addresses.Count;
-            if (addressCount == 0)
-                return [0];
+		public byte[] AsBytes(EndianessBehavier endianess = EndianessBehavier.LittleEndian)
+		{
+			var addressCount = Addresses.Count;
+			if (addressCount == 0)
+				return [0];
 
-            var addrIndex = 0;
-            var ipLength = Addresses.First().GetAddressBytes().Length;
-            var addressbuffer = new byte[sizeof(ushort) + sizeof(byte) + (ipLength * addressCount)];
+			var addrIndex = 0;
+			var ipLength = Addresses.First().GetAddressBytes().Length;
+			var addressbuffer = new byte[sizeof(ushort) + sizeof(byte) + (ipLength * addressCount)];
 
-            #region "Bootserver Type (Option)"
-            var typeBytes = new byte[sizeof(ushort)];
-            switch (endianess)
-            {
-                case EndianessBehavier.BigEndian:
-                    BinaryPrimitives.WriteUInt16BigEndian(typeBytes, (ushort)Type);
-                    break;
-                case EndianessBehavier.LittleEndian:
-                default:
-                    BinaryPrimitives.WriteUInt16LittleEndian(typeBytes, (ushort)Type);
-                    break;
-            }
+			#region "Bootserver Type (Option)"
+			var typeBytes = new byte[sizeof(ushort)];
+			switch (endianess)
+			{
+				case EndianessBehavier.BigEndian:
+					BinaryPrimitives.WriteUInt16BigEndian(typeBytes, (ushort)Type);
+					break;
+				case EndianessBehavier.LittleEndian:
+				default:
+					BinaryPrimitives.WriteUInt16LittleEndian(typeBytes, (ushort)Type);
+					break;
+			}
 
-            Array.Copy(typeBytes, 0, addressbuffer, addrIndex, typeBytes.Length);
-            addrIndex += typeBytes.Length;
+			Array.Copy(typeBytes, 0, addressbuffer, addrIndex, typeBytes.Length);
+			addrIndex += typeBytes.Length;
 
-            #endregion
+			#endregion
 
-            #region "IPAddress count (Length)"
-            addressbuffer[addrIndex] = Convert.ToByte(addressCount);
-            addrIndex += sizeof(byte);
-            #endregion
+			#region "IPAddress count (Length)"
+			addressbuffer[addrIndex] = Convert.ToByte(addressCount);
+			addrIndex += sizeof(byte);
+			#endregion
 
-            #region "Addresses"
-            foreach (var address in Addresses)
-            {
-                var addrBytes = address.GetAddressBytes();
-                Array.Copy(addrBytes, 0, addressbuffer, addrIndex, addrBytes.Length);
-                addrIndex += addrBytes.Length;
-            }
-            #endregion
+			#region "Addresses"
+			foreach (var address in Addresses)
+			{
+				var addrBytes = address.GetAddressBytes();
+				Array.Copy(addrBytes, 0, addressbuffer, addrIndex, addrBytes.Length);
+				addrIndex += addrBytes.Length;
+			}
+			#endregion
 
-            return addressbuffer;
-        }
-    }
+			return addressbuffer;
+		}
+	}
 }

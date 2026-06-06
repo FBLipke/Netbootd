@@ -21,203 +21,207 @@ using System.Xml;
 
 namespace Netboot.Common
 {
-    public class NetbootBase : IDisposable, IManager
-    {
-        private Task _heartBeatTask = Task.CompletedTask;
-        private CancellationTokenSource? _heartBeatCts;
-        private bool utilityInstance = false;
+	public class NetbootBase : IDisposable, IManager
+	{
+		private Task _heartBeatTask = Task.CompletedTask;
+		private CancellationTokenSource? _heartBeatCts;
+		private bool utilityInstance = false;
 
-        public static NetworkManager NetworkManager { get; private set; }
+		public static NetworkManager NetworkManager { get; private set; } = null!;
 
-        public static Dictionary<string, IProvider>? Providers { get; private set; }
-        public static Dictionary<string, IUtility>? UtilProviders { get; private set; }
+		public static Dictionary<string, IProvider>? Providers { get; private set; }
+		public static Dictionary<string, IUtility>? UtilProviders { get; private set; }
 
-        public Filesystem FileSystem { get; set; }
+		public Filesystem FileSystem { get; set; } = null!;
 
-        private string[] cmdArgs = [];
+		private string[] cmdArgs = [];
 
-        public bool Running { get; private set; }
+		public bool Running { get; private set; }
 
-        public static NetbootPlatform Platform = new();
+		public static NetbootPlatform Platform = new();
 
-        public NetbootBase(string[] args, bool utilityMode = false)
-        {
-            utilityInstance = utilityMode;
+		public NetbootBase(string[] args, bool utilityMode = false)
+		{
+			utilityInstance = utilityMode;
 
-            var appVersion = Assembly.GetExecutingAssembly().GetName().Version;
-            var title = string.Format(utilityMode ? "NetBoot Utility {0}.{1}" : "NetBoot {0}.{1}", appVersion.Major, appVersion.Minor);
-            Console.Title = title;
+			var appVersion = Assembly.GetExecutingAssembly().GetName().Version;
+			var title = string.Format(utilityMode ? "NetBoot Utility {0}.{1}" : "NetBoot {0}.{1}", appVersion.Major, appVersion.Minor);
+			Console.Title = title;
 
-            cmdArgs = args;
+			cmdArgs = args;
 
 
-            Providers = [];
-            UtilProviders = [];
+			Providers = [];
+			UtilProviders = [];
 
-            Provider.Provider.ModuleLoaded += (sender, e) =>
-            {
-                Log("I", "Common", string.Format("Loading Module \"{0}\"...", e.Module));
-                Providers.Add(e.Name, e.Module);
+			Provider.Provider.ModuleLoaded += (sender, e) =>
+			{
+				Log("I", "Common", string.Format("Loading Module \"{0}\"...", e.Module));
+				Providers.Add(e.Name, e.Module);
 
-                foreach (XmlNode xmlnode in e.Xml)
-                    if (e.Name == xmlnode.Attributes.GetNamedItem("type").Value)
-                        Providers[e.Name]?.Bootstrap(xmlnode);
+				foreach (XmlNode xmlnode in e.Xml)
+					if (e.Name == xmlnode.Attributes.GetNamedItem("type").Value)
+						Providers[e.Name]?.Bootstrap(xmlnode);
 
-                var funcs = new List<string>
-                {
-                    "Install",
-                    "Start",
-                    "HeartBeat"
-                };
+				var funcs = new List<string>
+				{
+					"Install",
+					"Start",
+					"HeartBeat"
+				};
 
-                foreach (var item in funcs)
-                {
-                    Log("I", "Common", string.Format("Sending \"{1}\" command  to \"{0}\"", e.Name, item));
-                    Provider.Provider.InvokeMethod<IProvider>(Providers[e.Name], item, []);
-                }
-            };
+				foreach (var item in funcs)
+				{
+					Log("I", "Common", string.Format("Sending \"{1}\" command  to \"{0}\"", e.Name, item));
+					Provider.Provider.InvokeMethod<IProvider>(Providers[e.Name], item, []);
+				}
+			};
 
-            Provider.Provider.UtilityModuleLoaded += (sender, e) =>
-            {
-                UtilProviders.Add(e.Name, e.Module);
-            };
+			Provider.Provider.UtilityModuleLoaded += (sender, e) =>
+			{
+				UtilProviders.Add(e.Name, e.Module);
+			};
 
-            if (!utilityInstance)
-                NetworkManager = new NetworkManager();
-        }
+			if (!utilityInstance)
+				NetworkManager = new NetworkManager();
+		}
 
-        public void Start()
-        {
-            if (!utilityInstance)
-            {
-                _heartBeatCts = new CancellationTokenSource();
-                _heartBeatTask = Task.Run(() => HeartBeatLoop(_heartBeatCts.Token));
-                NetworkManager.Start();
-            }
+		public void Start()
+		{
+			if (!utilityInstance)
+			{
+				_heartBeatCts = new CancellationTokenSource();
+				_heartBeatTask = Task.Run(() => HeartBeatLoop(_heartBeatCts.Token));
+				NetworkManager.Start();
+			}
 
-            Running = Providers.Count != 0;
-        }
+			Running = Providers.Count != 0;
+		}
 
-        public void Stop()
-        {
-            if (!utilityInstance)
-            {
-                _heartBeatCts?.Cancel();
-                NetworkManager.Stop();
-            }
+		public void Stop()
+		{
+			if (!utilityInstance)
+			{
+				_heartBeatCts?.Cancel();
+				NetworkManager.Stop();
+			}
 
-            foreach (var provider in Providers)
-            {
-                Provider.Provider.InvokeMethod<IProvider>(provider.Value, "Stop");
-                Log("I", provider.Key, "stopped!");
-            }
-        }
+			foreach (var provider in Providers)
+			{
+				Provider.Provider.InvokeMethod<IProvider>(provider.Value, "Stop");
+				Log("I", provider.Key, "stopped!");
+			}
+		}
 
-        public void Dispose()
-        {
-            if (!utilityInstance)
-                NetworkManager.Dispose();
+		public void Dispose()
+		{
+			if (!utilityInstance)
+				NetworkManager.Dispose();
 
-            if (Providers.Count != 0)
-            {
-                foreach (var provider in Providers)
-                    Provider.Provider.InvokeMethod<IProvider>(provider.Value, "Dispose");
+			if (Providers.Count != 0)
+			{
+				foreach (var provider in Providers)
+					Provider.Provider.InvokeMethod<IProvider>(provider.Value, "Dispose");
 
-                Providers.Clear();
-                Providers = null;
-            }
+				Providers.Clear();
+				Providers = null;
+			}
 
-            if (UtilProviders.Count != 0)
-            {
-                UtilProviders.Clear();
-                UtilProviders = null;
-            }
+			if (UtilProviders.Count != 0)
+			{
+				UtilProviders.Clear();
+				UtilProviders = null;
+			}
 
-            if (!utilityInstance)
-            {
-                _heartBeatCts?.Cancel();
-                _heartBeatTask.Wait(TimeSpan.FromSeconds(2));
-                _heartBeatCts?.Dispose();
-                _heartBeatCts = null;
-            }
+			if (!utilityInstance)
+			{
+				_heartBeatCts?.Cancel();
+				_heartBeatTask.Wait(TimeSpan.FromSeconds(2));
+				_heartBeatCts?.Dispose();
+				_heartBeatCts = null;
+			}
 
-        }
+		}
 
-        public void Bootstrap(XmlNode xml)
-        {
-            if (!Platform.Initialize())
-            {
-                Log("E", "Netboot", "Failed to initialize Platform.");
-                return;
-            }
+		public void Bootstrap(XmlNode xml)
+		{
+			if (!Platform.Initialize())
+			{
+				Log("E", "Netboot", "Failed to initialize Platform.");
+				return;
+			}
 
-            FileSystem = new Filesystem(Platform.NetbootDirectory);
-            var ConfigFile = Path.Combine(Platform.ConfigDirectory, "Netboot.xml");
+			FileSystem = new Filesystem(Platform.NetbootDirectory);
+			var ConfigFile = Path.Combine(Platform.ConfigDirectory, "Netboot.xml");
 
-            if (!File.Exists(ConfigFile))
-                throw new FileNotFoundException(ConfigFile);
+			if (!File.Exists(ConfigFile))
+				throw new FileNotFoundException(ConfigFile);
 
-            var xmlFile = new XmlDocument();
-            xmlFile.Load(ConfigFile);
-            var services = xmlFile.SelectNodes("Netboot/Configuration/Services/Service");
+			var xmlFile = new XmlDocument();
+			xmlFile.Load(ConfigFile);
+			var services = xmlFile.SelectNodes("Netboot/Configuration/Services/Service");
 
-            Provider.Provider.LoadModule(FileSystem.Root, services);
+			if (services is null)
+				throw new InvalidOperationException("No service configuration nodes were found in Netboot.xml.");
 
-            if (!utilityInstance)
-                NetworkManager.Bootstrap(xml);
-        }
+			Provider.Provider.LoadModule(FileSystem.Root, services);
 
-        public void Close()
-        {
-            if (utilityInstance)
-                return;
+			if (!utilityInstance)
+				NetworkManager.Bootstrap(xml);
+		}
 
-            NetworkManager.Close();
+		public void Close()
+		{
+			if (utilityInstance)
+				return;
 
-            foreach (var provider in Providers)
-            {
-                Provider.Provider.InvokeMethod<IProvider>(provider.Value, "Close");
-                Log("I", provider.Key, "closed!");
-            }
-        }
+			NetworkManager.Close();
 
-        private void HeartBeatLoop(CancellationToken cancellationToken)
-        {
-            while (!cancellationToken.IsCancellationRequested)
-            {
-                try
-                {
-                    Task.Delay(TimeSpan.FromSeconds(30), cancellationToken).GetAwaiter().GetResult();
-                }
-                catch (OperationCanceledException)
-                {
-                    break;
-                }
+			foreach (var provider in Providers)
+			{
+				Provider.Provider.InvokeMethod<IProvider>(provider.Value, "Close");
+				Log("I", provider.Key, "closed!");
+			}
+		}
 
-                if (cancellationToken.IsCancellationRequested)
-                    break;
+		private void HeartBeatLoop(CancellationToken cancellationToken)
+		{
+			while (!cancellationToken.IsCancellationRequested)
+			{
+				try
+				{
+					Task.Delay(TimeSpan.FromSeconds(30), cancellationToken).GetAwaiter().GetResult();
+				}
+				catch (OperationCanceledException)
+				{
+					break;
+				}
 
-                NetworkManager.HeartBeat();
+				if (cancellationToken.IsCancellationRequested)
+					break;
 
-                foreach (var provider in Providers ?? [])
-                    Provider.Provider.InvokeMethod<IProvider>(provider.Value, "HeartBeat");
-            }
-        }
+				NetworkManager.HeartBeat();
 
-        public void HeartBeat()
-        {
-            if (utilityInstance)
-                return;
+				foreach (var provider in Providers ?? [])
+					Provider.Provider.InvokeMethod<IProvider>(provider.Value, "HeartBeat");
+			}
+		}
 
-            HeartBeatLoop(CancellationToken.None);
-        }
+		public void HeartBeat()
+		{
+			if (utilityInstance)
+				return;
 
-        public static void Log(string type, string name, string logmessage)
-        {
-            var str = "\t" + DateTime.Now.ToString("dd.MM.yyyy : HH:mm:ss", CultureInfo.InvariantCulture)
-                + "\tNetboot." + name + ": " + logmessage;
+			HeartBeatLoop(CancellationToken.None);
+		}
 
-            Console.WriteLine("[{0}] {1}", type, str);
-        }
-    }
+		public static void Log(string type, string name, string logmessage)
+		{
+
+			var str = "\t" + DateTime.Now.ToString("dd.MM.yyyy : HH:mm:ss", CultureInfo.InvariantCulture)
+				+ "\tNetboot." + name + ": " + logmessage;
+
+			Console.WriteLine("[{0}] {1}", type, str);
+		}
+	}
 }

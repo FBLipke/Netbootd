@@ -13,181 +13,181 @@ using System.Xml;
 
 namespace Netboot.Module.BINLListener
 {
-    public class BINLListener : IProvider, IManager
-    {
-        public Filesystem Filesystem { get; set; }
+	public class BINLListener : IProvider, IManager
+	{
+		public Filesystem Filesystem { get; set; }
 
-        public IDatabase Database { get; set; }
+		public IDatabase Database { get; set; }
 
-        public Guid Server { get; private set; }
-        public Dictionary<Guid, IMember> Members { get; set; }
+		public Guid Server { get; private set; }
+		public Dictionary<Guid, IMember> Members { get; set; }
 
-        public bool VolativeModule { get; set; } = false;
+		public bool VolativeModule { get; set; } = false;
 
-        public bool CanEdit { get; set; }
+		public bool CanEdit { get; set; }
 
-        public string FriendlyName { get; set; } = "BINLListener";
+		public string FriendlyName { get; set; } = "BINLListener";
 
-        public string Description { get; set; } = "";
+		public string Description { get; set; } = "";
 
-        public bool CanAdd { get; set; }
+		public bool CanAdd { get; set; }
 
-        public bool CanRemove { get; set; }
+		public bool CanRemove { get; set; }
 
-        public bool IsPublicModule { get; set; }
+		public bool IsPublicModule { get; set; }
 
-        public bool Active { get; set; } = false;
+		public bool Active { get; set; } = false;
 
-        public ICrypto Crypt { get; set; }
-
-        
-
-        public BINLListener()
-        {
-            CanAdd = false;
-            CanEdit = false;
-            CanRemove = false;
-            Members = [];
-            Filesystem = new Filesystem("Providers\\BINLListener");
-            Database = new SqlDatabase(Filesystem, "BINLListener.db");
-        }
+		public ICrypto Crypt { get; set; }
 
 
-        public void Bootstrap(XmlNode xml)
-        {
-            var _ports = new List<ushort>();
 
-            var ports = xml.Attributes.GetNamedItem("port").Value.Split(',').ToList();
-            if (ports.Count > 0)
-                _ports.AddRange(from port in ports select ushort.Parse(port.Trim()));
+		public BINLListener()
+		{
+			CanAdd = false;
+			CanEdit = false;
+			CanRemove = false;
+			Members = [];
+			Filesystem = new Filesystem("Providers\\BINLListener");
+			Database = new SqlDatabase(Filesystem, "BINLListener.db");
+		}
 
-            Server = NetbootBase.NetworkManager.ServerManager.Add(ProtoType.Udp, _ports);
 
-            NetbootBase.NetworkManager.UDPRequestReceived += (sender, e) =>
-            {
-                var requestPacket = new BINLPacket(e.Data.GetBuffer());
+		public void Bootstrap(XmlNode xml)
+		{
+			var _ports = new List<ushort>();
 
-                switch (requestPacket.MessageType)
-                {
-                    case BINLMessageTypes.Negotiate:
-                        break;
-                    case BINLMessageTypes.Authenticate:
-                        break;
-                    case BINLMessageTypes.AuthenticateFlipped:
-                        break;
-                    case BINLMessageTypes.RequestUnsigned:
-                        NetbootBase.Log("I","BINLListener", "Got RQU Request...");
-                        break;
-                    case BINLMessageTypes.RequestSigned:
-                        break;
-                    case BINLMessageTypes.Logoff:
-                        break;
-                    case BINLMessageTypes.NetcardRequest:
-                        break;
-                    case BINLMessageTypes.HalRequest:
-                        break;
-                    case BINLMessageTypes.SetupRequest:
-                        break;
-                    default:
-                        break;
-                }
-            };
+			var ports = xml.Attributes.GetNamedItem("port").Value.Split(',').ToList();
+			if (ports.Count > 0)
+				_ports.AddRange(from port in ports select ushort.Parse(port.Trim()));
 
-            if (VolativeModule)
-                return;
+			Server = NetbootBase.NetworkManager.ServerManager.Add(ProtoType.Udp, _ports);
 
-            Database?.Bootstrap(xml);
-        }
+			NetbootBase.NetworkManager.UDPRequestReceived += (sender, e) =>
+			{
+				var requestPacket = new BINLPacket(e.Data.GetBuffer());
 
-        public void Close()
-        {
-            if (VolativeModule)
-                return;
+				switch (requestPacket.MessageType)
+				{
+					case BINLMessageTypes.Negotiate:
+						break;
+					case BINLMessageTypes.Authenticate:
+						break;
+					case BINLMessageTypes.AuthenticateFlipped:
+						break;
+					case BINLMessageTypes.RequestUnsigned:
+						NetbootBase.Log("I", "BINLListener", "Got RQU Request...");
+						break;
+					case BINLMessageTypes.RequestSigned:
+						break;
+					case BINLMessageTypes.Logoff:
+						break;
+					case BINLMessageTypes.NetcardRequest:
+						break;
+					case BINLMessageTypes.HalRequest:
+						break;
+					case BINLMessageTypes.SetupRequest:
+						break;
+					default:
+						break;
+				}
+			};
 
-            Database.Close();
-        }
+			if (VolativeModule)
+				return;
 
-        public bool Contains(Guid id) => Members.ContainsKey(id);
+			Database?.Bootstrap(xml);
+		}
 
-        public void Dispose()
-        {
-            if (Database != null)
-                Database.Dispose();
+		public void Close()
+		{
+			if (VolativeModule)
+				return;
 
-            if (Members != null)
-                Members.Clear();
+			Database.Close();
+		}
 
-            Filesystem?.Dispose();
-        }
+		public bool Contains(Guid id) => Members.ContainsKey(id);
 
-        public string Handle_Get_Request(NetbootHttpContext request)
-            => JsonConvert.SerializeObject(Members.Values);
+		public void Dispose()
+		{
+			if (Database != null)
+				Database.Dispose();
 
-        public void Install()
-        {
-        }
+			if (Members != null)
+				Members.Clear();
 
-        public IMember Get_Member(Guid id)
-            => Members.ContainsKey(id) ? Members[id] : null;
+			Filesystem?.Dispose();
+		}
 
-        public void HeartBeat()
-        {
-            if (VolativeModule)
-                return;
+		public string Handle_Get_Request(NetbootHttpContext request)
+			=> JsonConvert.SerializeObject(Members.Values);
 
-            Database?.HeartBeat();
-            Update();
-        }
+		public void Install()
+		{
+		}
 
-        public void Remove(Guid id) => Members.Remove(id);
+		public IMember? Get_Member(Guid id)
+			=> Members.ContainsKey(id) ? Members[id] : null;
 
-        public IMember Request(Guid id) => Members[id];
+		public void HeartBeat()
+		{
+			if (VolativeModule)
+				return;
 
-        public void Start()
-        {
-            Active = true;
+			Database?.HeartBeat();
+			Update();
+		}
 
-            NetbootBase.Log("I", FriendlyName, "This module handles BINL Messages");
-        }
+		public void Remove(Guid id) => Members.Remove(id);
 
-        public void Stop()
-        {
-            Active = false;
+		public IMember Request(Guid id) => Members[id];
 
-            Provider.Commit(Members, FriendlyName, Database, Filesystem);
-        }
+		public void Start()
+		{
+			Active = true;
 
-        public void Update()
-        {
-            if (!Active)
-                return;
+			NetbootBase.Log("I", FriendlyName, "This module handles BINL Messages");
+		}
 
-            Provider.Commit(Members, FriendlyName, Database, Filesystem);
-        }
+		public void Stop()
+		{
+			Active = false;
 
-        public string Handle_Add_Request(NetbootHttpContext context)
-        {
-            throw new NotImplementedException();
-        }
+			Provider.Commit(Members, FriendlyName, Database, Filesystem);
+		}
 
-        public string Handle_Edit_Request(NetbootHttpContext context)
-        {
-            throw new NotImplementedException();
-        }
+		public void Update()
+		{
+			if (!Active)
+				return;
 
-        public string Handle_Remove_Request(NetbootHttpContext context)
-        {
-            throw new NotImplementedException();
-        }
+			Provider.Commit(Members, FriendlyName, Database, Filesystem);
+		}
 
-        public string Handle_Info_Request(NetbootHttpContext context)
-        {
-            throw new NotImplementedException();
-        }
+		public string Handle_Add_Request(NetbootHttpContext context)
+		{
+			throw new NotImplementedException();
+		}
 
-        public string Handle_Redirect_Request(bool loggedin, string redirectTo, string content = "")
-        {
-            throw new NotImplementedException();
-        }
-    }
+		public string Handle_Edit_Request(NetbootHttpContext context)
+		{
+			throw new NotImplementedException();
+		}
+
+		public string Handle_Remove_Request(NetbootHttpContext context)
+		{
+			throw new NotImplementedException();
+		}
+
+		public string Handle_Info_Request(NetbootHttpContext context)
+		{
+			throw new NotImplementedException();
+		}
+
+		public string Handle_Redirect_Request(bool loggedin, string redirectTo, string content = "")
+		{
+			throw new NotImplementedException();
+		}
+	}
 }

@@ -17,57 +17,57 @@ using System.Text;
 
 namespace Netboot.Module.DHCPListener
 {
-    public class DHCPClient : IDHCPClient
-    {
-        public DHCPClient(bool testClient, Guid server, Guid socket, Guid client, DHCPPacket request)
-        {
-            Socket = socket;
-            Client = client;
-            Server = server;
+	public class DHCPClient : IDHCPClient
+	{
+		public DHCPClient(bool testClient, Guid server, Guid socket, Guid client, DHCPPacket request)
+		{
+			Socket = socket;
+			Client = client;
+			Server = server;
 
-            Request = request;
-            VendorId = Request.GetVendorIdent;
-            
-            Response = Request.CreateResponse(NetbootBase.NetworkManager.ServerManager.GetEndPoint(server, socket).Address);
-            Response.AddOption(new((byte)DHCPOptions.VendorClassIdentifier, VendorId.ToString(), Encoding.ASCII));
+			Request = request;
+			VendorId = Request.GetVendorIdent;
 
-            if (request.HasOption(DHCPOptions.NetworkInterfaceIdentifier))
-                NicSpecType = (NicSpecType)request.GetOption((byte)DHCPOptions.NetworkInterfaceIdentifier).AsByte();
+			Response = Request.CreateResponse(NetbootBase.NetworkManager.ServerManager.GetEndPoint(server, socket).Address);
+			Response.AddOption(new((byte)DHCPOptions.VendorClassIdentifier, VendorId.ToString(), Encoding.ASCII));
 
-            Architecture = (Architecture)
-                Request.GetOption((byte)DHCPOptions.SystemArchitectureType).AsUInt16();
+			if (request.HasOption(DHCPOptions.NetworkInterfaceIdentifier))
+				NicSpecType = (NicSpecType)request.GetOption((byte)DHCPOptions.NetworkInterfaceIdentifier).AsByte();
 
-            TestClient = testClient;
-        }
+			Architecture = (Architecture)
+				Request.GetOption((byte)DHCPOptions.SystemArchitectureType).AsUInt16();
 
-        private void _ctorFunc()
-        {
-        }
+			TestClient = testClient;
+		}
 
-        public void Dispose()
-        {
-            Request?.Dispose();
-            Response?.Dispose();
-        }
+		private void _ctorFunc()
+		{
+		}
 
-        public bool TestClient { get; set; }
+		public void Dispose()
+		{
+			Request?.Dispose();
+			Response?.Dispose();
+		}
 
-        public Architecture Architecture { get; set; }
+		public bool TestClient { get; set; }
 
-        public DHCPPacket Response { get; set; }
+		public Architecture Architecture { get; set; }
 
-        public DHCPPacket Request { get; set; }
+		public DHCPPacket Response { get; set; }
 
-        public DHCPVendorID VendorId { get; set; }
+		public DHCPPacket Request { get; set; }
 
-        public NicSpecType NicSpecType { get; set; }
+		public DHCPVendorID VendorId { get; set; }
 
-        public Guid Socket { get; set; }
+		public NicSpecType NicSpecType { get; set; }
 
-        public Guid Server { get; set; }
+		public Guid Socket { get; set; }
 
-        public Guid Client { get; set; }
+		public Guid Server { get; set; }
 
-        public Guid Id { get; set; }
-    }
+		public Guid Client { get; set; }
+
+		public Guid Id { get; set; }
+	}
 }

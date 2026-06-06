@@ -13,11 +13,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace Netboot.Common.Cryptography.Interfaces
 {
-    public interface ICrypto
-    {
-        string GetHash(string text, string key);
+	public interface ICrypto
+	{
+		string GetHash(string text, string key);
 
-        byte[] GetHash(byte[] data);
+		byte[] GetHash(byte[] data);
 
-    }
+	}
 }

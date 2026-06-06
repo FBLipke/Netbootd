@@ -6,68 +6,68 @@
 
 namespace Netboot.Common.Provider.Events
 {
-    public interface IMember
-    {
-        Dictionary<Guid, IMember> Members { get; set; }
+	public interface IMember
+	{
+		Dictionary<Guid, IMember> Members { get; set; }
 
-        double Created { get; set; }
+		double Created { get; set; }
 
-        string Url { get; set; }
+		string Url { get; set; }
 
-        double Updated { get; set; }
+		double Updated { get; set; }
 
-        string OutPut { get; set; }
+		string OutPut { get; set; }
 
-        Guid Author { get; set; }
+		Guid Author { get; set; }
 
-        int FormatType { get; set; }
+		int FormatType { get; set; }
 
-        int ControlType { get; set; }
+		int ControlType { get; set; }
 
-        string Frame { get; set; }
+		string Frame { get; set; }
 
-        string Provider { get; set; }
+		string Provider { get; set; }
 
-        string Design { get; set; }
+		string Design { get; set; }
 
-        string Image { get; set; }
+		string Image { get; set; }
 
-        int Width { get; set; }
+		int Width { get; set; }
 
-        int Height { get; set; }
+		int Height { get; set; }
 
-        string Name { get; set; }
+		string Name { get; set; }
 
-        string Password { get; set; }
+		string Password { get; set; }
 
-        bool Active { get; set; }
+		bool Active { get; set; }
 
-        string Action { get; set; }
+		string Action { get; set; }
 
-        string Description { get; set; }
+		string Description { get; set; }
 
-        ulong Level { get; set; }
+		ulong Level { get; set; }
 
-        Guid Access { get; set; }
+		Guid Access { get; set; }
 
-        bool Locked { get; set; }
+		bool Locked { get; set; }
 
-        bool Service { get; set; }
+		bool Service { get; set; }
 
-        bool Moderator { get; set; }
+		bool Moderator { get; set; }
 
-        string Target { get; set; }
+		string Target { get; set; }
 
-        ushort Port { get; set; }
+		ushort Port { get; set; }
 
-        string Salt { get; set; }
+		string Salt { get; set; }
 
-        string IpAddress { get; set; }
+		string IpAddress { get; set; }
 
-        Guid Id { get; set; }
+		Guid Id { get; set; }
 
-        string EMail { get; set; }
+		string EMail { get; set; }
 
-        string ExtraData { get; set; }
-    }
+		string ExtraData { get; set; }
+	}
 }

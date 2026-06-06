@@ -35,7 +35,7 @@ namespace Netboot.Module.BINLListener
 			get
 			{
 				SetPosition(0);
-				
+
 				var signatureBytes = Read_Bytes(sizeof(uint));
 				var result = (BINLMessageTypes)BinaryPrimitives.ReadUInt32BigEndian(signatureBytes);
 
@@ -45,7 +45,7 @@ namespace Netboot.Module.BINLListener
 			set
 			{
 				SetPosition(0);
-				
+
 				var signatureBytes = new byte[sizeof(uint)];
 				BinaryPrimitives.WriteUInt32BigEndian(signatureBytes, (uint)value);
 
@@ -107,7 +107,7 @@ namespace Netboot.Module.BINLListener
 			get
 			{
 				SetPosition(4);
-				
+
 				var lenBytes = Read_Bytes(sizeof(uint));
 				var result = BinaryPrimitives.ReadUInt32LittleEndian(lenBytes);
 				RestorePosition();
@@ -118,7 +118,7 @@ namespace Netboot.Module.BINLListener
 			set
 			{
 				SetPosition(4);
-				
+
 				var lenBytes = new byte[sizeof(uint)];
 				BinaryPrimitives.WriteUInt32LittleEndian(lenBytes, value);
 
@@ -191,7 +191,7 @@ namespace Netboot.Module.BINLListener
 				BinaryPrimitives.WriteUInt16LittleEndian(fragBytes, value);
 
 				Write_Bytes(fragBytes);
-				
+
 				RestorePosition();
 			}
 		}
@@ -337,7 +337,7 @@ namespace Netboot.Module.BINLListener
 			set
 			{
 				SetPosition(20);
-				
+
 				switch (MessageType)
 				{
 					case BINLMessageTypes.RequestSigned:
@@ -359,14 +359,14 @@ namespace Netboot.Module.BINLListener
 			{
 
 				SetPosition(12);
-				var archBytes =  Read_UINT32();
+				var archBytes = Read_UINT32();
 				RestorePosition();
 
 				return (Architecture)archBytes;
 			}
 			set
 			{
-			
+
 			}
 		}
 

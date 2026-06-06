@@ -13,17 +13,17 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace Netboot.Module.TFTPServer
 {
-    public class TFTPPacketBacklogEntry
-    {
-        public long BytesRead { get; set; }
-        public long BytesToRead { get; set; }
-        public ushort Block { get; set; }
+	public class TFTPPacketBacklogEntry
+	{
+		public long BytesRead { get; set; }
+		public long BytesToRead { get; set; }
+		public ushort Block { get; set; }
 
-        public TFTPPacketBacklogEntry(long bytesRead, long bytesToRead, ushort block)
-        {
-            BytesRead = bytesRead;
-            BytesToRead = bytesToRead;
-            Block = block;
-        }
-    }
+		public TFTPPacketBacklogEntry(long bytesRead, long bytesToRead, ushort block)
+		{
+			BytesRead = bytesRead;
+			BytesToRead = bytesToRead;
+			Block = block;
+		}
+	}
 }

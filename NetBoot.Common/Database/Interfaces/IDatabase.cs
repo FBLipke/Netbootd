@@ -16,11 +16,11 @@ using System.Collections.Specialized;
 
 namespace Netboot.Common.Database.Interfaces
 {
-    public interface IDatabase : IManager
-    {
-        int Count<TS>(string table, string condition, TS value);
-        Dictionary<int, NameValueCollection> Query(string sql);
-        bool Insert(string sql);
-        string Query(string sql, string key);
-    }
+	public interface IDatabase : IManager
+	{
+		int Count<TS>(string table, string condition, TS value);
+		Dictionary<int, NameValueCollection> Query(string sql);
+		bool Insert(string sql);
+		string Query(string sql, string key);
+	}
 }

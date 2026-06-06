@@ -13,16 +13,16 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace Netboot.Common.Network.Sockets
 {
-    public class ClientManagerReceivedDataArgs : EventArgs
-    {
-        public Guid Client { get; private set; }
+	public class ClientManagerReceivedDataArgs : EventArgs
+	{
+		public Guid Client { get; private set; }
 
-        public byte[] Data { get; private set; }
+		public byte[] Data { get; private set; }
 
-        public ClientManagerReceivedDataArgs(Guid client, byte[] data)
-        {
-            Client = client;
-            Data = data;
-        }
-    }
+		public ClientManagerReceivedDataArgs(Guid client, byte[] data)
+		{
+			Client = client;
+			Data = data;
+		}
+	}
 }

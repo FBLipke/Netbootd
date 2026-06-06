@@ -3,7 +3,7 @@
 
 namespace DHCPListener.BSvcMod.MSRIS
 {
-    public interface IRISClient : IDHCPClient, IDisposable
-    {
-    }
+	public interface IRISClient : IDHCPClient, IDisposable
+	{
+	}
 }

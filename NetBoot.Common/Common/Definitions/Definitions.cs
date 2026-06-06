@@ -15,67 +15,67 @@ namespace Netboot.Common.Common.Definitions
 {
 
 
-    public enum Architecture : ushort
-    {
-        X86PC = 0,
-        NECPC98,
-        EFIItanium,
-        DECAlpha,
-        Arcx86,
-        IntelLeanClient,
-        EFI_IA32,
-        EFIByteCode,
-        EFI_xScale,
-        EFI_x8664,
-        ARM32_EFI,
-        ARM64_EFI,
-        PowerPCOpenFW,
-        PowerPCePAPR,
-        PowerOpalV3,
-        X86EfiHttp,
-        X64EfiHttp,
-        EfiHttp,
-        Arm32EfiHttp,
-        Arm64EfiHttp,
-        PCBiosHttp,
-        Arm32Uboot,
-        Arm64UBoot,
-        Arm32UbootHttp,
-        Arm64UbootHttp,
-        RiscV32EFi,
-        RiscV32EFiHttp,
-        RiscV64EFi,
-        RiscV64EFiHttp,
-        RiscV128Efi,
-        RiscV128EfiHttp,
-        S390Basic,
-        S390Extended,
-        MIPS32Efi,
-        MIPS64Efi,
-        SunWay32Efi,
-        SunWay64Efi,
-        LoongArch32Efi,
-        LoongArch32EfiHttp,
-        LoongArch64Efi,
-        LoongArch64EfiHttp,
-        ArmRPIBoot
-    }
-    
+	public enum Architecture : ushort
+	{
+		X86PC = 0,
+		NECPC98,
+		EFIItanium,
+		DECAlpha,
+		Arcx86,
+		IntelLeanClient,
+		EFI_IA32,
+		EFIByteCode,
+		EFI_xScale,
+		EFI_x8664,
+		ARM32_EFI,
+		ARM64_EFI,
+		PowerPCOpenFW,
+		PowerPCePAPR,
+		PowerOpalV3,
+		X86EfiHttp,
+		X64EfiHttp,
+		EfiHttp,
+		Arm32EfiHttp,
+		Arm64EfiHttp,
+		PCBiosHttp,
+		Arm32Uboot,
+		Arm64UBoot,
+		Arm32UbootHttp,
+		Arm64UbootHttp,
+		RiscV32EFi,
+		RiscV32EFiHttp,
+		RiscV64EFi,
+		RiscV64EFiHttp,
+		RiscV128Efi,
+		RiscV128EfiHttp,
+		S390Basic,
+		S390Extended,
+		MIPS32Efi,
+		MIPS64Efi,
+		SunWay32Efi,
+		SunWay64Efi,
+		LoongArch32Efi,
+		LoongArch32EfiHttp,
+		LoongArch64Efi,
+		LoongArch64EfiHttp,
+		ArmRPIBoot
+	}
 
-    public enum OSPlatformId : byte
-    {
-        Windows = 0,
-        Linux = 1,
-        MacOS = 2,
-        Ios = 3,
-        Android = 4,
-        FreeBSD = 5
-    }
 
-    public enum EndianessBehavier : byte
-    {
-        LittleEndian,
-        BigEndian
-    }
+	public enum OSPlatformId : byte
+	{
+		Windows = 0,
+		Linux = 1,
+		MacOS = 2,
+		Ios = 3,
+		Android = 4,
+		FreeBSD = 5
+	}
+
+	public enum EndianessBehavier : byte
+	{
+		LittleEndian,
+		BigEndian
+	}
 
 }

@@ -12,156 +12,156 @@ using System.Xml;
 
 namespace Netboot.Module.TFTPServer
 {
-    public class TFTPServer : IProvider, IManager
-    {
-        public Filesystem Filesystem { get; set; }
+	public class TFTPServer : IProvider, IManager
+	{
+		public Filesystem Filesystem { get; set; }
 
-        public IDatabase Database { get; set; }
+		public IDatabase Database { get; set; }
 
-        public Guid Server { get; private set; }
+		public Guid Server { get; private set; }
 
-        public Dictionary<Guid, IMember> Members { get; set; }
+		public Dictionary<Guid, IMember> Members { get; set; }
 
-        public bool VolativeModule { get; set; } = false;
+		public bool VolativeModule { get; set; } = false;
 
-        public bool CanEdit { get; set; }
+		public bool CanEdit { get; set; }
 
-        public string FriendlyName { get; set; } = "TFTPServer";
+		public string FriendlyName { get; set; } = "TFTPServer";
 
-        public string Description { get; set; } = "";
+		public string Description { get; set; } = "";
 
-        public bool CanAdd { get; set; }
+		public bool CanAdd { get; set; }
 
-        public bool CanRemove { get; set; }
+		public bool CanRemove { get; set; }
 
-        public bool IsPublicModule { get; set; }
+		public bool IsPublicModule { get; set; }
 
-        public bool Active { get; set; } = false;
+		public bool Active { get; set; } = false;
 
-        public ICrypto Crypt { get; set; }
+		public ICrypto Crypt { get; set; }
 
-        TFTPServerBase Base { get; set; }
+		TFTPServerBase Base { get; set; }
 
-        public TFTPServer()
-        {
-            CanAdd = false;
-            CanEdit = false;
-            CanRemove = false;
-            Members = [];
-            Filesystem = new Filesystem("Providers\\TFTPServer");
-            Database = new SqlDatabase(Filesystem, "TFTPServer.db");
-            Base = new TFTPServerBase(Filesystem, Database);
-        }
+		public TFTPServer()
+		{
+			CanAdd = false;
+			CanEdit = false;
+			CanRemove = false;
+			Members = [];
+			Filesystem = new Filesystem("Providers\\TFTPServer");
+			Database = new SqlDatabase(Filesystem, "TFTPServer.db");
+			Base = new TFTPServerBase(Filesystem, Database);
+		}
 
-        public void Bootstrap(XmlNode xml)
-        {
-            if (NetbootBase.NetworkManager != null)
-            {
-                Server = NetbootBase.NetworkManager.ServerManager.Add(ProtoType.Udp, [69, 1758]);
-                NetbootBase.NetworkManager.UDPRequestReceived += (sender, e) =>
-                {
-                    Base.Handle_Listener_Request(e.Server, e.Socket, e.Client, e.Data);
-                };
-            }
+		public void Bootstrap(XmlNode xml)
+		{
+			if (NetbootBase.NetworkManager != null)
+			{
+				Server = NetbootBase.NetworkManager.ServerManager.Add(ProtoType.Udp, [69, 1758]);
+				NetbootBase.NetworkManager.UDPRequestReceived += (sender, e) =>
+				{
+					Base.Handle_Listener_Request(e.Server, e.Socket, e.Client, e.Data);
+				};
+			}
 
-            Base.Bootstrap(xml);
+			Base.Bootstrap(xml);
 
-            if (VolativeModule)
-                return;
+			if (VolativeModule)
+				return;
 
-            Database?.Bootstrap(xml);
-        }
+			Database?.Bootstrap(xml);
+		}
 
-        public void Close()
-        {
-            Base.Close();
+		public void Close()
+		{
+			Base.Close();
 
-            if (VolativeModule)
-                return;
+			if (VolativeModule)
+				return;
 
-            Database.Close();
-        }
+			Database.Close();
+		}
 
-        public bool Contains(Guid id) => Members.ContainsKey(id);
+		public bool Contains(Guid id) => Members.ContainsKey(id);
 
-        public void Dispose()
-        {
-            Database?.Dispose();
+		public void Dispose()
+		{
+			Database?.Dispose();
 
-            Members?.Clear();
+			Members?.Clear();
 
-            Base.Dispose();
-        }
+			Base.Dispose();
+		}
 
-        public string Handle_Get_Request(NetbootHttpContext request)
-            => JsonConvert.SerializeObject(Members.Values);
+		public string Handle_Get_Request(NetbootHttpContext request)
+			=> JsonConvert.SerializeObject(Members.Values);
 
-        public void Install()
-        {
-        }
+		public void Install()
+		{
+		}
 
-        public IMember Get_Member(Guid id)
-            => Members.ContainsKey(id) ? Members[id] : null;
+		public IMember? Get_Member(Guid id)
+			=> Members.ContainsKey(id) ? Members[id] : null;
 
-        public void HeartBeat()
-        {
-            Base.HeartBeat();
+		public void HeartBeat()
+		{
+			Base.HeartBeat();
 
-            if (VolativeModule)
-                return;
+			if (VolativeModule)
+				return;
 
-            Database?.HeartBeat();
-            Update();
-        }
+			Database?.HeartBeat();
+			Update();
+		}
 
-        public void Remove(Guid id) => Members.Remove(id);
+		public void Remove(Guid id) => Members.Remove(id);
 
-        public IMember Request(Guid id) => Members[id];
+		public IMember Request(Guid id) => Members[id];
 
-        public void Start()
-        {
-            Active = true;
-            NetbootBase.Log("I", FriendlyName, "This module provides an basic TFTP Server");
-        }
+		public void Start()
+		{
+			Active = true;
+			NetbootBase.Log("I", FriendlyName, "This module provides an basic TFTP Server");
+		}
 
-        public void Stop()
-        {
-            Active = false;
+		public void Stop()
+		{
+			Active = false;
 
-            Provider.Commit(Members, FriendlyName, Database, Filesystem);
-        }
+			Provider.Commit(Members, FriendlyName, Database, Filesystem);
+		}
 
-        public void Update()
-        {
-            if (!Active)
-                return;
+		public void Update()
+		{
+			if (!Active)
+				return;
 
-            Provider.Commit(Members, FriendlyName, Database, Filesystem);
-        }
+			Provider.Commit(Members, FriendlyName, Database, Filesystem);
+		}
 
-        public string Handle_Add_Request(NetbootHttpContext context)
-        {
-            throw new NotImplementedException();
-        }
+		public string Handle_Add_Request(NetbootHttpContext context)
+		{
+			throw new NotImplementedException();
+		}
 
-        public string Handle_Edit_Request(NetbootHttpContext context)
-        {
-            throw new NotImplementedException();
-        }
+		public string Handle_Edit_Request(NetbootHttpContext context)
+		{
+			throw new NotImplementedException();
+		}
 
-        public string Handle_Remove_Request(NetbootHttpContext context)
-        {
-            throw new NotImplementedException();
-        }
+		public string Handle_Remove_Request(NetbootHttpContext context)
+		{
+			throw new NotImplementedException();
+		}
 
-        public string Handle_Info_Request(NetbootHttpContext context)
-        {
-            throw new NotImplementedException();
-        }
+		public string Handle_Info_Request(NetbootHttpContext context)
+		{
+			throw new NotImplementedException();
+		}
 
-        public string Handle_Redirect_Request(bool loggedin, string redirectTo, string content = "")
-        {
-            throw new NotImplementedException();
-        }
-    }
+		public string Handle_Redirect_Request(bool loggedin, string redirectTo, string content = "")
+		{
+			throw new NotImplementedException();
+		}
+	}
 }

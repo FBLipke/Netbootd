@@ -14,16 +14,16 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 namespace Netboot.Module.TFTPServer
 {
 
-    public class PacketBacklogEventArgs
-    {
-        public TFTPPacketBacklogEntry TFTPPacketBacklogEntry { get; private set; }
+	public class PacketBacklogEventArgs
+	{
+		public TFTPPacketBacklogEntry TFTPPacketBacklogEntry { get; private set; }
 
-        public string Client { get; private set; }
+		public string Client { get; private set; }
 
-        public PacketBacklogEventArgs(string client, TFTPPacketBacklogEntry packetBacklogEntry)
-        {
-            TFTPPacketBacklogEntry = packetBacklogEntry;
-            Client = client;
-        }
-    }
+		public PacketBacklogEventArgs(string client, TFTPPacketBacklogEntry packetBacklogEntry)
+		{
+			TFTPPacketBacklogEntry = packetBacklogEntry;
+			Client = client;
+		}
+	}
 }

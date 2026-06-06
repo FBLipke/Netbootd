@@ -1,19 +1,19 @@
 ﻿namespace Netboot.Common.Utility.Commands
 {
-    public class OSXDistShare : IDisposable
-    {
-        public string RootPath = Directory.GetCurrentDirectory();
+	public class OSXDistShare : IDisposable
+	{
+		public string RootPath = Directory.GetCurrentDirectory();
 
-        public OSXDistShare()
-        {
+		public OSXDistShare()
+		{
 
-        }
+		}
 
-        public void Start(string srcType, string sourcePath)
-        {
-        }
-        public void Dispose()
-        {
-        }
-    }
+		public void Start(string srcType, string sourcePath)
+		{
+		}
+		public void Dispose()
+		{
+		}
+	}
 }

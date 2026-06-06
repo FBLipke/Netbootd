@@ -15,18 +15,18 @@ using Netboot.Module.DHCPListener;
 
 namespace DHCPListener.BSvcMod.RBCP
 {
-    public class RBCPClient : DHCPClient
-    {
-        public ushort Layer { get; set; }
+	public class RBCPClient : DHCPClient
+	{
+		public ushort Layer { get; set; }
 
-        public ushort Item { get; set; }
+		public ushort Item { get; set; }
 
-        public RBCPClient(bool testClient, DHCPPacket request, Guid server, Guid socket, Guid client)
-            : base(testClient, server, socket, client, request)
-        {
+		public RBCPClient(bool testClient, DHCPPacket request, Guid server, Guid socket, Guid client)
+			: base(testClient, server, socket, client, request)
+		{
 
-            Layer = 0;
-            Item = 0;
-        }
-    }
+			Layer = 0;
+			Item = 0;
+		}
+	}
 }

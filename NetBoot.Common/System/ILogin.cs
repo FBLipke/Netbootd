@@ -9,10 +9,10 @@ using Netboot.Common.Provider.Events;
 
 namespace Netboot.Common.System
 {
-    public interface ILogin
-    {
-        IMember Handle_Login_Request(NetbootHttpContext request);
+	public interface ILogin
+	{
+		IMember Handle_Login_Request(NetbootHttpContext request);
 
-        IMember Handle_Logout_Request(NetbootHttpContext request);
-    }
+		IMember Handle_Logout_Request(NetbootHttpContext request);
+	}
 }

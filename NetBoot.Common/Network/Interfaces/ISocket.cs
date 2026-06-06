@@ -15,13 +15,13 @@ using System.Net;
 
 namespace Netboot.Common.Network.Interfaces
 {
-    public interface ISocket : IDisposable
-    {
-        bool Initialize();
-        void Start();
-        void SendTo(IPacket packet, IClient client);
-        void Close();
-        IPAddress GetIPAddress();
+	public interface ISocket : IDisposable
+	{
+		bool Initialize();
+		void Start();
+		void SendTo(IPacket packet, IClient client);
+		void Close();
+		IPAddress GetIPAddress();
 
-    }
+	}
 }

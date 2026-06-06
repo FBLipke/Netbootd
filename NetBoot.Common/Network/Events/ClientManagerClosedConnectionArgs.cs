@@ -13,10 +13,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace Netboot.Common.Network.Sockets
 {
-    public class ClientManagerClosedConnectionArgs : EventArgs
-    {
-        public Guid Client { get; private set; }
+	public class ClientManagerClosedConnectionArgs : EventArgs
+	{
+		public Guid Client { get; private set; }
 
-        public ClientManagerClosedConnectionArgs(Guid client) => Client = client;
-    }
+		public ClientManagerClosedConnectionArgs(Guid client) => Client = client;
+	}
 }

@@ -1,4 +1,7 @@
 ﻿[*.cs]
+indent_style = tab
+indent_size = 4
+tab_width = 4
 
 # CS8602: Dereferenzierung eines möglichen Nullverweises.
 dotnet_diagnostic.CS8602.severity = silent

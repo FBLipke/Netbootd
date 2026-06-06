@@ -5,244 +5,244 @@ using System.Text;
 
 namespace Netboot.Common.Network.Sockets
 {
-    public class NetbootUdpSocket : IDisposable, INetbootSocket
-    {
-        private delegate void ClientAcceptedEventHandler(object sender, ClientAcceptedEventArgs e);
-        public delegate void SocketAddedClientEventHandler(object sender, SocketAddedClientEventArgs e);
-        public delegate void SocketFailedToStartEventHandler(object sender, SocketFailedToStartEventArgs e);
-        public delegate void SocketClosedClientEventHandler(object sender, SocketClosedClientEventArgs e);
-        public delegate void SocketReadDataFromClientEventHandler(object sender, SocketReadDataFromClientArgs e);
+	public class NetbootUdpSocket : IDisposable, INetbootSocket
+	{
+		private delegate void ClientAcceptedEventHandler(object sender, ClientAcceptedEventArgs e);
+		public delegate void SocketAddedClientEventHandler(object sender, SocketAddedClientEventArgs e);
+		public delegate void SocketFailedToStartEventHandler(object sender, SocketFailedToStartEventArgs e);
+		public delegate void SocketClosedClientEventHandler(object sender, SocketClosedClientEventArgs e);
+		public delegate void SocketReadDataFromClientEventHandler(object sender, SocketReadDataFromClientArgs e);
 
-        private event ClientAcceptedEventHandler InternalClientAccepted;
-        public event SocketAddedClientEventHandler SocketAddedClient;
-        public event SocketFailedToStartEventHandler SocketFailedToStart;
-        public event SocketClosedClientEventHandler SocketClosedClient;
-        public event SocketReadDataFromClientEventHandler SocketReadDataFromClient;
+		private event ClientAcceptedEventHandler InternalClientAccepted;
+		public event SocketAddedClientEventHandler SocketAddedClient;
+		public event SocketFailedToStartEventHandler SocketFailedToStart;
+		public event SocketClosedClientEventHandler SocketClosedClient;
+		public event SocketReadDataFromClientEventHandler SocketReadDataFromClient;
 
-        private Socket _sock;
-        public Dictionary<Guid, INetbootClient> Clients { get; set; }
-        SocketState state;
+		private Socket _sock;
+		public Dictionary<Guid, INetbootClient> Clients { get; set; }
+		SocketState state;
 
-        public Guid Id { get; set; }
+		public Guid Id { get; set; }
 
-        EndPoint LocalEndpoint;
+		EndPoint LocalEndpoint;
 
-        public IPAddress MulticastGroup { get; set; }
+		public IPAddress MulticastGroup { get; set; }
 
-        public byte MulticastTTL { get; set; } = 3;
+		public byte MulticastTTL { get; set; } = 3;
 
-        public bool Listening { get; set; }
+		public bool Listening { get; set; }
 
-        public NetbootUdpSocket(Guid id, IPEndPoint endpoint)
-        {
-            LocalEndpoint = endpoint;
-            _sock = new Socket(endpoint.AddressFamily, SocketType.Dgram, ProtocolType.Udp);
-            _sock.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.Broadcast, true);
-            _sock.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
-
-
-            Clients = [];
-            Id = id;
-
-            InternalClientAccepted += (sender, e) =>
-            {
-                Clients.Add(e.Client.Id, e.Client);
-
-                SocketAddedClient?.Invoke(this, new SocketAddedClientEventArgs(Id, e.Client.Id));
-            };
-        }
-
-        public void Start(bool joinMulticastGroup)
-        {
-            if (Listening)
-                return;
-
-            try
-            {
-                state = new SocketState
-                {
-                    Buffer = new byte[1024]
-                };
-
-                if (_sock.IsBound)
-                    return;
-
-                _sock.Bind(LocalEndpoint);
-
-                if (joinMulticastGroup)
-                    JoinMulticastGroup(MulticastGroup);
-
-                Listening = true;
-                
-                _ = ReceiveLoopAsync();
+		public NetbootUdpSocket(Guid id, IPEndPoint endpoint)
+		{
+			LocalEndpoint = endpoint;
+			_sock = new Socket(endpoint.AddressFamily, SocketType.Dgram, ProtocolType.Udp);
+			_sock.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.Broadcast, true);
+			_sock.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
 
 
-            }
-            catch (SocketException ex)
-            {
-                SocketFailedToStart?.Invoke(this, new SocketFailedToStartEventArgs(Id, ex));
-            }
-        }
+			Clients = [];
+			Id = id;
 
-        private async Task ReceiveLoopAsync()
-        {
-            var buffer = new byte[ushort.MaxValue];
-            var remoteEndpoint = new IPEndPoint(IPAddress.Any, 0);
+			InternalClientAccepted += (sender, e) =>
+			{
+				Clients.Add(e.Client.Id, e.Client);
 
-            while (Listening && _sock != null)
-            {
-                var result = await _sock.ReceiveFromAsync(buffer, SocketFlags.None, remoteEndpoint);
-                if (result.ReceivedBytes == 0 || result.ReceivedBytes == -1)
-                    return;
+				SocketAddedClient?.Invoke(this, new SocketAddedClientEventArgs(Id, e.Client.Id));
+			};
+		}
 
-                var data = new byte[result.ReceivedBytes];
-                Array.Copy(buffer, data, data.Length);
+		public void Start(bool joinMulticastGroup)
+		{
+			if (Listening)
+				return;
 
-                var client = new NetbootUdpClient(Guid.NewGuid(), (IPEndPoint)result.RemoteEndPoint);
-                InternalClientAccepted?.Invoke(this, new ClientAcceptedEventArgs(client));
-                SocketReadDataFromClient?.Invoke(this, new SocketReadDataFromClientArgs(Id, client.Id, data));
-            }
-        }
+			try
+			{
+				state = new SocketState
+				{
+					Buffer = new byte[1024]
+				};
 
-        public void JoinMulticastGroup(IPAddress group)
-        {
-            if (LocalEndpoint.AddressFamily != AddressFamily.InterNetwork)
-                return;
+				if (_sock.IsBound)
+					return;
 
-            MulticastGroup = group;
+				_sock.Bind(LocalEndpoint);
 
-            _sock.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership,
-                new MulticastOption(MulticastGroup, ((IPEndPoint)LocalEndpoint).Address));
-        }
+				if (joinMulticastGroup)
+					JoinMulticastGroup(MulticastGroup);
 
-        public void LeaveMulticastGroup(IPAddress group)
-        {
-            try
-            {
-                if (LocalEndpoint.AddressFamily != AddressFamily.InterNetwork)
-                    return;
+				Listening = true;
 
-                _sock.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.DropMembership,
-                    new MulticastOption(MulticastGroup, ((IPEndPoint)LocalEndpoint).Address));
+				_ = ReceiveLoopAsync();
 
-                MulticastGroup = IPAddress.None;
-            }
-            catch (Exception)
-            {
-            }
-        }
 
-        private void Received(IAsyncResult ar)
-        {
-            if (_sock == null)
-                return;
+			}
+			catch (SocketException ex)
+			{
+				SocketFailedToStart?.Invoke(this, new SocketFailedToStartEventArgs(Id, ex));
+			}
+		}
 
-            if (!Listening)
-                return;
+		private async Task ReceiveLoopAsync()
+		{
+			var buffer = new byte[ushort.MaxValue];
+			var remoteEndpoint = new IPEndPoint(IPAddress.Any, 0);
 
-            EndPoint remoteEndpoint = new IPEndPoint(IPAddress.Any, 0);
+			while (Listening && _sock != null)
+			{
+				var result = await _sock.ReceiveFromAsync(buffer, SocketFlags.None, remoteEndpoint);
+				if (result.ReceivedBytes == 0 || result.ReceivedBytes == -1)
+					return;
 
-            state = (SocketState)ar.AsyncState;
-            var bytesRead = _sock.EndReceiveFrom(ar, ref remoteEndpoint);
-            
+				var data = new byte[result.ReceivedBytes];
+				Array.Copy(buffer, data, data.Length);
 
-            _sock.BeginReceiveFrom(state.Buffer, 0, state.Buffer.Length, 0,
-                ref LocalEndpoint, new AsyncCallback(Received), state);
-        }
+				var client = new NetbootUdpClient(Guid.NewGuid(), (IPEndPoint)result.RemoteEndPoint);
+				InternalClientAccepted?.Invoke(this, new ClientAcceptedEventArgs(client));
+				SocketReadDataFromClient?.Invoke(this, new SocketReadDataFromClientArgs(Id, client.Id, data));
+			}
+		}
 
-        public void Send(Guid client, byte[] data)
-        {
-            _sock.BeginSendTo(data, 0, data.Length, SocketFlags.None,
-                Clients[client].RemoteEndpoint, new AsyncCallback(EndSend), _sock);
-        }
+		public void JoinMulticastGroup(IPAddress group)
+		{
+			if (LocalEndpoint.AddressFamily != AddressFamily.InterNetwork)
+				return;
 
-        public void Close(Guid client)
-        {
-            if (!Clients.TryGetValue(client, out INetbootClient? value))
-                return;
+			MulticastGroup = group;
 
-            value.Close();
-            Remove(client);
-        }
+			_sock.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership,
+				new MulticastOption(MulticastGroup, ((IPEndPoint)LocalEndpoint).Address));
+		}
 
-        public void Remove(Guid client)
-        {
-            if (!Clients.ContainsKey(client))
-                return;
+		public void LeaveMulticastGroup(IPAddress group)
+		{
+			try
+			{
+				if (LocalEndpoint.AddressFamily != AddressFamily.InterNetwork)
+					return;
 
-            Clients.Remove(client);
-            var socketClosedClient = SocketClosedClient;
+				_sock.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.DropMembership,
+					new MulticastOption(MulticastGroup, ((IPEndPoint)LocalEndpoint).Address));
 
-            socketClosedClient?.Invoke(this, new(client, Id));
-        }
+				MulticastGroup = IPAddress.None;
+			}
+			catch (Exception)
+			{
+			}
+		}
 
-        public void Close()
-        {
-            Listening = false;
-            foreach (var NetbootClient in Clients.Values.ToList())
-                NetbootClient?.Close();
+		private void Received(IAsyncResult ar)
+		{
+			if (_sock == null)
+				return;
 
-            LeaveMulticastGroup(MulticastGroup);
+			if (!Listening)
+				return;
 
-            _sock.Close();
-        }
+			EndPoint remoteEndpoint = new IPEndPoint(IPAddress.Any, 0);
 
-        public void HeartBeat()
-        {
-        }
+			state = (SocketState)ar.AsyncState;
+			var bytesRead = _sock.EndReceiveFrom(ar, ref remoteEndpoint);
 
-        private void EndSend(IAsyncResult ar)
-        {
-            var so = (Socket)ar.AsyncState;
 
-            var bytesSend = so.EndSendTo(ar);
+			_sock.BeginReceiveFrom(state.Buffer, 0, state.Buffer.Length, 0,
+				ref LocalEndpoint, new AsyncCallback(Received), state);
+		}
 
-            if (bytesSend == 0 || bytesSend == -1)
-                return;
-        }
+		public void Send(Guid client, byte[] data)
+		{
+			_sock.BeginSendTo(data, 0, data.Length, SocketFlags.None,
+				Clients[client].RemoteEndpoint, new AsyncCallback(EndSend), _sock);
+		}
 
-        public void Send(Guid client, MemoryStream data, bool keepAlive)
-        {
-            _sock.BeginSendTo(data.GetBuffer(), 0, (int)data.Length,
-                SocketFlags.None, Clients[client].RemoteEndpoint, new AsyncCallback(EndSend), _sock);
-        }
+		public void Close(Guid client)
+		{
+			if (!Clients.TryGetValue(client, out INetbootClient? value))
+				return;
 
-        public void Send(Guid client, byte[] data, bool keepAlive)
-        {
-            _sock.BeginSendTo(data, 0, data.Length,
-                SocketFlags.None, Clients[client].RemoteEndpoint, new AsyncCallback(EndSend), _sock);
-        }
+			value.Close();
+			Remove(client);
+		}
 
-        public void Send(Guid client, IPEndPoint remoteEndPoint, MemoryStream data)
-        {
-            _sock.BeginSendTo(data.GetBuffer(), 0, (int)data.Length,
-                SocketFlags.None, remoteEndPoint, new AsyncCallback(EndSend), _sock);
-        }
+		public void Remove(Guid client)
+		{
+			if (!Clients.ContainsKey(client))
+				return;
 
-        public void Send(Guid client, IPEndPoint remoteEndPoint, byte[] data)
-        {
-            _sock.BeginSendTo(data, 0, data.Length,
-                SocketFlags.None, remoteEndPoint, new AsyncCallback(EndSend), _sock);
-        }
+			Clients.Remove(client);
+			var socketClosedClient = SocketClosedClient;
 
-        public void Dispose()
-        {
-            foreach (var NetbootUdpClient in Clients.Values.ToList())
-                NetbootUdpClient.Dispose();
+			socketClosedClient?.Invoke(this, new(client, Id));
+		}
 
-            Clients.Clear();
-        }
+		public void Close()
+		{
+			Listening = false;
+			foreach (var NetbootClient in Clients.Values.ToList())
+				NetbootClient?.Close();
 
-        public void Send(Guid client, string data, Encoding encoding, bool keepAlive)
-        {
-            var bytes = encoding.GetBytes(data);
-            _sock.BeginSendTo(bytes, 0, bytes.Length,
-                SocketFlags.None, Clients[client].RemoteEndpoint, new AsyncCallback(EndSend), _sock);
-        }
+			LeaveMulticastGroup(MulticastGroup);
 
-        public IPEndPoint GetEndPoint()
-        {
-            return (IPEndPoint)LocalEndpoint;
-        }
-    }
+			_sock.Close();
+		}
+
+		public void HeartBeat()
+		{
+		}
+
+		private void EndSend(IAsyncResult ar)
+		{
+			var so = (Socket)ar.AsyncState;
+
+			var bytesSend = so.EndSendTo(ar);
+
+			if (bytesSend == 0 || bytesSend == -1)
+				return;
+		}
+
+		public void Send(Guid client, MemoryStream data, bool keepAlive)
+		{
+			_sock.BeginSendTo(data.GetBuffer(), 0, (int)data.Length,
+				SocketFlags.None, Clients[client].RemoteEndpoint, new AsyncCallback(EndSend), _sock);
+		}
+
+		public void Send(Guid client, byte[] data, bool keepAlive)
+		{
+			_sock.BeginSendTo(data, 0, data.Length,
+				SocketFlags.None, Clients[client].RemoteEndpoint, new AsyncCallback(EndSend), _sock);
+		}
+
+		public void Send(Guid client, IPEndPoint remoteEndPoint, MemoryStream data)
+		{
+			_sock.BeginSendTo(data.GetBuffer(), 0, (int)data.Length,
+				SocketFlags.None, remoteEndPoint, new AsyncCallback(EndSend), _sock);
+		}
+
+		public void Send(Guid client, IPEndPoint remoteEndPoint, byte[] data)
+		{
+			_sock.BeginSendTo(data, 0, data.Length,
+				SocketFlags.None, remoteEndPoint, new AsyncCallback(EndSend), _sock);
+		}
+
+		public void Dispose()
+		{
+			foreach (var NetbootUdpClient in Clients.Values.ToList())
+				NetbootUdpClient.Dispose();
+
+			Clients.Clear();
+		}
+
+		public void Send(Guid client, string data, Encoding encoding, bool keepAlive)
+		{
+			var bytes = encoding.GetBytes(data);
+			_sock.BeginSendTo(bytes, 0, bytes.Length,
+				SocketFlags.None, Clients[client].RemoteEndpoint, new AsyncCallback(EndSend), _sock);
+		}
+
+		public IPEndPoint GetEndPoint()
+		{
+			return (IPEndPoint)LocalEndpoint;
+		}
+	}
 }

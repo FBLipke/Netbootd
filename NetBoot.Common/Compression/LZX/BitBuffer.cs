@@ -3,86 +3,86 @@ using System.IO;
 
 namespace Netboot.Common.Compression.LZX
 {
-    public class BitBuffer
-    {
-        public Stream stream;
-        public uint bit_buffer;
-        public int bits_left;
-        byte[] byte_buffer = new byte[ushort.MaxValue];
-        int buffer_pos;
-        int buffer_end;
+	public class BitBuffer
+	{
+		public Stream stream;
+		public uint bit_buffer;
+		public int bits_left;
+		byte[] byte_buffer = new byte[ushort.MaxValue];
+		int buffer_pos;
+		int buffer_end;
 
-        public BitBuffer(Stream s)
-        {
-            stream = s;
-            bit_buffer = 0;
-            bits_left = 0;
-            buffer_pos = 0;
-            buffer_end = 0;
-        }
+		public BitBuffer(Stream s)
+		{
+			stream = s;
+			bit_buffer = 0;
+			bits_left = 0;
+			buffer_pos = 0;
+			buffer_end = 0;
+		}
 
-        public void InitBitStream()
-        {
-            bit_buffer = 0;
-            bits_left = 0;
+		public void InitBitStream()
+		{
+			bit_buffer = 0;
+			bits_left = 0;
 
-            RefillBuffer();
-        }
+			RefillBuffer();
+		}
 
-        bool RefillBuffer()
-        {
-            if (buffer_pos >= buffer_end)
-            {
-                buffer_end = stream.Read(byte_buffer, 0, byte_buffer.Length);
-                buffer_pos = 0;
-                
-                if (buffer_end <= 0)
-                    return false;
-            }
+		bool RefillBuffer()
+		{
+			if (buffer_pos >= buffer_end)
+			{
+				buffer_end = stream.Read(byte_buffer, 0, byte_buffer.Length);
+				buffer_pos = 0;
 
-            while (bits_left <= 24 && buffer_pos < buffer_end)
-            {
-                bit_buffer |= (uint)(byte_buffer[buffer_pos++] << bits_left);
-                bits_left += 8;
-            }
+				if (buffer_end <= 0)
+					return false;
+			}
 
-            return true;
-        }
+			while (bits_left <= 24 && buffer_pos < buffer_end)
+			{
+				bit_buffer |= (uint)(byte_buffer[buffer_pos++] << bits_left);
+				bits_left += 8;
+			}
 
-        public uint ReadBits(int count)
-        {
-            while (bits_left < count)
-                if (!RefillBuffer())
-                    break;
+			return true;
+		}
 
-            var result = bit_buffer & ((1u << count) - 1);
-            bit_buffer >>= count;
-            bits_left -= count;
+		public uint ReadBits(int count)
+		{
+			while (bits_left < count)
+				if (!RefillBuffer())
+					break;
 
-            return result;
-        }
+			var result = bit_buffer & ((1u << count) - 1);
+			bit_buffer >>= count;
+			bits_left -= count;
 
-        public void EnsureBits(int count)
-        {
-            while (bits_left < count)
-                RefillBuffer();
-        }
+			return result;
+		}
 
-        public uint GetBitsLeft()
-            => (uint)((buffer_end - buffer_pos) * 8 + bits_left);
+		public void EnsureBits(int count)
+		{
+			while (bits_left < count)
+				RefillBuffer();
+		}
 
-        public int ReadByte()
-        {
-            if (buffer_pos >= buffer_end)
-            {
-                buffer_end = stream.Read(byte_buffer, 0, byte_buffer.Length);
-                buffer_pos = 0;
+		public uint GetBitsLeft()
+			=> (uint)((buffer_end - buffer_pos) * 8 + bits_left);
 
-                if (buffer_end <= 0)
-                    return -1;
-            }
+		public int ReadByte()
+		{
+			if (buffer_pos >= buffer_end)
+			{
+				buffer_end = stream.Read(byte_buffer, 0, byte_buffer.Length);
+				buffer_pos = 0;
 
-            return byte_buffer[buffer_pos++];
-        }
-    }
+				if (buffer_end <= 0)
+					return -1;
+			}
+
+			return byte_buffer[buffer_pos++];
+		}
+	}
 }

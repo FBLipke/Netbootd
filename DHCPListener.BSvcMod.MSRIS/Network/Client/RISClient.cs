@@ -15,12 +15,12 @@ using Netboot.Module.DHCPListener;
 
 namespace DHCPListener.BSvcMod.MSRIS
 {
-    public class RISClient : DHCPClient, IRISClient
-    {
-        public RISClient(bool testClient, DHCPPacket request, Guid server, Guid socket, Guid client)
-            : base(testClient, server, socket, client, request)
-        {
+	public class RISClient : DHCPClient, IRISClient
+	{
+		public RISClient(bool testClient, DHCPPacket request, Guid server, Guid socket, Guid client)
+			: base(testClient, server, socket, client, request)
+		{
 
-        }
-    }
+		}
+	}
 }

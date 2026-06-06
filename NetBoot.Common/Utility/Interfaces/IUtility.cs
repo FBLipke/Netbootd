@@ -6,26 +6,26 @@ using System.Threading.Tasks;
 
 namespace Netboot.Common.Utility
 {
-    public interface IUtility: IDisposable
-    {
-        Guid Id { get; set; }
+	public interface IUtility : IDisposable
+	{
+		Guid Id { get; set; }
 
-        string Name { get; set; }
+		string Name { get; set; }
 
-        string Description { get; set; }
+		string Description { get; set; }
 
-        void Initialize();
-        
-        void Start();
+		void Initialize();
 
-        void Show(string[] args);
+		void Start();
 
-        void List(string[] args);
+		void Show(string[] args);
 
-        void Add(string[] args);
+		void List(string[] args);
 
-        void Remove(string[] args);
+		void Add(string[] args);
 
-        void Modify(string[] args);
-    }
+		void Remove(string[] args);
+
+		void Modify(string[] args);
+	}
 }

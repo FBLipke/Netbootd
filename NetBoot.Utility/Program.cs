@@ -17,38 +17,38 @@ using System.Diagnostics;
 
 namespace Netboot
 {
-    internal class Program
-    {
+	internal class Program
+	{
 
-        static Utility utility;
+		static Utility? utility;
 
-        [STAThread]
-        static void Main(string[] args)
-        {
-            var currentProcess = Process.GetCurrentProcess();
-            currentProcess.Exited += CurrentDomain_ProcessExit;
-            AppDomain.CurrentDomain.ProcessExit += CurrentDomain_ProcessExit;
-            AppDomain.CurrentDomain.DomainUnload += CurrentDomain_ProcessExit;
+		[STAThread]
+		static void Main(string[] args)
+		{
+			var currentProcess = Process.GetCurrentProcess();
+			currentProcess.Exited += CurrentDomain_ProcessExit;
+			AppDomain.CurrentDomain.ProcessExit += CurrentDomain_ProcessExit;
+			AppDomain.CurrentDomain.DomainUnload += CurrentDomain_ProcessExit;
 
-            utility = new Utility(args);
-            
-            #region "keep program alive"
-            var x = string.Empty;
+			utility = new Utility(args);
 
-            while (x != "!exit")
-            {
-                x = Console.ReadLine();
-                if (x.StartsWith('!'))
-                    utility.RunCommand(x.Split(' '));
-            }
-            #endregion
+			#region "keep program alive"
+			var x = string.Empty;
 
-            CurrentDomain_ProcessExit(null, EventArgs.Empty);
-        }
+			while (x != "!exit")
+			{
+				x = Console.ReadLine();
+				if (x.StartsWith('!'))
+					utility.RunCommand(x.Split(' '));
+			}
+			#endregion
 
-        private static void CurrentDomain_ProcessExit(object? sender, EventArgs e)
-        {
-            utility.Dispose();
-        }
-    }
+			CurrentDomain_ProcessExit(null, EventArgs.Empty);
+		}
+
+		private static void CurrentDomain_ProcessExit(object? sender, EventArgs e)
+		{
+			utility.Dispose();
+		}
+	}
 }

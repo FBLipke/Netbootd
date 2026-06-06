@@ -6,10 +6,10 @@
 
 namespace Netboot.Common.Provider.Attributes
 {
-    public class IsRuntimeModuleAttribute : Attribute
-    {
-        public IsRuntimeModuleAttribute()
-            => NetbootBase.Log("I", "Netboot.ModuleInstaller",
-                "This Module does not need any Installation Routines!");
-    }
+	public class IsRuntimeModuleAttribute : Attribute
+	{
+		public IsRuntimeModuleAttribute()
+			=> NetbootBase.Log("I", "Netboot.ModuleInstaller",
+				"This Module does not need any Installation Routines!");
+	}
 }

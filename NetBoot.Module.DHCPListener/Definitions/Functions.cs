@@ -13,18 +13,18 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace Netboot.Module.DHCPListener
 {
-    public static class Functions
-    {
-        public static Guid AsLittleEndianGuid(byte[] bytes)
-        {
-            var idBytes = new byte[16];
+	public static class Functions
+	{
+		public static Guid AsLittleEndianGuid(byte[] bytes)
+		{
+			var idBytes = new byte[16];
 
-            Array.Copy(bytes, idBytes, idBytes.Length);
-            Array.Reverse(idBytes, 0, 4);
-            Array.Reverse(idBytes, 4, 2);
-            Array.Reverse(idBytes, 6, 2);
+			Array.Copy(bytes, idBytes, idBytes.Length);
+			Array.Reverse(idBytes, 0, 4);
+			Array.Reverse(idBytes, 4, 2);
+			Array.Reverse(idBytes, 6, 2);
 
-            return new Guid(idBytes);
-        }
-    }
+			return new Guid(idBytes);
+		}
+	}
 }
