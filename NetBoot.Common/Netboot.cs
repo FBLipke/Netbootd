@@ -23,7 +23,8 @@ namespace Netboot.Common
 {
     public class NetbootBase : IDisposable, IManager
     {
-        private Thread _heartBeatThread;
+        private Task _heartBeatTask = Task.CompletedTask;
+        private CancellationTokenSource? _heartBeatCts;
         private bool utilityInstance = false;
 
         public static NetworkManager NetworkManager { get; private set; }
@@ -49,8 +50,6 @@ namespace Netboot.Common
 
             cmdArgs = args;
 
-            if (!utilityInstance)
-                _heartBeatThread = new Thread(new ThreadStart(HeartBeat));
 
             Providers = [];
             UtilProviders = [];
@@ -90,16 +89,22 @@ namespace Netboot.Common
         public void Start()
         {
             if (!utilityInstance)
+            {
+                _heartBeatCts = new CancellationTokenSource();
+                _heartBeatTask = Task.Run(() => HeartBeatLoop(_heartBeatCts.Token));
                 NetworkManager.Start();
+            }
 
             Running = Providers.Count != 0;
-            _heartBeatThread.Start();
         }
 
         public void Stop()
         {
             if (!utilityInstance)
+            {
+                _heartBeatCts?.Cancel();
                 NetworkManager.Stop();
+            }
 
             foreach (var provider in Providers)
             {
@@ -128,13 +133,12 @@ namespace Netboot.Common
                 UtilProviders = null;
             }
 
-            try
+            if (!utilityInstance)
             {
-                if (!utilityInstance)
-                    _heartBeatThread.Abort();
-            }
-            catch
-            {
+                _heartBeatCts?.Cancel();
+                _heartBeatTask.Wait(TimeSpan.FromSeconds(2));
+                _heartBeatCts?.Dispose();
+                _heartBeatCts = null;
             }
 
         }
@@ -177,16 +181,35 @@ namespace Netboot.Common
             }
         }
 
+        private void HeartBeatLoop(CancellationToken cancellationToken)
+        {
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                try
+                {
+                    Task.Delay(TimeSpan.FromSeconds(30), cancellationToken).GetAwaiter().GetResult();
+                }
+                catch (OperationCanceledException)
+                {
+                    break;
+                }
+
+                if (cancellationToken.IsCancellationRequested)
+                    break;
+
+                NetworkManager.HeartBeat();
+
+                foreach (var provider in Providers ?? [])
+                    Provider.Provider.InvokeMethod<IProvider>(provider.Value, "HeartBeat");
+            }
+        }
+
         public void HeartBeat()
         {
             if (utilityInstance)
                 return;
 
-            Thread.Sleep(30000);
-            NetworkManager.HeartBeat();
-
-            foreach (var provider in Providers)
-                Provider.Provider.InvokeMethod<IProvider>(provider.Value, "HeartBeat");
+            HeartBeatLoop(CancellationToken.None);
         }
 
         public static void Log(string type, string name, string logmessage)
