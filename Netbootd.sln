@@ -36,6 +36,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetBoot.Loader", "NetBoot.L
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetBoot.Tests", "NetBoot.Tests\NetBoot.Tests.csproj", "{AE58AB16-8430-6B18-7E02-05AF982C2EC3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BINLListener.BSvcMod.MSRIS", "BINLListener.BSvcMod.MSRIS\BINLListener.BSvcMod.MSRIS.csproj", "{F527786A-3AD1-4DF8-B5ED-AF60C5E54897}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -202,6 +204,18 @@ Global
 		{AE58AB16-8430-6B18-7E02-05AF982C2EC3}.Release|x64.Build.0 = Release|Any CPU
 		{AE58AB16-8430-6B18-7E02-05AF982C2EC3}.Release|x86.ActiveCfg = Release|Any CPU
 		{AE58AB16-8430-6B18-7E02-05AF982C2EC3}.Release|x86.Build.0 = Release|Any CPU
+		{F527786A-3AD1-4DF8-B5ED-AF60C5E54897}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F527786A-3AD1-4DF8-B5ED-AF60C5E54897}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F527786A-3AD1-4DF8-B5ED-AF60C5E54897}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{F527786A-3AD1-4DF8-B5ED-AF60C5E54897}.Debug|x64.Build.0 = Debug|Any CPU
+		{F527786A-3AD1-4DF8-B5ED-AF60C5E54897}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{F527786A-3AD1-4DF8-B5ED-AF60C5E54897}.Debug|x86.Build.0 = Debug|Any CPU
+		{F527786A-3AD1-4DF8-B5ED-AF60C5E54897}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F527786A-3AD1-4DF8-B5ED-AF60C5E54897}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F527786A-3AD1-4DF8-B5ED-AF60C5E54897}.Release|x64.ActiveCfg = Release|Any CPU
+		{F527786A-3AD1-4DF8-B5ED-AF60C5E54897}.Release|x64.Build.0 = Release|Any CPU
+		{F527786A-3AD1-4DF8-B5ED-AF60C5E54897}.Release|x86.ActiveCfg = Release|Any CPU
+		{F527786A-3AD1-4DF8-B5ED-AF60C5E54897}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

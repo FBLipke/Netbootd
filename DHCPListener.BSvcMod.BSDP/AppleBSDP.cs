@@ -14,6 +14,11 @@ namespace DHCPListener.BSvcMod.BSDP
 			ServerType = BootServerType.AppleBootServer;
 			DHCPListenerBase.RegisterBootService(this, ServerType, Environment.MachineName);
 
+			DHCPListenerBase.BootServiceRequest += (sender, e) =>
+			{
+				Handle_Listener_Request(e.Server, e.Socket, e.Client, e.Request);
+			};
+
 			ReadBootFile(xml);
 		}
 

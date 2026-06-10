@@ -31,6 +31,11 @@ namespace DHCPListener.BSvcMod.RBCP
 			ServerType = BootServerType.PXEBootstrapServer;
 			DHCPListenerBase.RegisterBootService(this, ServerType, Environment.MachineName);
 
+			DHCPListenerBase.BootServiceRequest += (sender, e) =>
+			{
+				Handle_Listener_Request(e.Server, e.Socket, e.Client, e.Request);
+			};
+
 			DiscoveryControl = byte.Parse(xml.Attributes.GetNamedItem("discovery").Value);
 			MulticastDelay = byte.Parse(xml.Attributes.GetNamedItem("mcstartdelay").Value);
 			MulticastTimeout = byte.Parse(xml.Attributes.GetNamedItem("mctimeout").Value);
@@ -40,6 +45,8 @@ namespace DHCPListener.BSvcMod.RBCP
 
 			MulticastSPort = ushort.Parse(xml.Attributes.GetNamedItem("mcsport").Value);
 			MulticastCPort = ushort.Parse(xml.Attributes.GetNamedItem("mccport").Value);
+
+
 		}
 
 		public override void Handle_Bootp_Request(DHCPPacket requestPacket, Guid server, Guid socket, Guid client)
@@ -79,6 +86,8 @@ namespace DHCPListener.BSvcMod.RBCP
 
 		public override void Handle_DHCP_Discover(Guid clientid, DHCPPacket request)
 		{
+			Console.WriteLine("xxxxxx xxxxxx xxxxxx");
+
 			Clients[clientid].Response.AddOption(new((byte)DHCPOptions.VendorSpecificInformation,
 			[
 				new ((byte) PXEOptions.MulticastTFTPDelay, MulticastDelay),

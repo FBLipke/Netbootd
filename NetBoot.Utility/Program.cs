@@ -13,6 +13,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using Netboot.Common;
 using Netboot.Common.Utility;
+using NetBoot.Utility;
 using System.Diagnostics;
 
 namespace Netboot
@@ -39,7 +40,18 @@ namespace Netboot
 			{
 				x = Console.ReadLine();
 				if (x.StartsWith('!'))
-					utility.RunCommand(x.Split(' '));
+				{
+					var parts = x.Split(' ');
+					if (parts[0] == "!dhcp")
+					{
+						var target = parts.Length > 1 ? parts[1] : "10.232.128.101";
+						TestDHCPClient.Run(target);
+					}
+					else
+					{
+						utility.RunCommand(parts);
+					}
+				}
 			}
 			#endregion
 

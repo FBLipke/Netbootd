@@ -18,7 +18,7 @@ using System.Text;
 
 namespace Netboot.Module.DHCPListener
 {
-	public class DHCPOption<T>
+	public class DHCPOption<O>
 	{
 		public byte Option { get; private set; }
 
@@ -26,14 +26,14 @@ namespace Netboot.Module.DHCPListener
 
 		public byte[] Data { get; private set; }
 
-		public DHCPOption(T option)
+		public DHCPOption(O option)
 		{
 			Option = Convert.ToByte(option);
 			Data = [];
 			Length = Convert.ToByte(Data.Length);
 		}
 
-		public DHCPOption(T option, byte data)
+		public DHCPOption(O option, byte data)
 		{
 			Option = Convert.ToByte(option);
 			Length = 1;
@@ -41,15 +41,14 @@ namespace Netboot.Module.DHCPListener
 			Data[0] = data;
 		}
 
-		public DHCPOption(T option, byte[] data)
+		public DHCPOption(O option, byte[] data)
 		{
 			Option = Convert.ToByte(option);
 			Length = Convert.ToByte(data.Length);
 			Data = data;
 		}
 
-
-		void DHCPOptionFunc<C>(T option, List<DHCPOption<C>> list)
+		void DHCPOptionFunc<C>(O option, List<DHCPOption<C>> list)
 		{
 			var length = 0;
 
@@ -70,7 +69,7 @@ namespace Netboot.Module.DHCPListener
 				if (item.Length == 0)
 					continue;
 
-				block[offset] = item.Length;
+				block[offset] = (byte)item.Length;
 				offset += sizeof(byte);
 
 				Array.Copy(item.Data, 0, block, offset, item.Data.Length);
@@ -80,81 +79,80 @@ namespace Netboot.Module.DHCPListener
 			Option = Convert.ToByte(option);
 			Data = block;
 			Length = Convert.ToByte(length);
-
 		}
 
-		public DHCPOption(T option, List<DHCPOption<byte>> list)
+		public DHCPOption(O option, List<DHCPOption<byte>> list)
 		{
 			DHCPOptionFunc(option, list);
 		}
 
-		public DHCPOption(T option, List<DHCPOption<DHCPOptions>> list) => DHCPOptionFunc(option, list);
+		public DHCPOption(O option, List<DHCPOption<DHCPOptions>> list)
+			=> DHCPOptionFunc(option, list);
 
-
-		public DHCPOption(T option, short data)
+		public DHCPOption(O option, short data)
 		{
 			Option = Convert.ToByte(option);
 			Data = BitConverter.GetBytes(data);
 			Length = Convert.ToByte(Data.Length);
 		}
 
-		public DHCPOption(T option, ushort data)
+		public DHCPOption(O option, ushort data)
 		{
 			Option = Convert.ToByte(option);
 			Data = BitConverter.GetBytes(data);
 			Length = Convert.ToByte(Data.Length);
 		}
 
-		public DHCPOption(T option, int data)
+		public DHCPOption(O option, int data)
 		{
 			Option = Convert.ToByte(option);
 			Data = BitConverter.GetBytes(data);
 			Length = Convert.ToByte(Data.Length);
 		}
 
-		public DHCPOption(T option, bool data)
+		public DHCPOption(O option, bool data)
 		{
 			Option = Convert.ToByte(option);
 			Data = BitConverter.GetBytes(data);
 			Length = Convert.ToByte(Data.Length);
 		}
 
-		public DHCPOption(T option, uint data)
+		public DHCPOption(O option, uint data)
 		{
 			Option = Convert.ToByte(option);
 			Data = BitConverter.GetBytes(data);
 			Length = Convert.ToByte(Data.Length);
 		}
 
-		public DHCPOption(T option, long data)
+		public DHCPOption(O option, long data)
 		{
 			Option = Convert.ToByte(option);
 			Data = BitConverter.GetBytes(data);
 			Length = Convert.ToByte(Data.Length);
 		}
 
-		public DHCPOption(T option, ulong data)
+		public DHCPOption(O option, ulong data)
 		{
 			Option = Convert.ToByte(option);
 			Data = BitConverter.GetBytes(data);
 			Length = Convert.ToByte(Data.Length);
 		}
 
-		public DHCPOption(T option, string data, Encoding encoding)
+		public DHCPOption(O option, string data, Encoding encoding)
 		{
 			Option = Convert.ToByte(option);
 			Data = encoding.GetBytes(data);
 			Length = Convert.ToByte(Data.Length);
 		}
 
-		public DHCPOption(T option, IPAddress data)
+		public DHCPOption(O option, IPAddress data)
 		{
 			Option = Convert.ToByte(option);
 			Data = data.GetAddressBytes();
 			Length = Convert.ToByte(Data.Length);
 		}
 
-		public DHCPOption(T option, ClientIdentType type, Guid data)
+		public DHCPOption(O option, ClientIdentType type, Guid data)
 		{
 			var bytes = new byte[17];
 			bytes[0] = (byte)type;
@@ -167,7 +165,7 @@ namespace Netboot.Module.DHCPListener
 			Length = Convert.ToByte(Data.Length);
 		}
 
-		public DHCPOption(T option, Guid data)
+		public DHCPOption(O option, Guid data)
 		{
 			Option = Convert.ToByte(option);
 			Data = data.ToByteArray();

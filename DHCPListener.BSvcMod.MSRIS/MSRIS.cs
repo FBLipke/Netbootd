@@ -44,8 +44,7 @@ namespace DHCPListener.BSvcMod.MSRIS
 
 		public MSRIS(XmlNode xml) : base(xml)
 		{
-			ServerType = BootServerType.MicrosoftWindowsNT;
-			DHCPListenerBase.RegisterBootService(this, ServerType, Environment.MachineName);
+
 
 			ReadBootFile(xml);
 
@@ -57,9 +56,14 @@ namespace DHCPListener.BSvcMod.MSRIS
 				{
 				}
 			}
-
+			
+			ServerType = BootServerType.MicrosoftWindowsNT;
 			DHCPListenerBase.RegisterBootService(this, ServerType, Environment.MachineName);
 
+			DHCPListenerBase.BootServiceRequest += (sender, e) =>
+			{
+				Handle_Listener_Request(e.Server, e.Socket, e.Client, e.Request);
+			};
 			LoadUtilitiyModule();
 		}
 

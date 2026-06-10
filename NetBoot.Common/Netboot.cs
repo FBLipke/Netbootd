@@ -74,7 +74,7 @@ namespace Netboot.Common
 				foreach (var item in funcs)
 				{
 					Log("I", "Common", string.Format("Sending \"{1}\" command  to \"{0}\"", e.Name, item));
-					Provider.Provider.InvokeMethod<IProvider>(Providers[e.Name], item, []);
+					Provider.Provider.InvokeMethod(Providers[e.Name], item, []);
 				}
 			};
 
@@ -103,7 +103,7 @@ namespace Netboot.Common
 
 			foreach (var provider in Providers)
 			{
-				Provider.Provider.InvokeMethod<IProvider>(provider.Value, "Stop");
+				Provider.Provider.InvokeMethod(provider.Value, "Stop");
 				Log("I", provider.Key, "stopped!");
 			}
 		}
@@ -116,7 +116,7 @@ namespace Netboot.Common
 			if (Providers.Count != 0)
 			{
 				foreach (var provider in Providers)
-					Provider.Provider.InvokeMethod<IProvider>(provider.Value, "Dispose");
+					Provider.Provider.InvokeMethod(provider.Value, "Dispose");
 
 				Providers.Clear();
 				Providers = null;
@@ -168,7 +168,7 @@ namespace Netboot.Common
 
 			foreach (var provider in Providers)
 			{
-				Provider.Provider.InvokeMethod<IProvider>(provider.Value, "Close");
+				Provider.Provider.InvokeMethod(provider.Value, "Close");
 				Log("I", provider.Key, "closed!");
 			}
 		}
@@ -182,7 +182,7 @@ namespace Netboot.Common
 			NetworkManager.HeartBeat();
 
 			foreach (var provider in Providers)
-				Provider.Provider.InvokeMethod<IProvider>(provider.Value, "HeartBeat");
+				Provider.Provider.InvokeMethod(provider.Value, "HeartBeat");
 		}
 
 		public static void Log(string type, string name, string logmessage)

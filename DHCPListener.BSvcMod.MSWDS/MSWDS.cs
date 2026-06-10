@@ -51,6 +51,11 @@ namespace DHCPListener.BSvcMod.MSWDS
 					#endregion
 				}
 			}
+
+			DHCPListenerBase.BootServiceRequest += (sender, e) =>
+			{
+				Handle_Listener_Request(e.Server, e.Socket, e.Client, e.Request);
+			};
 		}
 
 		public override void Handle_Bootp_Request(DHCPPacket requestPacket, Guid server, Guid socket, Guid client)

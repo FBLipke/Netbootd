@@ -10,17 +10,14 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <Compile Include="BINLListener.cs" />
-	  <Compile Include="BINLListenerBase.cs" />
-	  <Compile Include="Network\Client\BINLClient.cs" />
-	  <Compile Include="Network\Definitions\Definitions.cs" />
-	  <Compile Include="Network\Definitions\SecurityBuffer.cs" />
-	  <Compile Include="Network\Interfaces\IBINLService.cs" />
-	  <Compile Include="Network\Packet\BINLPacket.cs" />
-	  <Compile Include="Network\Packet\NTLMSSPPacket.cs" />
+		<Compile Include="MSRIS.cs" />
+		<Compile Include="Network\Client\BINLClient.cs" />
+		<Compile Include="Network\Interfaces\IBINLClient.cs" />
 	</ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\NetBoot.Content\NetBoot.Content.csproj" />
+    <ProjectReference Include="..\NetBoot.Module.BINLListener\NetBoot.Module.BINLListener.csproj" />
     <ProjectReference Include="..\NetBoot.Module.DHCPListener\NetBoot.Module.DHCPListener.csproj" />
     <ProjectReference Include="..\NetBoot.Common\NetBoot.Common.csproj" />
   </ItemGroup>
